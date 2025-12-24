@@ -1,8 +1,7 @@
 export default function Home() {
   return (
-    <div>
-      <h1>Home</h1>
-      <p>Layout test content</p>
+    <div className="px-4 h-[80vh]">
+      <h1>Hero Section</h1>
     </div>
   );
 }
