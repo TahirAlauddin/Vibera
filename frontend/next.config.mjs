@@ -2,6 +2,9 @@
 const nextConfig = {
   /* config options here */
   reactCompiler: true,
+  experimental: {
+    turbo: false, // hard-disable Turbopack
+  },
 };
 
 export default nextConfig;
