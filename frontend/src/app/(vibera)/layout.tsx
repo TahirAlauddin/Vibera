@@ -4,7 +4,7 @@ type ViberaLayoutProps = {
   children: ReactNode;
 };
 
-export default function ViberaLayout({ children }: ViberaLayoutProps) {
+export default function MainLayout({ children }: ViberaLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* header placeholder */}

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 
 // Define a type for data
-type Emoji = {
+type EmojiType = {
   id: number;
   name: string; // label
   symbol: string; // emoji character
 };
 
 // Real DB query OR mock data
-const emojis: Emoji[] = [
+const emojisDummyData: EmojiType[] = [
   { id: 1, name: "happy", symbol: "😀" },
   { id: 2, name: "neutral", symbol: "😐" },
   { id: 3, name: "sad", symbol: "😢" },
@@ -18,7 +18,7 @@ const emojis: Emoji[] = [
 export async function GET() {
   try {
     // later replace with db fetch
-    return NextResponse.json<Emoji[]>(emojis);
+    return NextResponse.json<EmojiType[]>(emojisDummyData);
   } catch (err) {
     console.error("API error", err);
     return NextResponse.json(

@@ -1,4 +1,4 @@
-export default function ViberaHome() {
+export default function Home() {
   return (
     <div>
       <h1>Vibera Home</h1>
