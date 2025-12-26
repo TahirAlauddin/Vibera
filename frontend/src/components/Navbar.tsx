@@ -10,10 +10,12 @@ export default function Navbar() {
   return (
     <nav className="flex w-full h-16">
       {/* Left Green Section */}
-      <div className="flex shrink-0 justify-between items-center bg-green-500 shadow-md px-4 py-2 rounded-r-[2.5rem] flex-3 min-w-0">
+      <div className="flex shrink-0 justify-between items-center color-primary shadow-md px-4 py-2 rounded-r-[2.5rem] flex-3 min-w-0">
         {/* Title */}
         <div className="flex items-center gap-2">
-          <span className=" font-bold text-xl text-white">Vibera</span>
+          <h1 className="font-secondary font-bold text-xl text-white ">
+            Vibera
+          </h1>
         </div>
 
         {/* Logo Image */}

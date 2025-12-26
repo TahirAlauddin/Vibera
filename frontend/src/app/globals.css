@@ -1,7 +1,31 @@
 @import "tailwindcss";
 
-html,
-body {
-  margin: 0;
-  padding: 0;
+@theme {
+  /* Colors */
+  --color-primary: oklch(0.74 0.16 144);
+  --color-background: oklch(0.93 0.06 158 / 80%);
+  --color-accent: oklch(0.65 0.2 30);
+
+  /* Font Aliases */
+  --font-secondary: cursive, ui-sans-serif, system-ui; /* headings */
+  /* Quicksand is imported in app/layout.tsx */
+  --font-primary: "Quicksand", "inter";
+}
+
+@layer utilities {
+  /* Fonts */
+
+  .font-primary {
+    font-family: var(--font-primary);
+  }
+  .font-secondary {
+    font-family: var(--font-secondary);
+  }
+  /* Colors */
+  .color-bg {
+    background-color: var(--color-background);
+  }
+  .color-primary {
+    background-color: var(--color-primary);
+  }
 }
