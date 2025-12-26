@@ -13,7 +13,7 @@ export default function Navbar() {
       <div className="flex shrink-0 justify-between items-center color-primary shadow-md px-4 py-2 rounded-r-[2.5rem] flex-3 min-w-0">
         {/* Title */}
         <div className="flex items-center gap-2">
-          <h1 className="font-secondary font-bold text-xl text-white ">
+          <h1 className="font-secondary font-bold text-4xl ml-4 text-white ">
             Vibera
           </h1>
         </div>
