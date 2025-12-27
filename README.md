@@ -47,8 +47,24 @@ A mood tracking and journaling application built with Django REST Framework.
    ```bash
    python manage.py runserver
    ```
+### Database Setup (PostgreSQL)
 
-The API will be available at `http://localhost:8000`
+1. **Create a database**:
+   ```bash
+   psql -U postgres -c "CREATE DATABASE vibera_db;"
+   ```
+
+2. **Update `.env`**:
+   Configure your database credentials in the `.env` file:
+   ```env
+   DB_NAME=vibera_db
+   DB_USER=postgres
+   DB_PASSWORD=your_password
+   DB_HOST=localhost
+   DB_PORT=5432
+   ```
+
+The API will be available at `http://127.0.0.1:8000/api/test/`
 
 ## Contributing
 
