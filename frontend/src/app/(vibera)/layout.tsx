@@ -14,7 +14,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Navbar />
       </header>
       {/* Main content */}
-      <main className="flex-1 py-6 color-bg">{children}</main>
+      <main className="flex-1 py-6 bg-gradient color-bg">{children}</main>
       {/* Footer placefolder */}
       <footer className="h-12 border-t flex items-center justify-center text-sm">
         Footer
