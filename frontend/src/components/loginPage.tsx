@@ -10,16 +10,16 @@ export default function LoginModal({ onClose, onSwitch }) {
           height={20}
         />
       </button>
-      <div className="bg-white">
-        <h2>Sign in</h2>
-        <form action="">
-          <label htmlFor="">Username</label>
-          <input type="text" />
+      <div className="bg-white flex justify-center flex-col">
+        <h2 className="text-center">Sign in</h2>
+        <form action="" className="flex justify-center flex-col items-center">
+          <label htmlFor="">Email</label>
+          <input type="text" placeholder="email" />
           <label htmlFor="">Password</label>
-          <input type="text" />
+          <input type="text" placeholder="password" />
           <div>
             <button>Sign In</button>
-            <button>Sign Up</button>
+            <button onClick={onSwitch}>Sign Up</button>
           </div>
         </form>
       </div>
