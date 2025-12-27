@@ -31,4 +31,7 @@
   .color-accent {
     color: var(--color-accent);
   }
+  .bg-gradient {
+    background-image: radial-gradient(circle, #effaf3, #a6ddc6);
+  }
 }
