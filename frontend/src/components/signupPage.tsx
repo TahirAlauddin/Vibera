@@ -1,17 +1,29 @@
-export default function SignUp({ isVisible }) {
-  if (!isVisible) return null; // hide when false
+import Image from "next/image";
+
+export default function SignUpModal({ onClose, onSwitch }) {
   return (
-    <div>
-      <form action="">
-        <label htmlFor="">Email</label>
-        <input type="text" />
-        <label htmlFor="">Password</label>
-        <input type="text" />
-        <div>
-          <button>Sign Up</button>
-          <button>Sign In</button>
-        </div>
-      </form>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+      <button onClick={onClose}>
+        <Image
+          src="/assets/cancel.png"
+          alt="close button"
+          width={20}
+          height={20}
+        />
+      </button>
+      <div className="bg-white">
+        <h2>Sign Up</h2>
+        <form action="">
+          <label htmlFor="">Email</label>
+          <input type="text" placeholder="Email" />
+          <label htmlFor="">Password</label>
+          <input type="password" placeholder="password" />
+          <div>
+            <button>Sign Up</button>
+            <button onClick={onSwitch}>Sign In</button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
