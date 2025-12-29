@@ -16,10 +16,16 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from moods import views as moods_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    
+    # JWT Authentication endpoints (Djoser)
+    path("api/auth/", include("djoser.urls")),
+    path("api/auth/", include("djoser.urls.jwt")),
+
     path("api/test/", moods_views.test_api, name="test_api"),
+    
 ]
