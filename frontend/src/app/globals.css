@@ -2,14 +2,11 @@
 
 @theme {
   /* Colors */
-  --color-primary: oklch(0.74 0.16 144);
-  --color-background: oklch(0.93 0.06 158 / 80%);
+  --color-primary: #7dbf7a;
+  --color-background: #a7d9d4;
   --color-accent: oklch(0.22 0.04 235);
-
-  /* Font Aliases */
-  --font-secondary: cursive, ui-sans-serif, system-ui; /* headings */
-  /* Quicksand is imported in app/layout.tsx */
-  --font-primary: "Quicksand", "inter";
+  /* font */
+  --font-primary: "inter";
 }
 
 @layer utilities {
@@ -17,9 +14,6 @@
 
   .font-primary {
     font-family: var(--font-primary);
-  }
-  .font-secondary {
-    font-family: var(--font-secondary);
   }
   /* Colors */
   .color-bg {
@@ -30,8 +24,5 @@
   }
   .color-accent {
     color: var(--color-accent);
-  }
-  .bg-gradient {
-    background-image: radial-gradient(circle, #effaf3, #a6ddc6);
   }
 }
