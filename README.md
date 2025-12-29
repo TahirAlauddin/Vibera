@@ -1,4 +1,4 @@
-# Vibera 💜
+# Vibera 
 
 A mood tracking and journaling application built with Django REST Framework.
 
