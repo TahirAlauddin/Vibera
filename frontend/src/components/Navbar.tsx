@@ -13,7 +13,7 @@ export default function Navbar() {
       <div className="flex items-center justify-between color-primary shadow-md px-4 rounded-r-[2.5rem] w-[60%] min-w-0 h-full">
         {/* Brand */}
         <h1 className="font-bold text-2xl sm:text-3xl text-white truncate">
-          Vibera
+          VIBERA
         </h1>
 
         {/* Logo at rounded edge */}
