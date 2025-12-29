@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Quicksand } from "next/font/google";
-const quicksand = Quicksand({ subsets: ["latin"], variable: "--font-primary" });
+import { Inter } from "next/font/google";
+const inter = Inter({ subsets: ["latin"], variable: "--font-primary" });
 
 export const metadata: Metadata = {
   title: "Vibera",
@@ -14,7 +14,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${quicksand.variable}`}>
+    <html lang="en" className={`${inter.variable} font-sans`}>
       <body>{children}</body>
     </html>
   );
