@@ -9,7 +9,7 @@ export default function Home() {
           A daily mood journal for mindful reflection & community connection
         </p>
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-          <button className=" bg-primary text-white font-bold px-6 py-2 rounded-full hover:bg-primary/80 ">
+          <button className=" color-primary text-white font-bold px-6 py-2 rounded-full hover:bg-primary/80 ">
             Get Started - its Free
           </button>
           <button className="bg-white text-accent border border-primary font-bold px-6 py-2 rounded-full hover:bg-white/80">
