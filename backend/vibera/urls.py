@@ -21,11 +21,11 @@ from moods import views as moods_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    
     # JWT Authentication endpoints (Djoser)
     path("api/auth/", include("djoser.urls")),
     path("api/auth/", include("djoser.urls.jwt")),
-
+    # Moods endpoints
+    path("api/moods/", include("moods.urls")),
+    # Test endpoint
     path("api/test/", moods_views.test_api, name="test_api"),
-    
 ]
