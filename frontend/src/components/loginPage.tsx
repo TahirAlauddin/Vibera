@@ -38,7 +38,7 @@ export default function LoginModal({ onClose, onSwitch }) {
             </div>
             {/* buttons */}
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-              <button className="mt-2 bg-primary text-white w-full sm:w-[200px] py-2 rounded-full font-medium hover:opacity-90 transition">
+              <button className="mt-2 color-primary text-white w-full sm:w-[200px] py-2 rounded-full font-medium hover:opacity-90 transition">
                 Sign In
               </button>
               <button
