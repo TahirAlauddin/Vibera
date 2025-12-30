@@ -4,6 +4,7 @@ import SignUpModal from "../../components/signupPage";
 import LoginModal from "../../components/loginPage";
 import Image from "next/image";
 import Features from "../../components/features";
+import Testimonials from "../../components/testimonials";
 
 export default function Home() {
   const [modal, setModal] = useState(null); // null/ "signup" / "signin"
@@ -101,6 +102,9 @@ export default function Home() {
       </div>
       <div>
         <Features />
+      </div>
+      <div>
+        <Testimonials />
       </div>
     </div>
   );
