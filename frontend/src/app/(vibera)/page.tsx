@@ -1,4 +1,10 @@
+"use client";
+import { useState } from "react";
+import SignUpModal from "../../components/signupPage";
+import LoginModal from "../../components/loginPage";
+
 export default function Home() {
+  const [modal, setModal] = useState(null); // null/ "signup" / "signin"
   return (
     <div className="px-4 h-[80vh] ">
       <div className="flex justify-center flex-col items-center h-full">
@@ -17,6 +23,18 @@ export default function Home() {
           </button>
         </div>
       </div>
+      {modal === "signup" && (
+        <SignUpModal
+          onClose={() => setModal(null)}
+          onSwitch={() => setModal("signin")}
+        />
+      )}
+      {modal === "signin" && (
+        <LoginModal
+          onClose={() => setModal(null)}
+          onSwitch={() => setModal("signup")}
+        />
+      )}
     </div>
   );
 }
