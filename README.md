@@ -185,13 +185,25 @@ GET http://127.0.0.1:8000/api/auth/users/me/
    npm install
    ```
 
-3. Run the development server:
+3. Install class-variance-authority for cva, slot, VarianceProps
+
+```bash
+npm install class-variance-authority
+```
+
+4. Install clsx
+
+```bash
+npm install clsx
+```
+
+5. Run the development server:
 
    ```bash
    npm run dev
    ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Contributing
 
