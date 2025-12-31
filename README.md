@@ -79,6 +79,7 @@ This project uses **Simple JWT** with **Djoser** for token-based authentication.
 ### Authentication Endpoints
 
 The JWT endpoints are configured at `/api/auth/`:
+
 - User registration, login, and profile management via Djoser
 - Token creation, refresh, and verification via Simple JWT
 
@@ -98,13 +99,13 @@ docker run -d \
 
 ## JWT Authentication Endpoints
 
-| Action            | Method | URL                     |
-| ----------------- | ------ | ----------------------- |
-| Register User     | POST   | `/api/auth/users/`      |
-| Login (Get Token) | POST   | `/api/auth/jwt/create/` |
-| Refresh Token     | POST   | `/api/auth/jwt/refresh/`|
-| Verify Token      | POST   | `/api/auth/jwt/verify/` |
-| Current User Info | GET    | `/api/auth/users/me/`   |
+| Action            | Method | URL                      |
+| ----------------- | ------ | ------------------------ |
+| Register User     | POST   | `/api/auth/users/`       |
+| Login (Get Token) | POST   | `/api/auth/jwt/create/`  |
+| Refresh Token     | POST   | `/api/auth/jwt/refresh/` |
+| Verify Token      | POST   | `/api/auth/jwt/verify/`  |
+| Current User Info | GET    | `/api/auth/users/me/`    |
 
 ## Testing with Postman
 
@@ -161,6 +162,36 @@ Example:
 ```
 GET http://127.0.0.1:8000/api/auth/users/me/
 ```
+
+## Frontend
+
+### Dependencies
+
+- **Next.js**: 16.1.1
+- **React**: 19.2.3
+- **React DOM**: 19.2.3
+
+### Steps to Run the Frontend
+
+1. Navigate to the frontend directory:
+
+   ```bash
+   cd frontend
+   ```
+
+2. Install the dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
 ## Contributing
 
