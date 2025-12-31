@@ -1,24 +1,13 @@
-import Image from "next/image";
 import { useState } from "react";
-export default function LoginModal({ onClose, onSwitch }) {
+import Link from "next/link";
+
+export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="relative w-full max-w-md">
-        <button
-          onClick={onClose}
-          className="absolute -top-10 right-2 p-2 rounded-full cursor-pointer shadow-md hover:scale-105 transition"
-        >
-          <Image
-            src="/assets/cancel.png"
-            alt="close button"
-            width={20}
-            height={20}
-          />
-        </button>
-        {/* modal */}
-        <div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col">
+    <div className="min-h-screen flex items-center justify-center color-bg py-12 px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col shadow-lg">
           <h2 className="text-center text-2xl sm:text-3xl font-semibold mb-6">
             Log in
           </h2>
@@ -89,13 +78,22 @@ export default function LoginModal({ onClose, onSwitch }) {
               <button className="mt-2 color-primary text-white w-full sm:w-50 py-2 cursor-pointer rounded-full font-medium hover:opacity-90 transition">
                 Sign In
               </button>
-              <button
-                type="button"
-                onClick={onSwitch}
-                className="mt-2 bg-white text-accent border border-accent cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:opacity-80 transition"
-              >
-                No account? Sign Up
-              </button>
+              {onSwitch ? (
+                <button
+                  type="button"
+                  onClick={onSwitch}
+                  className="mt-2 bg-white text-accent border border-accent cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:opacity-80 transition"
+                >
+                  No account? Sign Up
+                </button>
+              ) : (
+                <Link
+                  href="/signup"
+                  className="mt-2 bg-white text-accent border border-accent cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:opacity-80 transition text-center"
+                >
+                  No account? Sign Up
+                </Link>
+              )}
             </div>
           </form>
         </div>

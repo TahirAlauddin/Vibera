@@ -1,15 +1,7 @@
 "use client";
 
-import LoginModal from "../../components/loginPage";
-import { useRouter } from "next/navigation";
+import LoginPage from "../../components/loginPage";
 
 export default function Login() {
-    const router = useRouter();
-
-    return (
-        <LoginModal
-            onClose={() => router.push("/")}
-            onSwitch={() => router.push("/signup")}
-        />
-    );
+    return <LoginPage />;
 }

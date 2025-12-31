@@ -5,10 +5,9 @@ import Footer from "../../components/Footer";
 
 type MainLayoutProps = {
   children: ReactNode;
-  modal?: ReactNode;
 };
 
-export default function MainLayout({ children, modal }: MainLayoutProps) {
+export default function MainLayout({ children }: MainLayoutProps) {
   return (
     <div className="min-h-screen flex flex-col">
       {/* header placeholder */}
@@ -21,8 +20,6 @@ export default function MainLayout({ children, modal }: MainLayoutProps) {
       <footer>
         <Footer />
       </footer>
-      {/* Modal slot for intercepting routes */}
-      {modal}
     </div>
   );
 }
