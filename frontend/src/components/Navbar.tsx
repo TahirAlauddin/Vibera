@@ -1,5 +1,5 @@
 "use client";
-
+import { Menu } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 
@@ -66,12 +66,7 @@ export default function Navbar() {
           onClick={() => setMenuOpen(!menuOpen)}
           className="p-2 focus:outline-none cursor-pointer"
         >
-          <Image
-            src="/assets/list.png"
-            alt="menu button"
-            width={24}
-            height={24}
-          />
+          <Menu />
         </button>
       </div>
 
