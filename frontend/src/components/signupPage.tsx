@@ -6,7 +6,7 @@ export default function SignUpModal({ onClose, onSwitch }) {
       <div className="relative w-full max-w-md">
         <button
           onClick={onClose}
-          className="absolute -top-10 right-2 p-2 rounded-full shadow-md hover:scale-105 transition"
+          className="absolute -top-10 right-2 p-2 rounded-full cursor-pointer shadow-md hover:scale-105 transition"
         >
           <Image
             src="/assets/cancel.png"
@@ -38,12 +38,12 @@ export default function SignUpModal({ onClose, onSwitch }) {
               />
             </div>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-              <button className="mt-2 color-primary text-white w-full sm:w-[200px] py-2 rounded-full font-medium hover:opacity-90 transition">
+              <button className="mt-2 cursor-pointer color-primary text-white w-full sm:w-50 py-2 rounded-full font-medium hover:opacity-90 transition">
                 Sign Up
               </button>
               <button
                 onClick={onSwitch}
-                className="mt-2 bg-white text-accent border border-accent  py-2 w-full sm:w-[200px] rounded-full font-medium hover:opacity-80 transition"
+                className="mt-2 bg-white text-accent border border-accent cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:opacity-80 transition"
               >
                 Sign In
               </button>

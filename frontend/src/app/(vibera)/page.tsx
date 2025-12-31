@@ -23,7 +23,7 @@ export default function Home() {
     },
     {
       emoji: "😍",
-      position: "top-18 right-12",
+      position: "top-18 right-28",
       size: "text-3xl",
       opacity: "opacity-70",
     },
@@ -67,12 +67,12 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
             <button
-              className=" color-primary text-white font-bold px-6 py-2 rounded-full hover:bg-primary/80 "
+              className=" color-primary text-white font-bold px-6 py-2 cursor-pointer rounded-full hover:bg-primary/80"
               onClick={() => setModal("signup")}
             >
               Get Started - its Free
             </button>
-            <button className="bg-white text-accent border border-primary font-bold px-6 py-2 rounded-full hover:bg-white/80">
+            <button className="bg-white text-accent border cursor-pointer border-primary font-bold px-6 py-2 rounded-full hover:bg-white/80">
               Learn More
             </button>
           </div>
@@ -103,7 +103,10 @@ export default function Home() {
       <div>
         <Features />
       </div>
-      <div>
+      <div className="color-secondary py-5">
+        <h2 className="text-white py-3 font-bold text-3xl sm:text-4xl text-center">
+          Join the Vibera Community
+        </h2>
         <Testimonials />
       </div>
     </div>

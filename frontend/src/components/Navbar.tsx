@@ -59,7 +59,7 @@ export default function Navbar() {
         {/* Hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="p-2 focus:outline-none"
+          className="p-2 focus:outline-none cursor-pointer"
         >
           <div className="w-6 h-0.5 bg-black mb-1 rounded-full"></div>
           <div className="w-6 h-0.5 bg-black mb-1 rounded-full"></div>

@@ -39,7 +39,7 @@ export default function Testimonials() {
   return (
     <div>
       {/* Testimonials Carousel */}
-      <div className="flex items-center justify-center gap-6 mb-8">
+      <div className="flex items-center justify-center gap-6 mb-8 py-6">
         <Button
           onClick={prevTestimonial}
           className="shrink-0 p-2 hover:bg-white/20 rounded-full transition-colors bg-transparent"
