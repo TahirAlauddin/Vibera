@@ -1,4 +1,5 @@
 import { Button } from "./ui/button";
+import clsx from "clsx";
 
 export default function Footer() {
   const footerLinks = ["Home", "About Us", "Contacts", "Privacy"];
@@ -8,11 +9,11 @@ export default function Footer() {
     <footer className="border-t border-gray-200 bg-white">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div
-          className="
-            flex flex-col gap-6
-            sm:items-center
-            md:flex-row md:items-center md:justify-between
-          "
+          className={clsx(
+            "flex flex-col gap-6",
+            "sm:items-center",
+            "md:flex-row md:items-center md:justify-between"
+          )}
         >
           {/* Left */}
           <p className="text-sm text-gray-600 text-center md:text-left">
