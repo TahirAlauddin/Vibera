@@ -1,13 +1,10 @@
 "use client";
-import { useState } from "react";
-import SignUpModal from "../../components/signupPage";
-import LoginModal from "../../components/loginPage";
 import Image from "next/image";
+import Link from "next/link";
 import Features from "../../components/features";
 import Testimonials from "../../components/testimonials";
 
 export default function Home() {
-  const [modal, setModal] = useState(null); // null/ "signup" / "signin"
   const decorativeEmojis = [
     {
       emoji: "😊",
@@ -66,29 +63,17 @@ export default function Home() {
             A daily mood journal for mindful reflection & community connection
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2">
-            <button
-              className=" color-primary text-white font-bold px-6 py-2 cursor-pointer rounded-full hover:bg-primary/80"
-              onClick={() => setModal("signup")}
+            <Link
+              href="/signup"
+              className="color-primary text-white font-bold px-6 py-2 cursor-pointer rounded-full hover:bg-primary/80 text-center"
             >
-              Get Started - its Free
-            </button>
+              Get Started - it's Free
+            </Link>
             <button className="bg-white text-accent border cursor-pointer border-primary font-bold px-6 py-2 rounded-full hover:bg-white/80">
               Learn More
             </button>
           </div>
         </div>
-        {modal === "signup" && (
-          <SignUpModal
-            onClose={() => setModal(null)}
-            onSwitch={() => setModal("signin")}
-          />
-        )}
-        {modal === "signin" && (
-          <LoginModal
-            onClose={() => setModal(null)}
-            onSwitch={() => setModal("signup")}
-          />
-        )}
         {/* Product demo */}
         <div className="flex flex-1 items-center justify-center p-4 sm:p-6">
           <Image
