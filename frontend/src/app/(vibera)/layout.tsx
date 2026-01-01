@@ -1,6 +1,7 @@
 "use client";
 import type { ReactNode } from "react";
 import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 
 type MainLayoutProps = {
   children: ReactNode;
@@ -16,8 +17,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
       {/* Main content */}
       <main className="flex-1 py-6 color-bg">{children}</main>
       {/* Footer placefolder */}
-      <footer className="h-12 border-t flex items-center justify-center text-sm">
-        Footer
+      <footer>
+        <Footer />
       </footer>
     </div>
   );

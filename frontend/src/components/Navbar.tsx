@@ -1,5 +1,5 @@
 "use client";
-
+import { Menu } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 
@@ -9,10 +9,10 @@ export default function Navbar() {
 
   return (
     <nav className="relative flex w-full h-16 items-center">
-      {/* LEFT GREEN SECTION – 60% */}
-      <div className="flex items-center justify-between color-primary shadow-md px-4 rounded-r-[2.5rem] w-[60%] min-w-0 h-full">
+      {/* LEFT GREEN SECTION  */}
+      <div className="flex items-center justify-between color-primary shadow-md px-2 rounded-r-[2.5rem] w-[145%] min-w-0 h-full">
         {/* Brand */}
-        <h1 className="font-bold text-2xl sm:text-3xl text-white truncate">
+        <h1 className="font-bold text-3xl sm:text-5xl text-white truncate ">
           VIBERA
         </h1>
 
@@ -20,8 +20,8 @@ export default function Navbar() {
         <Image
           src="/assets/Logo.png"
           alt="Logo"
-          width={40}
-          height={40}
+          width={52}
+          height={52}
           className="rounded-full shrink-0"
         />
       </div>
@@ -33,17 +33,17 @@ export default function Navbar() {
           <input
             type="text"
             placeholder="Search..."
-            className="border rounded-full pl-4 pr-10 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            className="rounded-full color-bg pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
           />
           <button
             type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2"
+            className="absolute left-3 top-1/2 -translate-y-1/2"
           >
             <Image
-              src="/assets/search.png"
+              src="/assets/searchh.png"
               alt="search"
-              width={18}
-              height={18}
+              width={24}
+              height={24}
             />
           </button>
         </form>
@@ -53,38 +53,41 @@ export default function Navbar() {
           onClick={() => setSearchOpen(!searchOpen)}
           className="md:hidden p-2"
         >
-          <Image src="/assets/search.png" alt="search" width={22} height={22} />
+          <Image
+            src="/assets/searchh.png"
+            alt="search"
+            width={24}
+            height={24}
+          />
         </button>
 
         {/* Hamburger */}
         <button
           onClick={() => setMenuOpen(!menuOpen)}
-          className="p-2 focus:outline-none"
+          className="p-2 focus:outline-none cursor-pointer"
         >
-          <div className="w-6 h-0.5 bg-black mb-1 rounded-full"></div>
-          <div className="w-6 h-0.5 bg-black mb-1 rounded-full"></div>
-          <div className="w-6 h-0.5 bg-black rounded-full"></div>
+          <Menu />
         </button>
       </div>
 
       {/* MOBILE / TABLET SEARCH BAR */}
       {searchOpen && (
-        <form className="absolute top-16 left-0 w-full bg-white px-4 py-3 shadow-md md:hidden">
+        <form className="absolute top-16 left-0 w-full bg-white px-4 py-3 shadow-md ">
           <div className="relative">
             <input
               type="text"
               placeholder="Search..."
-              className="w-full border rounded-full pl-4 pr-10 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full border rounded-full pl-10 pr-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
             />
             <button
               type="submit"
-              className="absolute right-3 top-1/2 -translate-y-1/2"
+              className="absolute left-3 top-1/2 -translate-y-1/2"
             >
               <Image
-                src="/assets/search.png"
+                src="/assets/searchh.png"
                 alt="search"
-                width={18}
-                height={18}
+                width={21}
+                height={21}
               />
             </button>
           </div>
