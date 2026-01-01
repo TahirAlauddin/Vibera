@@ -30,13 +30,7 @@ pip install -r requirements.txt
 
 ### 3. Configure Environment Variables
 
-Copy the example env file and update with your settings:
-
-```bash
-cp .env.example .env
-```
-
-Required `.env` variables:
+Copy `.env.example` to `.env` and update:
 
 ```env
 SECRET_KEY=your_secret_key
@@ -64,19 +58,24 @@ python manage.py runserver
 
 API Base URL: `http://127.0.0.1:8000/`
 
-## JWT Authentication Setup
+## Database Models
 
-This project uses **Simple JWT** with **Djoser** for token-based authentication.
+### User Model
+- `email`, `username` (unique, for login)
+- `first_name`, `last_name` (optional)
+- `is_active`, `is_staff`, `date_joined`
 
-### Key Configuration
+### Mood Model
+- `user` - ForeignKey to User
+- `emoji` - Mood emoji (😊 Happy, 😔 Sad, 😡 Angry, 😰 Anxious, 😴 Tired, 😌 Calm)
+- `reason` - Optional text
+- `created_at`, `updated_at`
 
-- **Access Token Lifetime**: 60 minutes
-- **Refresh Token Lifetime**: 7 days
-- **Token Rotation**: Enabled with blacklisting
-- **Login Field**: Username
-- **Custom User Model**: `users.User`
-
-### Authentication Endpoints
+### EmojiJournalEntry Model
+- `mood` - ForeignKey to Mood
+- `user` - ForeignKey to User
+- `note` - Journal text
+- `created_at`, `updated_at`
 
 The JWT endpoints are configured at `/api/auth/`:
 
@@ -96,8 +95,9 @@ docker run -d \
   -p 5432:5432 \
   postgres:18
 ```
+## API Endpoints
 
-## JWT Authentication Endpoints
+### Authentication
 
 | Action            | Method | URL                      |
 | ----------------- | ------ | ------------------------ |
@@ -107,61 +107,52 @@ docker run -d \
 | Verify Token      | POST   | `/api/auth/jwt/verify/`  |
 | Current User Info | GET    | `/api/auth/users/me/`    |
 
+### Mood Tracking
+
+| Action          | Method | URL           | Auth Required |
+| --------------- | ------ | ------------- | ------------- |
+| Create Mood Log | POST   | `/api/moods/` | Yes           |
+| Get All Moods   | GET    | `/api/moods/` | Yes           |
+
 ## Testing with Postman
 
-### Register a User
+### 1. Register & Login
 
+**Register:**
 ```
-POST http://127.0.0.1:8000/api/auth/users/
-```
-
-Body (JSON):
-
-```json
-{
-  "email": "user@example.com",
-  "username": "testuser",
-  "password": "TestPassword123"
-}
+POST /api/auth/users/
+Body: {"email": "user@example.com", "username": "testuser", "password": "TestPassword123"}
 ```
 
-### Login to Get Tokens
-
+**Login:**
 ```
-POST http://127.0.0.1:8000/api/auth/jwt/create/
-```
-
-Body (JSON):
-
-```json
-{
-  "username": "testuser",
-  "password": "TestPassword123"
-}
+POST /api/auth/jwt/create/
+Body: {"username": "testuser", "password": "TestPassword123"}
+Response: {"refresh": "...", "access": "..."}
 ```
 
-Response:
-
-```json
-{
-  "refresh": "REFRESH_TOKEN_HERE",
-  "access": "ACCESS_TOKEN_HERE"
-}
-```
-
-### Access Protected Endpoints
-
-Add the following header to your requests:
+### 2. Create Mood (Requires Token)
 
 ```
-Authorization: Bearer ACCESS_TOKEN_HERE
+POST /api/moods/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Body: {"emoji": "😊", "reason": "Had a great day!"}
 ```
 
-Example:
+**Emoji choices:** 😊 😔 😡 😰 😴 😌
+
+### 3. Get Moods (Requires Token)
 
 ```
-GET http://127.0.0.1:8000/api/auth/users/me/
+GET /api/moods/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
 ```
+
+## JWT Configuration
+
+- **Access Token**: 60 minutes
+- **Refresh Token**: 7 days
+- **Login Field**: Username
 
 ## Frontend
 
