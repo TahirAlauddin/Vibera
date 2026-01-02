@@ -9,9 +9,12 @@ type EmojiType = {
 
 // Real DB query OR mock data
 const emojisDummyData: EmojiType[] = [
-  { id: 1, name: "happy", symbol: "😀" },
-  { id: 2, name: "neutral", symbol: "😐" },
-  { id: 3, name: "sad", symbol: "😢" },
+  { id: 1, name: "happy", symbol: "/assets/emojis/happy.png" },
+  { id: 2, name: "angry", symbol: "/assets/emojis/angry.png" },
+  { id: 3, name: "sad", symbol: "/assets/emojis/sad.png" },
+  { id: 4, name: "calm", symbol: "/assets/emojis/calm.png" },
+  { id: 3, name: "tired", symbol: "/assets/emojis/tired.png" },
+  { id: 3, name: "anxious", symbol: "/assets/emojis/anxious.png" },
 ];
 
 // Exported Get handler

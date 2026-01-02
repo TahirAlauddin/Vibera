@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+
 /*
   Calendar Component
   Responsibilities:
@@ -90,7 +91,7 @@ export default function Calendar({
             return (
               <div
                 key={index}
-                className="aspect-square border border-gray-300"
+                className="min-w-11 aspect-square border border-gray-300"
               />
             );
 
@@ -105,31 +106,43 @@ export default function Calendar({
           return (
             <div
               key={index}
-              className="relative flex flex-col items-center justify-center p-1 cursor-pointer aspect-square border border-gray-300 hover:bg-gray-100 rounded-b-sm"
+              className="relative aspect-square min-w-11 p-1 cursor-pointer border border-gray-300 hover:bg-gray-100 rounded-b-sm"
               onClick={() => onDateSelect?.(dateKey)}
             >
               {/* Day number */}
-              <span className="absolute top-1 left-1 text-sm font-small text-gray-500">
+              <span className="absolute top-1 left-1 text-xs  font-medium text-gray-500">
                 {day}
               </span>
-
-              {/* Emoji rendering */}
-              {images[dateKey] ? (
-                <Image
-                  src={images[dateKey]}
-                  alt="emoji"
-                  className="w-6 h-6 mt-1"
-                />
-              ) : (
-                fallbackEnabled &&
-                cellDate <= todayMidnight && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                {/* Emoji rendering */}
+                {images[dateKey] ? (
                   <Image
-                    src={fallbackEmojiSrc}
-                    alt="default emoji"
-                    className="w-6 h-6 mt-1 opacity-60"
+                    src={images[dateKey]}
+                    alt="emoji"
+                    width={32}
+                    height={32}
+                    className="w-5 h-5  
+                    sm:w-6 sm:h-6
+                    md:w-7 md:h-7
+                    lg:w-8 lg:h-8 
+                    "
                   />
-                )
-              )}
+                ) : (
+                  fallbackEnabled &&
+                  cellDate <= todayMidnight && (
+                    <Image
+                      src={fallbackEmojiSrc}
+                      alt="default emoji"
+                      width={15}
+                      height={15}
+                      className="w-4 h-4
+                      sm:w-5  sm:h-5
+                      lg:w-7  lg:h-7
+                       opacity-60"
+                    />
+                  )
+                )}
+              </div>
             </div>
           );
         })}
