@@ -1,8 +1,8 @@
 'use client'
 import Image from 'next/image'
 import Link from 'next/link'
-import Features from '../../components/features'
-import Testimonials from '../../components/testimonials'
+import Features from '@/components/features'
+import Testimonials from '@/components/testimonials'
 
 export default function Home() {
   const decorativeEmojis = [
