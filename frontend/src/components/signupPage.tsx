@@ -15,7 +15,7 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
               <label htmlFor="">Email</label>
               <input
                 type="text"
-                placeholder="email"
+                placeholder="Email"
                 className="border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
               />
             </div>
@@ -24,14 +24,14 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  placeholder="password"
+                  placeholder="Password"
                   className="border border-gray-300 rounded-lg px-4 py-2 pr-12 w-full focus:outline-none focus:ring-2 focus:ring-primary"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition"
-                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  aria-label={showPassword ? 'Hide Password' : 'Show Password'}
                 >
                   {showPassword ? (
                     <svg
@@ -133,14 +133,14 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
                 <button
                   type="button"
                   onClick={onSwitch}
-                  className="mt-2 bg-white text-accent border border-accent cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:opacity-80 transition"
+                  className="mt-2 bg-gray-200 text-gray-800 border border-gray-400 cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:bg-gray-300 transition"
                 >
                   Sign In
                 </button>
               ) : (
                 <Link
                   href="/login"
-                  className="mt-2 bg-white text-accent border border-accent cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:opacity-80 transition text-center"
+                  className="mt-2 bg-gray-200 text-gray-800 border border-gray-400 cursor-pointer py-2 w-full sm:w-50 rounded-full font-medium hover:bg-gray-300 transition text-center"
                 >
                   Sign In
                 </Link>
