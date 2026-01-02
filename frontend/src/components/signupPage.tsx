@@ -1,17 +1,15 @@
-import { useState } from "react";
-import Link from "next/link";
+import { useState } from 'react'
+import Link from 'next/link'
 
 export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   return (
     <div className="min-h-screen flex items-center justify-center color-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col shadow-lg">
-          <h2 className="text-center text-2xl sm:text-3xl font-semibold mb-6">
-            Sign Up
-          </h2>
+          <h2 className="text-center text-2xl sm:text-3xl font-semibold mb-6">Sign Up</h2>
           <form action="" className="flex  flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label htmlFor="">Email</label>
@@ -25,7 +23,7 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
               <label htmlFor="">Password</label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="password"
                   className="border border-gray-300 rounded-lg px-4 py-2 pr-12 w-full focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -33,7 +31,7 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
                     <svg
@@ -78,7 +76,7 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
               <label htmlFor="">Confirm Password</label>
               <div className="relative">
                 <input
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? 'text' : 'password'}
                   placeholder="Confirm Password"
                   className="border border-gray-300 rounded-lg px-4 py-2 pr-12 w-full focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -86,7 +84,7 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
                 >
                   {showConfirmPassword ? (
                     <svg
@@ -152,5 +150,5 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

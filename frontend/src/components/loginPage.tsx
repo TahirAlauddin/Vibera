@@ -1,16 +1,14 @@
-import { useState } from "react";
-import Link from "next/link";
+import { useState } from 'react'
+import Link from 'next/link'
 
 export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false)
 
   return (
     <div className="min-h-screen flex items-center justify-center color-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col shadow-lg">
-          <h2 className="text-center text-2xl sm:text-3xl font-semibold mb-6">
-            Log in
-          </h2>
+          <h2 className="text-center text-2xl sm:text-3xl font-semibold mb-6">Log in</h2>
           <form action="" className="flex  flex-col gap-4">
             <div className="flex flex-col gap-1">
               <label htmlFor="">Email</label>
@@ -24,7 +22,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
               <label htmlFor="">Password</label>
               <div className="relative">
                 <input
-                  type={showPassword ? "text" : "password"}
+                  type={showPassword ? 'text' : 'password'}
                   placeholder="password"
                   className="border border-gray-300 rounded-lg px-4 py-2 pr-12 w-full focus:outline-none focus:ring-2 focus:ring-primary"
                 />
@@ -32,7 +30,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition"
-                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? (
                     <svg
@@ -99,5 +97,5 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
         </div>
       </div>
     </div>
-  );
+  )
 }

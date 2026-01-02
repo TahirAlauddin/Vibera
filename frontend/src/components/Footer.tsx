@@ -1,18 +1,18 @@
-import { Button } from "./ui/button";
-import clsx from "clsx";
+import { Button } from './ui/button'
+import clsx from 'clsx'
 
 export default function Footer() {
-  const footerLinks = ["Home", "About Us", "Contacts", "Privacy"];
-  const socialButtons = ["☀️", "𝕏", "⋯"];
+  const footerLinks = ['Home', 'About Us', 'Contacts', 'Privacy']
+  const socialButtons = ['☀️', '𝕏', '⋯']
 
   return (
     <footer className="border-t border-gray-200 bg-white">
       <div className="max-w-7xl mx-auto px-6 py-8">
         <div
           className={clsx(
-            "flex flex-col gap-6",
-            "sm:items-center",
-            "md:flex-row md:items-center md:justify-between"
+            'flex flex-col gap-6',
+            'sm:items-center',
+            'md:flex-row md:items-center md:justify-between'
           )}
         >
           {/* Left */}
@@ -48,5 +48,5 @@ export default function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

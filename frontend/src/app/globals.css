@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   /* Colors */
@@ -7,7 +7,7 @@
   --color-secondary: #a7d9d4;
   --color-accent: oklch(0.22 0.04 235);
   /* font */
-  --font-primary: "DIN Pro Cond";
+  --font-primary: 'DIN Pro Cond';
 }
 
 @layer utilities {
@@ -31,19 +31,20 @@
   }
 }
 @font-face {
-  font-family: "DIN Pro Cond";
-  src: url("/fonts/DINPro-CondensedBold.woff2") format("woff2"),
-    url("/fonts/DINPro-CondensedBold.woff") format("woff");
+  font-family: 'DIN Pro Cond';
+  src:
+    url('/fonts/DINPro-CondensedBold.woff2') format('woff2'),
+    url('/fonts/DINPro-CondensedBold.woff') format('woff');
   font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
 body {
-  font-family: "DIN Pro Cond", sans-serif;
+  font-family: 'DIN Pro Cond', sans-serif;
 }
 
 h1,
 h2,
 h3 {
-  font-family: "DIN Pro Cond", sans-serif;
+  font-family: 'DIN Pro Cond', sans-serif;
 }
