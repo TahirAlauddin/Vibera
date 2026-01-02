@@ -1,75 +1,138 @@
 "use client";
 
-import * as React from "react";
 import { useState } from "react";
-import { cn } from "src/lib/utils";
-import { Button } from "src/components/ui/button";
+import Image from "next/image";
+/*
+  Calendar Component
+  Responsibilities:
+  - Month navigation
+  - Correct weekday alignment
+  - Rendering days
+  - Showing emoji from DB or fallback
+*/
 
-export function Calendar() {
-  const [currentDate, setCurrentDate] = useState(new Date());
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+export default function Calendar({
+  images = {}, // { "YYYY-MM-DD": emojiSrc }
+  fallbackEnabled = false, // show default emoji if no DB emoji
+  fallbackEmojiSrc = "", // default emoji image
+  onDateSelect, // callback when a day is clicked
+}) {
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const year = currentDate.getFullYear();
-  const month = currentDate.getMonth();
-  const monthName = currentDate.toLocaleString("default", { month: "long" });
+  const today = new Date();
+  const todayMidnight = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate()
+  );
 
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth(); // 0-based
+
+  const firstDayOfMonth = new Date(year, month, 1);
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const handlePrevMonth = () => {
-    setCurrentDate(new Date(year, month - 1, 1));
-  };
+  // Shift Sunday to the end (UI starts Monday)
+  const startDay = (firstDayOfMonth.getDay() + 6) % 7;
 
-  const handleNextMonth = () => {
-    setCurrentDate(new Date(year, month + 1, 1));
-  };
+  const cells = [];
 
-  const handleDayClick = (day: number) => {
-    setSelectedDate(new Date(year, month, day));
-  };
+  // Empty slots before day 1
+  for (let i = 0; i < startDay; i++) cells.push(null);
+
+  // Actual days
+  for (let day = 1; day <= daysInMonth; day++) cells.push(day);
+
+  // Navigation
+  const goPrevMonth = () => setSelectedDate(new Date(year, month - 1, 1));
+  const goNextMonth = () => setSelectedDate(new Date(year, month + 1, 1));
 
   return (
-    <div className="p-4 w-full sm:w-3/4 md:w-1/2 lg:w-1/2 bg-white shadow-sm">
+    <div className="p-4 w-full sm:w-3/4 md:w-1/2 lg:w-2/4 m-auto bg-white shadow-md rounded-lg">
       {/* Header */}
-      <div className="flex justify-between items-center mb-2">
-        <Button variant="ghost" size="sm" onClick={handlePrevMonth}>
-          &lt;
-        </Button>
-        <h2 className="text-lg font-semibold">
-          {monthName} {year}
-        </h2>
-        <Button variant="ghost" size="sm" onClick={handleNextMonth}>
-          &gt;
-        </Button>
+      <div className="flex justify-between items-center mb-4">
+        <button
+          onClick={goPrevMonth}
+          className="text-lg font-bold hover:text-primary transition-colors"
+        >
+          ‹
+        </button>
+
+        <span className="text-lg font-semibold">
+          {selectedDate.toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          })}
+        </span>
+
+        <button
+          onClick={goNextMonth}
+          className="text-lg font-bold hover:text-primary transition-colors"
+        >
+          ›
+        </button>
       </div>
 
-      {/* Days of the week */}
-      <div className="grid grid-cols-7  gap-1 text-center text-sm font-medium mb-1">
-        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div key={day}>{day}</div>
+      {/* Weekday labels */}
+      <div className="grid grid-cols-7 text-center text-sm font-medium mb-2">
+        {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
+          <div key={d} className="text-accent">
+            {d}
+          </div>
         ))}
       </div>
 
-      {/* Days */}
-      <div className="grid grid-cols-7 gap-1 border border-b-gray-600">
-        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
-          <Button
-            key={day}
-            variant="ghost"
-            size="sm"
-            className={cn(
-              "h-8 w-8 p-0 text-sm",
-              selectedDate &&
-                selectedDate.getDate() === day &&
-                selectedDate.getMonth() === month &&
-                selectedDate.getFullYear() === year
-                ? "bg-primary text-white"
-                : ""
-            )}
-            onClick={() => handleDayClick(day)}
-          >
-            {day}
-          </Button>
-        ))}
+      {/* Calendar grid */}
+      <div className="grid grid-cols-7 gap-0 border border-gray-300">
+        {cells.map((day, index) => {
+          // Empty cell
+          if (!day)
+            return (
+              <div
+                key={index}
+                className="aspect-square border border-gray-300"
+              />
+            );
+
+          // Build YYYY-MM-DD key
+          const dateKey = `${year}-${String(month + 1).padStart(
+            2,
+            "0"
+          )}-${String(day).padStart(2, "0")}`;
+
+          const cellDate = new Date(dateKey);
+
+          return (
+            <div
+              key={index}
+              className="relative flex flex-col items-center justify-center p-1 cursor-pointer aspect-square border border-gray-300 hover:bg-gray-100 rounded-b-sm"
+              onClick={() => onDateSelect?.(dateKey)}
+            >
+              {/* Day number */}
+              <span className="absolute top-1 left-1 text-sm font-small text-gray-500">
+                {day}
+              </span>
+
+              {/* Emoji rendering */}
+              {images[dateKey] ? (
+                <Image
+                  src={images[dateKey]}
+                  alt="emoji"
+                  className="w-6 h-6 mt-1"
+                />
+              ) : (
+                fallbackEnabled &&
+                cellDate <= todayMidnight && (
+                  <Image
+                    src={fallbackEmojiSrc}
+                    alt="default emoji"
+                    className="w-6 h-6 mt-1 opacity-60"
+                  />
+                )
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );

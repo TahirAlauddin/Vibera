@@ -1,12 +1,14 @@
 "use client";
-import { Calendar } from "src/components/ui/calendar";
+import Calendar from "src/components/ui/calendar";
 
 export default function Journal() {
   return (
     <div className="color-bg justify-center items-center">
       <div className="flex items-center justify-center flex-col bg-white w-full">
-        <h2 className="p-4">DAILY CHECK-IN</h2>
-        <Calendar />
+        <h2 className="p-4 text-2xl">DAILY CHECK-IN</h2>
+        <div className="w-full flex justify-center items-center">
+          <Calendar onDateSelect={null} />
+        </div>
       </div>
     </div>
   );

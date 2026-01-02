@@ -67,7 +67,7 @@ export default function Home() {
               href="/signup"
               className="color-primary text-white font-bold px-6 py-2 cursor-pointer rounded-full hover:bg-primary/80 text-center"
             >
-              Get Started - it's Free
+              Get Started - its Free
             </Link>
             <button className="bg-white text-accent border cursor-pointer border-primary font-bold px-6 py-2 rounded-full hover:bg-white/80">
               Learn More
