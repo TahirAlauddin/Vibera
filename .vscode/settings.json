@@ -1,0 +1,20 @@
+{
+  // Use Prettier as the default formatter
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+
+  // Format files on save
+  "editor.formatOnSave": true,
+
+    // IMPORTANT: allow formatting even when autosave triggers
+  "editor.formatOnSaveMode": "file",
+
+  // Run ESLint fixes when a file is explicitly saved (Ctrl + S)
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Optional but recommended editor preferences
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.minimap.enabled": false
+}

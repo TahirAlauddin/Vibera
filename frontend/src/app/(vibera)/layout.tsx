@@ -1,11 +1,11 @@
-"use client";
-import type { ReactNode } from "react";
-import Navbar from "../../components/Navbar";
-import Footer from "../../components/Footer";
+'use client'
+import type { ReactNode } from 'react'
+import Navbar from '@/components/Navbar'
+import Footer from '@/components/Footer'
 
 type MainLayoutProps = {
-  children: ReactNode;
-};
+  children: ReactNode
+}
 
 export default function MainLayout({ children }: MainLayoutProps) {
   return (
@@ -21,5 +21,5 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <Footer />
       </footer>
     </div>
-  );
+  )
 }

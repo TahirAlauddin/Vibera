@@ -1,48 +1,48 @@
-"use client";
-import Image from "next/image";
-import Link from "next/link";
-import Features from "../../components/features";
-import Testimonials from "../../components/testimonials";
+'use client'
+import Image from 'next/image'
+import Link from 'next/link'
+import Features from '@/components/features'
+import Testimonials from '@/components/testimonials'
 
 export default function Home() {
   const decorativeEmojis = [
     {
-      emoji: "😊",
-      position: "top-20 left-24",
-      size: "text-2xl",
-      opacity: "opacity-70",
+      emoji: '😊',
+      position: 'top-20 left-24',
+      size: 'text-2xl',
+      opacity: 'opacity-70',
     },
     {
-      emoji: "😁",
-      position: "top-40 left-1/3",
-      size: "text-2xl",
-      opacity: "opacity-70",
+      emoji: '😁',
+      position: 'top-40 left-1/3',
+      size: 'text-2xl',
+      opacity: 'opacity-70',
     },
     {
-      emoji: "😍",
-      position: "top-18 right-28",
-      size: "text-3xl",
-      opacity: "opacity-70",
+      emoji: '😍',
+      position: 'top-18 right-28',
+      size: 'text-3xl',
+      opacity: 'opacity-70',
     },
     {
-      emoji: "😳",
-      position: "bottom-32 right-20",
-      size: "text-2xl",
-      opacity: "opacity-70",
+      emoji: '😳',
+      position: 'bottom-32 right-20',
+      size: 'text-2xl',
+      opacity: 'opacity-70',
     },
     {
-      emoji: "🥰",
-      position: "top-130 left-1/6",
-      size: "text-2xl",
-      opacity: "opacity-80",
+      emoji: '🥰',
+      position: 'top-130 left-1/6',
+      size: 'text-2xl',
+      opacity: 'opacity-80',
     },
     {
-      emoji: "😜",
-      position: "top-140 left-1/2",
-      size: "text-2xl",
-      opacity: "opacity-80",
+      emoji: '😜',
+      position: 'top-140 left-1/2',
+      size: 'text-2xl',
+      opacity: 'opacity-80',
     },
-  ];
+  ]
   return (
     <div>
       <div className="h-auto min-h-[80vh] flex flex-col  md:flex-row">
@@ -67,7 +67,7 @@ export default function Home() {
               href="/signup"
               className="color-primary text-white font-bold px-6 py-2 cursor-pointer rounded-full hover:bg-primary/80 text-center"
             >
-              Get Started - it's Free
+              Get Started - it&apos;s Free
             </Link>
             <button className="bg-white text-accent border cursor-pointer border-primary font-bold px-6 py-2 rounded-full hover:bg-white/80">
               Learn More
@@ -95,5 +95,5 @@ export default function Home() {
         <Testimonials />
       </div>
     </div>
-  );
+  )
 }
