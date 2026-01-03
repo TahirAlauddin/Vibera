@@ -15,35 +15,97 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Mood',
+            name="Mood",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('emoji', models.CharField(choices=[('😊', 'Happy'), ('😔', 'Sad'), ('😡', 'Angry'), ('😰', 'Anxious'), ('😴', 'Tired'), ('😌', 'Calm')], max_length=2)),
-                ('reason', models.TextField(blank=True, help_text='What caused this mood?', null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='moods', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "emoji",
+                    models.CharField(
+                        choices=[
+                            ("😊", "Happy"),
+                            ("😔", "Sad"),
+                            ("😡", "Angry"),
+                            ("😰", "Anxious"),
+                            ("😴", "Tired"),
+                            ("😌", "Calm"),
+                        ],
+                        max_length=2,
+                    ),
+                ),
+                (
+                    "reason",
+                    models.TextField(
+                        blank=True, help_text="What caused this mood?", null=True
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="moods",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Mood',
-                'verbose_name_plural': 'Moods',
-                'ordering': ['-created_at'],
+                "verbose_name": "Mood",
+                "verbose_name_plural": "Moods",
+                "ordering": ["-created_at"],
             },
         ),
         migrations.CreateModel(
-            name='EmojiJournalEntry',
+            name="EmojiJournalEntry",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('note', models.TextField(blank=True, help_text='Write what happened or why you felt this way.', null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='mood_entries', to=settings.AUTH_USER_MODEL)),
-                ('mood', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='journal_entries', to='moods.mood')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "note",
+                    models.TextField(
+                        blank=True,
+                        help_text="Write what happened or why you felt this way.",
+                        null=True,
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="mood_entries",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "mood",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="journal_entries",
+                        to="moods.mood",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Journal Entry',
-                'verbose_name_plural': 'Journal Entries',
-                'ordering': ['-created_at'],
+                "verbose_name": "Journal Entry",
+                "verbose_name_plural": "Journal Entries",
+                "ordering": ["-created_at"],
             },
         ),
     ]

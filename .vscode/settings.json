@@ -1,20 +1,23 @@
 {
-  // Use Prettier as the default formatter
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-
-  // Format files on save
-  "editor.formatOnSave": true,
-
-    // IMPORTANT: allow formatting even when autosave triggers
-  "editor.formatOnSaveMode": "file",
-
-  // Run ESLint fixes when a file is explicitly saved (Ctrl + S)
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": "explicit"
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit"
+    }
   },
-
-  // Optional but recommended editor preferences
-  "editor.tabSize": 2,
-  "editor.insertSpaces": true,
-  "editor.minimap.enabled": false
+  "python.formatting.provider": "none",
+  "editor.formatOnSave": true,
+  "black-formatter.args": [
+    "--line-length=88"
+  ],
+  "black-formatter.importStrategy": "fromEnvironment",
+  "python.linting.enabled": true,
+  "python.linting.flake8Enabled": true,
+  "python.linting.lintOnSave": true,
+  "python.linting.flake8Args": [
+    "--max-line-length=88",
+    "--extend-ignore=E203,E266,E501,W503",
+    "--exclude=venv,.venv,__pycache__,.git,.eggs,*.egg,build,dist,.mypy_cache,.tox,_build,buck-out"
+  ]
 }
