@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, startTransition } from "react";
 import Image from "next/image";
 
 /*
@@ -19,13 +19,24 @@ export default function Calendar({
   onDateSelect, // callback when a day is clicked
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [todayMidnight, setTodayMidnight] = useState<Date | null>(null);
 
-  const today = new Date();
-  const todayMidnight = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate()
-  );
+  // Calculate today's date only on client side to avoid hydration mismatch
+  // Using startTransition to mark this as a non-urgent update, avoiding cascading render warnings
+  useEffect(() => {
+    const today = new Date();
+    const midnight = new Date(
+      today.getFullYear(),
+      today.getMonth(),
+      today.getDate()
+    );
+    // This setState in useEffect is necessary to avoid hydration mismatches
+    // between server and client date calculations. Using startTransition
+    // marks it as non-urgent to avoid cascading render concerns.
+    startTransition(() => {
+      setTodayMidnight(midnight);
+    });
+  }, []);
 
   const year = selectedDate.getFullYear();
   const month = selectedDate.getMonth(); // 0-based
@@ -60,10 +71,14 @@ export default function Calendar({
         </button>
 
         <span className="text-lg font-semibold">
-          {selectedDate.toLocaleString("default", {
-            month: "long",
-            year: "numeric",
-          })}
+          {todayMidnight
+            ? selectedDate.toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+              })
+            : `${selectedDate.getFullYear()}-${String(
+                selectedDate.getMonth() + 1
+              ).padStart(2, "0")}`}
         </span>
 
         <button
@@ -129,6 +144,7 @@ export default function Calendar({
                   />
                 ) : (
                   fallbackEnabled &&
+                  todayMidnight &&
                   cellDate <= todayMidnight && (
                     <Image
                       src={fallbackEmojiSrc}
