@@ -65,7 +65,7 @@ export default function Calendar({
       <div className="flex justify-between items-center mb-4">
         <button
           onClick={goPrevMonth}
-          className="text-lg font-bold hover:text-primary transition-colors"
+          className="text-lg font-bold hover:text-primary transition-colors cursor-pointer"
         >
           ‹
         </button>
@@ -83,7 +83,7 @@ export default function Calendar({
 
         <button
           onClick={goNextMonth}
-          className="text-lg font-bold hover:text-primary transition-colors"
+          className="text-lg font-bold hover:text-primary transition-colors cursor-pointer"
         >
           ›
         </button>
@@ -140,6 +140,8 @@ export default function Calendar({
                     sm:w-6 sm:h-6
                     md:w-7 md:h-7
                     lg:w-8 lg:h-8 
+                    transition-transform duration-300 ease-in-out
+                    hover:scale-125 hover:rotate-12
                     "
                   />
                 ) : (
