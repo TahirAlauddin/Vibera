@@ -57,6 +57,9 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Custom middleware for request/response logging
+    # Placed at end to capture all request/response data
+    "vibera.middleware.RequestResponseLoggingMiddleware",
 ]
 
 ROOT_URLCONF = "vibera.urls"
@@ -180,3 +183,260 @@ DJOSER = {
 
 # Custom User Model
 AUTH_USER_MODEL = "users.User"
+
+# ============================================================================
+# LOGGING CONFIGURATION
+# ============================================================================
+"""
+Django Logging Configuration with File Rotation
+
+WHAT: Comprehensive logging setup with file-based rotation (size or date-based).
+WHY: Provides persistent logs in files with automatic rotation to prevent
+     disk space issues. Supports both size-based (5MB/10MB) and date-based rotation.
+WHEN: Logs are generated automatically for:
+      - All HTTP requests/responses (via middleware)
+      - Application errors, warnings, and critical events
+      - Django framework events
+      - Database queries (if DEBUG=True)
+
+ENVIRONMENT VARIABLES:
+- LOG_ROTATION_TYPE: 'size' or 'date' (default: 'date')
+- LOG_FORMATTER: 'verbose', 'detailed', or 'simple' (default: 'verbose')
+- LOG_FILE_SIZE_MB: Size in MB for size-based rotation (default: 5)
+- LOG_BACKUP_COUNT: Number of backup files to keep (default: 10)
+
+HOW IT WORKS:
+1. FORMATTERS: Define how log messages are formatted (verbose/detailed/simple)
+2. HANDLERS: Define where logs go (file with rotation)
+3. LOGGERS: Define which parts of the application log and at what level
+4. ROTATION: Automatically rotates files based on size or date
+
+LOG LEVELS (from least to most severe):
+- DEBUG: Detailed information for diagnosing problems
+- INFO: General informational messages
+- WARNING: Something unexpected happened, but app still works
+- ERROR: Serious problem, some functionality failed
+- CRITICAL: Very serious error, app may be unable to continue
+"""
+
+from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler, get_log_directory
+
+# Get log directory path
+LOG_DIR = get_log_directory()
+
+# Configuration from environment variables
+LOG_ROTATION_TYPE = os.getenv('LOG_ROTATION_TYPE', 'date').lower()  # 'size' or 'date'
+LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()  # 'verbose', 'detailed', or 'simple'
+LOG_FILE_SIZE_MB = int(os.getenv('LOG_FILE_SIZE_MB', '5'))  # Size in MB (5 or 10)
+LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '5'))  # Number of backup files
+
+# Convert MB to bytes for handler
+LOG_FILE_SIZE_BYTES = LOG_FILE_SIZE_MB * 1024 * 1024
+
+LOGGING = {
+    'version': 1,  # Required - specifies logging config format version
+    'disable_existing_loggers': False,  # Keep existing loggers (don't override Django's)
+    
+    # ========================================================================
+    # FORMATTERS: Define how log messages are formatted
+    # ========================================================================
+    'formatters': {
+        # Verbose formatter - includes all details
+        # WHAT: Most detailed format with timestamp, level, logger, process, thread
+        # WHY: Best for debugging and development
+        # WHEN: Used when LOG_FORMATTER='verbose'
+        'verbose': {
+            'format': '[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}',
+            'style': '{',  # Use {style} formatting
+            'datefmt': '%Y-%m-%d %H:%M:%S',  # Date format
+        },
+        
+        # Detailed formatter - includes key information
+        # WHAT: Includes timestamp, level, logger name, and message
+        # WHY: Good balance between detail and readability
+        # WHEN: Used when LOG_FORMATTER='detailed'
+        'detailed': {
+            'format': '[{levelname:8}] {asctime} | {name:30} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+        
+        # Simple formatter - minimal information
+        # WHAT: Only level and message
+        # WHY: Clean and minimal, good for production
+        # WHEN: Used when LOG_FORMATTER='simple'
+        'simple': {
+            'format': '[{levelname:8}] {message}',
+            'style': '{',
+        },
+        
+        # Error formatter - for error logs only
+        # WHAT: Includes full traceback information
+        # WHY: Critical for debugging errors
+        # WHEN: Used by error handlers
+        'error': {
+            'format': '[{levelname:8}] {asctime} | {name:30} | {pathname}:{lineno} | {message}',
+            'style': '{',
+            'datefmt': '%Y-%m-%d %H:%M:%S',
+        },
+    },
+    
+    # ========================================================================
+    # HANDLERS: Define where log messages are sent
+    # ========================================================================
+    'handlers': {
+        # Date-based rotating file handler
+        # WHAT: Creates new log file each day with format "6Dec2026.logs"
+        # WHY: Easy to find logs by date, keeps daily logs separate
+        # WHEN: Used when LOG_ROTATION_TYPE='date'
+        'date_file': {
+            '()': DateRotatingFileHandler,  # Custom handler class
+            'log_dir': LOG_DIR,
+            'formatter': LOG_FORMATTER,
+            'level': 'DEBUG',
+        },
+        
+        # Size-based rotating file handler
+        # WHAT: Rotates log file when it reaches specified size (5MB or 10MB)
+        # WHY: Prevents single file from growing too large
+        # WHEN: Used when LOG_ROTATION_TYPE='size'
+        'size_file': {
+            '()': SizeRotatingFileHandler,
+            'log_dir': LOG_DIR,
+            'max_bytes': LOG_FILE_SIZE_BYTES,
+            'backup_count': LOG_BACKUP_COUNT,
+            'formatter': LOG_FORMATTER,
+            'level': 'DEBUG',
+        },
+        
+        # Error file handler - separate file for errors only
+        # WHAT: Logs only ERROR and CRITICAL level messages
+        # WHY: Makes it easy to find and review errors
+        # WHEN: Always active regardless of rotation type
+        'error_file': {
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': str(LOG_DIR / 'errors.log'),
+            'maxBytes': 10 * 1024 * 1024,  # 10 MB
+            'backupCount': 5,
+            'formatter': 'error',
+            'level': 'ERROR',  # Only ERROR and above
+        },
+        
+        # Console handler - for development/debugging
+        # WHAT: Outputs logs to console (stdout)
+        # WHY: Useful for local development
+        # WHEN: Can be enabled via environment variable
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': LOG_FORMATTER,
+            'stream': 'ext://sys.stdout',
+        },
+    },
+    
+    # ========================================================================
+    # LOGGERS: Define which parts of the app log and at what level
+    # ========================================================================
+    'loggers': {
+        # Root logger - catches all unhandled log messages
+        # WHAT: Default logger for all unhandled messages
+        # WHY: Ensures no log messages are lost
+        # WHEN: Used as fallback for loggers without specific configuration
+        '': {  # Empty string = root logger
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+                'error_file',
+            ],
+            'level': os.getenv('LOG_LEVEL', 'INFO'),  # Default to INFO, configurable via env
+            'propagate': False,  # Don't propagate to parent (avoid duplicates)
+        },
+        
+        # Django framework logger
+        # WHAT: Logs Django framework events (request handling, etc.)
+        # WHY: Provides visibility into Django's internal operations
+        # WHEN: Automatically logs framework-level events
+        'django': {
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+                'error_file',
+            ],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        
+        # Django request logger
+        # WHAT: Logs HTTP request/response details
+        # WHY: Captures request metadata, response codes, timing
+        # WHEN: Automatically logs all HTTP requests (via middleware)
+        'django.request': {
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+                'error_file',
+            ],
+            'level': 'INFO',  # Log all requests
+            'propagate': False,
+        },
+        
+        # Django server logger
+        # WHAT: Logs server startup, shutdown, and server-level events
+        # WHY: Important for debugging deployment issues
+        # WHEN: Automatically logs server lifecycle events
+        'django.server': {
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+            ],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        
+        # Django database logger
+        # WHAT: Logs SQL queries (useful for debugging)
+        # WHY: Helps identify slow queries and N+1 problems
+        # WHEN: Only enabled in DEBUG mode (too verbose for production)
+        'django.db.backends': {
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+            ],
+            'level': 'DEBUG' if DEBUG else 'WARNING',  # Only in debug mode
+            'propagate': False,
+        },
+        
+        # Application-specific loggers
+        # WHAT: Logs from our application code
+        # WHY: Centralized logging for our custom code
+        # WHEN: Used when we call logger.info(), logger.error(), etc.
+        'vibera': {
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+                'error_file',
+            ],
+            'level': os.getenv('VIBERA_LOG_LEVEL', 'INFO'),
+            'propagate': False,
+        },
+        
+        # REST Framework logger
+        # WHAT: Logs DRF-specific events (authentication, permissions, etc.)
+        # WHY: Helps debug API authentication and permission issues
+        # WHEN: Automatically logs DRF events
+        'rest_framework': {
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+                'error_file',
+            ],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        
+        # Security logger
+        # WHAT: Logs security-related events (failed logins, etc.)
+        # WHY: Critical for security monitoring
+        # WHEN: Automatically logs security events
+        'django.security': {
+            'handlers': [
+                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
+                'error_file',
+            ],
+            'level': 'WARNING',  # Security issues should be warnings or errors
+            'propagate': False,
+        },
+    },
+}

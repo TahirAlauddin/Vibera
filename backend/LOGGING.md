@@ -1,0 +1,313 @@
+# Logging Configuration Guide
+
+## Overview
+
+This Django application uses file-based logging with automatic rotation. Logs are stored in the `backend/logs/` directory and can be configured to rotate by size or date.
+
+## Directory Structure
+
+```
+backend/
+  ├── logs/              # Log files directory (created automatically)
+  │   ├── 6Dec2026.logs  # Date-based log files (if LOG_ROTATION_TYPE=date)
+  │   ├── 7Dec2026.logs
+  │   ├── vibera.log     # Size-based log file (if LOG_ROTATION_TYPE=size)
+  │   └── errors.log     # Error-only log file (always present)
+  └── vibera/
+      ├── logging_config.py
+      ├── logging_handlers.py
+      └── settings.py
+```
+
+## Environment Variables
+
+Configure logging behavior via environment variables:
+
+### Rotation Type
+
+- `LOG_ROTATION_TYPE`: `'date'` or `'size'` (default: `'date'`)
+  - `'date'`: Creates new log file each day (format: `6Dec2026.logs`)
+  - `'size'`: Rotates when file reaches specified size
+
+### Formatter
+
+- `LOG_FORMATTER`: `'verbose'`, `'detailed'`, or `'simple'` (default: `'verbose'`)
+  - `'verbose'`: Most detailed - includes process, thread, logger name
+  - `'detailed'`: Includes timestamp, level, logger name, message
+  - `'simple'`: Minimal - only level and message
+
+### Size-Based Rotation Settings
+
+- `LOG_FILE_SIZE_MB`: Size in MB before rotation (default: `5`)
+  - Common values: `5` or `10`
+- `LOG_BACKUP_COUNT`: Number of backup files to keep (default: `10`)
+
+### Log Levels
+
+- `LOG_LEVEL`: Root logger level (default: `INFO`)
+- `DJANGO_LOG_LEVEL`: Django framework logger level (default: `INFO`)
+- `VIBERA_LOG_LEVEL`: Application logger level (default: `INFO`)
+
+## Configuration Examples
+
+### Date-Based Rotation (Default)
+
+```bash
+export LOG_ROTATION_TYPE=date
+export LOG_FORMATTER=verbose
+```
+
+This creates daily log files like:
+
+- `6Dec2026.logs`
+- `7Dec2026.logs`
+- `8Dec2026.logs`
+
+### Size-Based Rotation (5MB)
+
+```bash
+export LOG_ROTATION_TYPE=size
+export LOG_FILE_SIZE_MB=5
+export LOG_BACKUP_COUNT=5
+export LOG_FORMATTER=detailed
+```
+
+This creates:
+
+- `vibera.log` (current log file)
+- `vibera.log.1` (first backup)
+- `vibera.log.2` (second backup)
+- ... up to `vibera.log.5`
+
+### Size-Based Rotation (10MB)
+
+```bash
+export LOG_ROTATION_TYPE=size
+export LOG_FILE_SIZE_MB=10
+export LOG_FORMATTER=simple
+```
+
+## Log Files
+
+### Main Log Files
+
+- **Date-based**: `{day}{month}{year}.logs` (e.g., `6Dec2026.logs`)
+- **Size-based**: `vibera.log` with backups (`vibera.log.1`, `vibera.log.2`, etc.)
+
+### Error Log File
+
+- **Always present**: `errors.log`
+- Contains only ERROR and CRITICAL level messages
+- Rotates at 10MB with 5 backups
+
+## Log Formats
+
+### Verbose Format (Default)
+
+```
+[INFO    ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Incoming request: GET /api/moods/ | User: user123 | IP: 192.168.1.1
+```
+
+### Detailed Format
+
+```
+[INFO    ] 2026-12-06 10:30:45 | vibera.middleware | Incoming request: GET /api/moods/ | User: user123 | IP: 192.168.1.1
+```
+
+### Simple Format
+
+```
+[INFO    ] Incoming request: GET /api/moods/ | User: user123 | IP: 192.168.1.1
+```
+
+## Using Logging in Your Code
+
+### Basic Usage
+
+```python
+from vibera.logging_config import get_logger
+
+# Get logger for your module
+logger = get_logger(__name__)
+
+# Log at different levels
+logger.debug("Detailed diagnostic information")
+logger.info("General information")
+logger.warning("Something unexpected happened")
+logger.error("An error occurred")
+logger.critical("Critical error - app may stop")
+```
+
+### Logging with Context
+
+```python
+logger.info(f"User {user.id} created mood {mood.id}")
+logger.warning(f"Validation failed for user {user.id}: {errors}")
+logger.error(f"Failed to process payment for order {order.id}: {str(e)}")
+```
+
+### Logging Exceptions
+
+```python
+try:
+    result = risky_operation()
+except Exception as e:
+    logger.error(
+        f"Operation failed: {str(e)}",
+        exc_info=True,  # Includes full traceback
+    )
+```
+
+## What Gets Logged
+
+### Automatic Logging (via Middleware)
+
+- All HTTP requests (method, path, user, IP, user agent)
+- All HTTP responses (status code, duration)
+- All exceptions (full traceback, request context)
+
+### Framework Logging
+
+- Django server startup/shutdown
+- Database queries (only in DEBUG mode)
+- Security events (failed logins, etc.)
+- REST Framework events (authentication, permissions)
+
+### Application Logging
+
+- Custom log messages from your code
+- Business logic events
+- Error conditions
+
+## Viewing Logs
+
+### View Current Log File
+
+```bash
+# Date-based
+tail -f logs/6Dec2026.logs
+
+# Size-based
+tail -f logs/vibera.log
+```
+
+### View Error Logs
+
+```bash
+tail -f logs/errors.log
+```
+
+### Search Logs
+
+```bash
+# Search for errors
+grep "ERROR" logs/*.logs
+
+# Search for specific user
+grep "user123" logs/*.logs
+
+# Search for specific date
+grep "2026-12-06" logs/*.logs
+```
+
+### View Last N Lines
+
+```bash
+tail -n 100 logs/vibera.log
+```
+
+## Best Practices
+
+1. **Use appropriate log levels**
+
+   - DEBUG: Development only
+   - INFO: Normal operations
+   - WARNING: Unexpected but handled
+   - ERROR: Failures that need attention
+   - CRITICAL: System-threatening issues
+
+2. **Include context in log messages**
+
+   - Add user IDs, request IDs, object IDs
+   - Include relevant operation details
+   - Format messages clearly
+
+3. **Don't log sensitive data**
+
+   - Never log passwords, tokens, or secrets
+   - Be careful with PII (personally identifiable information)
+   - Consider masking sensitive fields
+
+4. **Monitor log file sizes**
+   - Use appropriate rotation settings
+   - Clean up old log files periodically
+   - Monitor disk space
+
+## Troubleshooting
+
+### No logs appearing
+
+1. Check log directory exists: `ls -la backend/logs/`
+2. Check log level configuration
+3. Verify middleware is in `MIDDLEWARE` list
+4. Check file permissions
+
+### Log files not rotating
+
+1. Check `LOG_ROTATION_TYPE` environment variable
+2. For size-based: Verify `LOG_FILE_SIZE_MB` is set correctly
+3. Check file permissions on log directory
+
+### Too many logs
+
+1. Increase log level (e.g., `INFO` to `WARNING`)
+2. Disable database query logging in production
+3. Reduce verbosity of specific loggers
+
+### Disk space issues
+
+1. Reduce `LOG_BACKUP_COUNT`
+2. Use smaller `LOG_FILE_SIZE_MB` for size-based rotation
+3. Implement log cleanup script
+4. Consider date-based rotation for automatic cleanup
+
+## Log Rotation Details
+
+### Date-Based Rotation
+
+- **When**: Rotates at midnight each day
+- **Format**: `{day}{month}{year}.logs` (e.g., `6Dec2026.logs`)
+- **Backup**: All old files are kept (no automatic deletion)
+- **Best for**: Daily log analysis, easy date-based searching
+
+### Size-Based Rotation
+
+- **When**: Rotates when file reaches specified size
+- **Format**: `vibera.log`, `vibera.log.1`, `vibera.log.2`, etc.
+- **Backup**: Keeps specified number of backups (default: 10)
+- **Best for**: Preventing large files, production environments
+
+## Example Log Output
+
+### Request Log
+
+```
+[INFO    ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Incoming request: GET /api/moods/ | User: user123 | IP: 192.168.1.1
+```
+
+### Response Log
+
+```
+[INFO    ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Outgoing response: GET /api/moods/ | Status: 200 | Duration: 45.23ms
+```
+
+### Error Log
+
+```
+[ERROR   ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Unhandled exception: ValueError - Invalid input | Request: POST /api/moods/ | Duration: 12.34ms
+Traceback (most recent call last):
+  File "/path/to/view.py", line 42, in post
+    result = process_data()
+  ...
+ValueError: Invalid input
+```
