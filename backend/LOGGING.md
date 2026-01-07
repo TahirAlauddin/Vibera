@@ -152,7 +152,9 @@ export LOG_FORMATTER=simple
 ```python
 from vibera.logging_config import get_logger
 
-# Get logger for your module
+# Get logger for your module - creates hierarchical logger name
+# Example: In moods/views.py, this creates 'moods.views' logger
+# which automatically inherits from 'moods' logger configuration
 logger = get_logger(__name__)
 
 # Log at different levels
@@ -162,6 +164,15 @@ logger.warning("Something unexpected happened")
 logger.error("An error occurred")
 logger.critical("Critical error - app may stop")
 ```
+
+**How Logger Hierarchy Works:**
+
+- In `moods/views.py`: `get_logger(__name__)` creates `'moods.views'` logger → inherits from `'moods'` logger
+- In `moods/models.py`: `get_logger(__name__)` creates `'moods.models'` logger → inherits from `'moods'` logger
+- In `users/views.py`: `get_logger(__name__)` creates `'users.views'` logger → inherits from `'users'` logger
+- In `vibera/middleware.py`: `get_logger(__name__)` creates `'vibera.middleware'` logger → uses `'vibera.middleware'` config
+
+This is the **standard Python logging pattern** recommended by Python's official documentation.
 
 ### Logging with Context
 

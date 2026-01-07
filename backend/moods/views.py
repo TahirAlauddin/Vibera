@@ -10,7 +10,8 @@ from vibera.logging_config import get_logger
 from .models import Mood
 from .serializers import MoodLogSerializer
 
-# Get logger instance for this module
+# Logger for moods domain - creates 'moods.views' logger
+# This automatically inherits from the 'moods' logger configuration in settings.py
 logger = get_logger(__name__)
 
 

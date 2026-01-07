@@ -21,7 +21,8 @@ from django.utils.deprecation import MiddlewareMixin
 
 from vibera.logging_config import RequestResponseLogger, get_logger
 
-# Get logger instance for this module
+# Logger for middleware domain - creates 'vibera.middleware' logger
+# This inherits from the 'vibera.middleware' logger configuration in settings.py
 logger = get_logger(__name__)
 
 

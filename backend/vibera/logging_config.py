@@ -13,7 +13,7 @@ from typing import Any, Dict
 
 def get_logger(name: str) -> logging.Logger:
     """
-    Get a configured logger instance.
+    Get a configured logger instance using Python's standard logging pattern.
     
     WHAT: Factory function that returns a properly configured logger.
     WHY: Ensures all loggers use consistent configuration and formatting.
@@ -21,6 +21,7 @@ def get_logger(name: str) -> logging.Logger:
     
     Args:
         name: Logger name (typically __name__ of the calling module)
+              Creates hierarchical loggers (e.g., 'moods.views' inherits from 'moods')
         
     Returns:
         Configured Logger instance
