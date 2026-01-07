@@ -217,6 +217,26 @@ except Exception as e:
 
 ## Viewing Logs
 
+### Docker Logs (stdout/stderr)
+
+All logs are written to **stdout** and can be accessed via Docker logs:
+
+```bash
+# View all logs from a running container
+docker logs <container_name>
+
+# Follow logs in real-time
+docker logs -f <container_name>
+
+# View last 100 lines
+docker logs --tail 100 <container_name>
+
+# View logs with timestamps
+docker logs -t <container_name>
+```
+
+**Note:** All loggers are configured to write to both stdout (for Docker) and log files (for persistence).
+
 ### View Current Log File
 
 ```bash
@@ -250,6 +270,18 @@ grep "2026-12-06" logs/*.logs
 
 ```bash
 tail -n 100 logs/vibera.log
+```
+
+### Validate Logging to stdout
+
+Test that logs are properly written to stdout:
+
+```bash
+# Run the test command
+python manage.py test_logging
+
+# In Docker, verify logs appear
+docker logs <container_name> | grep "Testing Logging"
 ```
 
 ## Best Practices

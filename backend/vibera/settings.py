@@ -283,6 +283,7 @@ LOGGING = {
         # Root logger: catches all unhandled logs from third-party libraries
         '': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -293,6 +294,7 @@ LOGGING = {
         # Django framework: middleware, templates, cache
         'django': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -303,6 +305,7 @@ LOGGING = {
         # Django requests: HTTP requests and responses
         'django.request': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -313,6 +316,7 @@ LOGGING = {
         # Django server: startup, shutdown, console output
         'django.server': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
             ],
             'level': 'INFO',
@@ -322,6 +326,7 @@ LOGGING = {
         # Django database: SQL queries and connections
         'django.db.backends': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
             ],
             'level': 'DEBUG' if DEBUG else 'WARNING',
@@ -331,6 +336,7 @@ LOGGING = {
         # Vibera middleware: request/response logging and timing
         'vibera.middleware': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -341,6 +347,7 @@ LOGGING = {
         # Users app: registration, authentication, profile management
         'users': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -351,6 +358,7 @@ LOGGING = {
         # Moods app: mood tracking and journal entries
         'moods': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -361,6 +369,7 @@ LOGGING = {
         # Social app: social interactions and community features
         'social': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -371,6 +380,7 @@ LOGGING = {
         # REST Framework: API authentication, permissions, viewsets
         'rest_framework': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
@@ -381,6 +391,7 @@ LOGGING = {
         # Django security: CSRF failures, suspicious activities
         'django.security': {
             'handlers': [
+                'console',
                 'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
                 'error_file',
             ],
