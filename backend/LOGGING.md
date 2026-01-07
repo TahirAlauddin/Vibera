@@ -36,11 +36,23 @@ Configure logging behavior via environment variables:
   - `'detailed'`: Includes timestamp, level, logger name, message
   - `'simple'`: Minimal - only level and message
 
+### Retention and Backup Settings
+
+- `LOG_RETENTION_DAYS`: Number of days to keep date-based log files (default: `30`)
+
+  - Set to `0` to keep all log files indefinitely
+  - Old files are automatically deleted after this period
+  - Only applies to date-based rotation
+
+- `LOG_BACKUP_COUNT`: Number of backup files to keep for size-based rotation (default: `10`)
+  - Set to `0` to disable backups (old files are overwritten)
+  - Applies to size-based rotation and error log files
+  - Example: With `LOG_BACKUP_COUNT=5`, you'll have `vibera.log`, `vibera.log.1`, ..., `vibera.log.5`
+
 ### Size-Based Rotation Settings
 
 - `LOG_FILE_SIZE_MB`: Size in MB before rotation (default: `5`)
   - Common values: `5` or `10`
-- `LOG_BACKUP_COUNT`: Number of backup files to keep (default: `5`)
 
 ### Log Levels
 
@@ -80,6 +92,7 @@ The application uses a hierarchical logger structure organized by domain:
 ```bash
 export LOG_ROTATION_TYPE=date
 export LOG_FORMATTER=verbose
+export LOG_RETENTION_DAYS=30  # Keep last 30 days of logs
 ```
 
 This creates daily log files like:
@@ -88,12 +101,14 @@ This creates daily log files like:
 - `2026-Jan-07.logs`
 - `2026-Jan-08.logs`
 
+**Automatic Cleanup**: Files older than `LOG_RETENTION_DAYS` are automatically deleted. Set to `0` to keep all files.
+
 ### Size-Based Rotation (5MB)
 
 ```bash
 export LOG_ROTATION_TYPE=size
 export LOG_FILE_SIZE_MB=5
-export LOG_BACKUP_COUNT=5
+export LOG_BACKUP_COUNT=10  # Keep last 10 rotated files
 export LOG_FORMATTER=detailed
 ```
 
@@ -102,7 +117,9 @@ This creates:
 - `vibera.log` (current log file)
 - `vibera.log.1` (first backup)
 - `vibera.log.2` (second backup)
-- ... up to `vibera.log.5`
+- ... up to `vibera.log.10`
+
+**Backup Control**: Set `LOG_BACKUP_COUNT=0` to disable backups (old files overwritten). Default is `10`.
 
 ### Size-Based Rotation (10MB)
 
@@ -117,13 +134,18 @@ export LOG_FORMATTER=simple
 ### Main Log Files
 
 - **Date-based**: `{year}-{month}-{day}.logs` (e.g., `2026-Jan-07.logs`)
+  - Automatically cleaned up after `LOG_RETENTION_DAYS` (default: 30 days)
+  - Set `LOG_RETENTION_DAYS=0` to keep all files indefinitely
 - **Size-based**: `vibera.log` with backups (`vibera.log.1`, `vibera.log.2`, etc.)
+  - Number of backups controlled by `LOG_BACKUP_COUNT` (default: 10)
+  - Set `LOG_BACKUP_COUNT=0` to disable backups
 
 ### Error Log File
 
 - **Always present**: `errors.log`
 - Contains only ERROR and CRITICAL level messages
-- Rotates at 10MB with 5 backups
+- Rotates at 10MB
+- Number of backups controlled by `LOG_BACKUP_COUNT` (default: 10)
 
 ## Log Formats
 
@@ -334,10 +356,10 @@ docker logs <container_name> | grep "Testing Logging"
 
 ### Disk space issues
 
-1. Reduce `LOG_BACKUP_COUNT`
-2. Use smaller `LOG_FILE_SIZE_MB` for size-based rotation
-3. Implement log cleanup script
-4. Consider date-based rotation for automatic cleanup
+1. Reduce `LOG_RETENTION_DAYS` for date-based rotation (e.g., `7` for last week only)
+2. Reduce `LOG_BACKUP_COUNT` for size-based rotation (e.g., `5` instead of `10`)
+3. Use smaller `LOG_FILE_SIZE_MB` for size-based rotation
+4. Set `LOG_RETENTION_DAYS=7` and `LOG_BACKUP_COUNT=5` for minimal disk usage
 
 ## Log Rotation Details
 
@@ -345,15 +367,17 @@ docker logs <container_name> | grep "Testing Logging"
 
 - **When**: Rotates at midnight each day
 - **Format**: `{year}-{month}-{day}.logs` (e.g., `2026-Jan-07.logs`)
-- **Backup**: All old files are kept (no automatic deletion)
-- **Best for**: Daily log analysis, easy date-based searching
+- **Retention**: Automatically deletes files older than `LOG_RETENTION_DAYS` (default: 30 days)
+- **Configuration**: Set `LOG_RETENTION_DAYS=0` to keep all files indefinitely
+- **Best for**: Daily log analysis, easy date-based searching, automatic cleanup
 
 ### Size-Based Rotation
 
 - **When**: Rotates when file reaches specified size
-- **Format**: `vibera.log`, `vibera.log.1`, `vibera.log.2`, etc.
-- **Backup**: Keeps specified number of backups (default: 10)
-- **Best for**: Preventing large files, production environments
+- **Format**: `vibera.log` with numbered backups (`vibera.log.1`, `vibera.log.2`, etc.)
+- **Backup**: Keeps last `LOG_BACKUP_COUNT` files (default: 10)
+- **Configuration**: Set `LOG_BACKUP_COUNT=0` to disable backups (overwrites old files)
+- **Best for**: Preventing large files, production environments, controlled backup retention
 
 ## Example Log Output
 

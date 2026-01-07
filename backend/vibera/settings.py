@@ -195,7 +195,8 @@ LOG_DIR = get_log_directory()
 LOG_ROTATION_TYPE = os.getenv('LOG_ROTATION_TYPE', 'date').lower()  # 'size' or 'date'
 LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()  # 'verbose', 'detailed', or 'simple'
 LOG_FILE_SIZE_MB = int(os.getenv('LOG_FILE_SIZE_MB', '5'))  # Size in MB (5 or 10)
-LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '5'))  # Number of backup files
+LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))  # Days to keep date-based logs (0 = keep all)
+LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '10'))  # Number of size-based backup files (0 = no backups)
 
 # Convert MB to bytes for handler
 LOG_FILE_SIZE_BYTES = LOG_FILE_SIZE_MB * 1024 * 1024
@@ -244,6 +245,7 @@ LOGGING = {
         'date_file': {
             '()': DateRotatingFileHandler,
             'log_dir': LOG_DIR,
+            'retention_days': LOG_RETENTION_DAYS,
             'formatter': LOG_FORMATTER,
             'level': 'DEBUG',
         },
@@ -263,7 +265,7 @@ LOGGING = {
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': str(LOG_DIR / 'errors.log'),
             'maxBytes': 10 * 1024 * 1024,  # 10 MB
-            'backupCount': 5,
+            'backupCount': LOG_BACKUP_COUNT,  # Keep specified number of backups
             'formatter': 'error',
             'level': 'ERROR',
         },
