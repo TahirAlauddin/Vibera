@@ -43,6 +43,10 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
+    "django_otp",
+    "django_otp.plugins.otp_email",  # Email OTP
+    "two_factor",
+    "two_factor.plugins.email",  # Email delivery
     "djoser",
     "users",
     "moods",
@@ -55,6 +59,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -94,6 +99,17 @@ DATABASES = {
 }
 
 
+# Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -130,28 +146,6 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# Email Configuration
-# https://docs.djangoproject.com/en/6.0/topics/email/
-if DEBUG:
-    # Development: Print emails to console
-    EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-else:
-    # Production: Use SMTP
-    EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-
-# SMTP Settings (used in production)
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
-EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() == "true"
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "Vibera <noreply@vibera.com>")
-
-# OTP Settings
-OTP_EXPIRY_MINUTES = int(os.getenv("OTP_EXPIRY_MINUTES", 10))
-OTP_MAX_ATTEMPTS = int(os.getenv("OTP_MAX_ATTEMPTS", 3))
 
 # Django REST Framework
 REST_FRAMEWORK = {
@@ -202,3 +196,9 @@ DJOSER = {
 
 # Custom User Model
 AUTH_USER_MODEL = "users.User"
+
+LOGIN_URL = "two_factor:login"
+LOGIN_REDIRECT_URL = "/"
+LOGOUT_REDIRECT_URL = "two_factor:login"
+
+TWO_FACTOR_PATCH_ADMIN = True

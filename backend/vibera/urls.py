@@ -18,14 +18,19 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from moods import views as moods_views
+from two_factor.urls import urlpatterns as tf_urls
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     # JWT Authentication endpoints (Djoser)
     path("api/auth/", include("djoser.urls")),
     path("api/auth/", include("djoser.urls.jwt")),
+    # Users endpoints (includes 2FA)
+    path("api/users/", include("users.urls")),
     # Moods endpoints
     path("api/moods/", include("moods.urls")),
     # Test endpoint
     path("api/test/", moods_views.test_api, name="test_api"),
+    # Two-factor auth (for admin protection)
+    path("accounts/", include(tf_urls)),
 ]
