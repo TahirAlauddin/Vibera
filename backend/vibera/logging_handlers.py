@@ -22,12 +22,12 @@ class DateRotatingFileHandler(TimedRotatingFileHandler):
     """
     Custom date-based rotating file handler with custom filename format.
     
-    WHAT: Rotates log files daily with format like "6Dec2026.logs"
+    WHAT: Rotates log files daily with format like "2026-Jan-07.logs"
     WHY: Provides daily log files with human-readable date format
     WHEN: Used when LOG_ROTATION_TYPE is set to 'date'
     
     HOW: Extends TimedRotatingFileHandler and overrides filename generation
-         to use custom date format (day + abbreviated month + year).
+         to use custom date format (year-month-day).
     """
     
     def __init__(self, log_dir: Path, *args, **kwargs):
@@ -56,9 +56,9 @@ class DateRotatingFileHandler(TimedRotatingFileHandler):
     
     def _generate_filename(self, log_dir: Path) -> str:
         """
-        Generate filename with date format: day + abbreviated month + year + .logs
+        Generate filename with date format: year-month-day + .logs
         
-        WHAT: Creates filename like "6Dec2026.logs"
+        WHAT: Creates filename like "2026-Jan-07.logs"
         WHY: Human-readable date format for easy identification
         WHEN: Called during initialization and when rotation occurs
         
@@ -69,8 +69,8 @@ class DateRotatingFileHandler(TimedRotatingFileHandler):
             Full path to log file
         """
         now = datetime.now()
-        # Format: day + abbreviated month + year (e.g., "6Dec2026")
-        date_str = now.strftime('%d%b%Y')
+        # Format: year-month-day (e.g., "2026-Jan-07")
+        date_str = now.strftime('%Y-%b-%d')
         filename = f"{date_str}.logs"
         return str(log_dir / filename)
     

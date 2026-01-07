@@ -9,8 +9,8 @@ This Django application uses file-based logging with automatic rotation. Logs ar
 ```
 backend/
   ├── logs/              # Log files directory (created automatically)
-  │   ├── 6Dec2026.logs  # Date-based log files (if LOG_ROTATION_TYPE=date)
-  │   ├── 7Dec2026.logs
+  │   ├── 2026-Jan-06.logs  # Date-based log files (if LOG_ROTATION_TYPE=date)
+  │   ├── 2026-jan-07.logs
   │   ├── vibera.log     # Size-based log file (if LOG_ROTATION_TYPE=size)
   │   └── errors.log     # Error-only log file (always present)
   └── vibera/
@@ -26,7 +26,7 @@ Configure logging behavior via environment variables:
 ### Rotation Type
 
 - `LOG_ROTATION_TYPE`: `'date'` or `'size'` (default: `'date'`)
-  - `'date'`: Creates new log file each day (format: `6Dec2026.logs`)
+  - `'date'`: Creates new log file each day (format: `2026-Jan-07.logs`)
   - `'size'`: Rotates when file reaches specified size
 
 ### Formatter
@@ -40,13 +40,38 @@ Configure logging behavior via environment variables:
 
 - `LOG_FILE_SIZE_MB`: Size in MB before rotation (default: `5`)
   - Common values: `5` or `10`
-- `LOG_BACKUP_COUNT`: Number of backup files to keep (default: `10`)
+- `LOG_BACKUP_COUNT`: Number of backup files to keep (default: `5`)
 
 ### Log Levels
 
-- `LOG_LEVEL`: Root logger level (default: `INFO`)
-- `DJANGO_LOG_LEVEL`: Django framework logger level (default: `INFO`)
-- `VIBERA_LOG_LEVEL`: Application logger level (default: `INFO`)
+- `ROOT_LOG_LEVEL`: Root logger level - catches all unhandled logs (default: `INFO`)
+- `FRAMEWORK_LOG_LEVEL`: Django framework logger level - Django internals (default: `INFO`)
+- `APPLICATION_LOG_LEVEL`: Application logger level - your custom code (default: `INFO`)
+  - Controls: `vibera.middleware`, `users`, `moods`, `social`
+
+## Logger Structure
+
+The application uses a hierarchical logger structure organized by domain:
+
+### Framework Loggers (Standard Django)
+
+- **`django`**: Core Django framework operations
+- **`django.request`**: HTTP request/response handling
+- **`django.server`**: Development server lifecycle
+- **`django.db.backends`**: Database queries and connections
+- **`django.security`**: Security events and threats
+- **`rest_framework`**: Django REST Framework API operations
+
+### Application Loggers (Domain-Specific)
+
+- **`vibera.middleware`**: Custom request/response logging middleware
+- **`users`**: User management, authentication, profile operations
+- **`moods`**: Mood tracking, mood creation, mood retrieval
+- **`social`**: Social features, sharing, community interactions
+
+### Root Logger
+
+- **`''`** (empty string): Catches all unhandled logs from third-party libraries
 
 ## Configuration Examples
 
@@ -59,9 +84,9 @@ export LOG_FORMATTER=verbose
 
 This creates daily log files like:
 
-- `6Dec2026.logs`
-- `7Dec2026.logs`
-- `8Dec2026.logs`
+- `2026-Jan-06.logs`
+- `2026-Jan-07.logs`
+- `2026-Jan-08.logs`
 
 ### Size-Based Rotation (5MB)
 
@@ -91,7 +116,7 @@ export LOG_FORMATTER=simple
 
 ### Main Log Files
 
-- **Date-based**: `{day}{month}{year}.logs` (e.g., `6Dec2026.logs`)
+- **Date-based**: `{year}-{month}-{day}.logs` (e.g., `2026-Jan-07.logs`)
 - **Size-based**: `vibera.log` with backups (`vibera.log.1`, `vibera.log.2`, etc.)
 
 ### Error Log File
@@ -185,7 +210,7 @@ except Exception as e:
 
 ```bash
 # Date-based
-tail -f logs/6Dec2026.logs
+tail -f logs/2026-Jan-07.logs
 
 # Size-based
 tail -f logs/vibera.log
@@ -276,7 +301,7 @@ tail -n 100 logs/vibera.log
 ### Date-Based Rotation
 
 - **When**: Rotates at midnight each day
-- **Format**: `{day}{month}{year}.logs` (e.g., `6Dec2026.logs`)
+- **Format**: `{year}-{month}-{day}.logs` (e.g., `2026-Jan-07.logs`)
 - **Backup**: All old files are kept (no automatic deletion)
 - **Best for**: Daily log analysis, easy date-based searching
 
