@@ -89,8 +89,15 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
+        # Database logging configuration
+        "OPTIONS": {
+            "connect_timeout": 10,
+        },
     }
 }
+
+# Database logging configuration
+DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -299,6 +306,13 @@ LOGGING = {
         'django.db.backends': {
             'handlers': ['stdout', 'file_date'],
             'level': 'DEBUG' if DEBUG else 'WARNING',
+            'propagate': False,
+        },
+        
+        # PostgreSQL-specific logging: connections, slow queries, errors
+        'django.db.backends.postgresql': {
+            'handlers': ['stdout', 'file_date'],
+            'level': 'INFO',  # Always log connections and errors, even in production
             'propagate': False,
         },
         

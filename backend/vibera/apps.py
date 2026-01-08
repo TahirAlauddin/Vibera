@@ -10,3 +10,8 @@ class ViberaConfig(AppConfig):
     
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'vibera'
+    
+    def ready(self):
+        """Initialize app when Django starts."""
+        # Import database logging to register signal handlers
+        import vibera.db_logging  # noqa: F401
