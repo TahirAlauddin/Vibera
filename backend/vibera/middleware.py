@@ -16,14 +16,11 @@ logger = get_logger(__name__)
 
 
 class RequestResponseLoggingMiddleware(MiddlewareMixin):
-    """
-    Middleware to log HTTP requests and responses.
-    Logging runs in background threads to prevent blocking when using remote logging services.
-    """
+    """Middleware to log HTTP requests and responses."""
     
     @staticmethod
     def _log_async(log_func, message, exc_info=False):
-        """Log in a background thread without blocking. Falls back to sync if threading fails."""
+        """Log in a background thread without blocking."""
         def _log():
             try:
                 if exc_info:
@@ -31,13 +28,12 @@ class RequestResponseLoggingMiddleware(MiddlewareMixin):
                 else:
                     log_func(message)
             except Exception:
-                pass  # Don't let logging errors break requests
+                pass
         
         try:
             thread = threading.Thread(target=_log, daemon=True)
             thread.start()
         except Exception:
-            # Fallback to sync logging if threading fails
             try:
                 if exc_info:
                     log_func(message, exc_info=True)
@@ -47,7 +43,7 @@ class RequestResponseLoggingMiddleware(MiddlewareMixin):
                 pass
     
     def process_request(self, request: HttpRequest) -> None:
-        """Log incoming request and store start time for duration calculation."""
+        """Log incoming request and store start time."""
         request._start_time = time.time()
         request_data = RequestResponseLogger.format_request(request)
         self._log_async(
@@ -56,7 +52,7 @@ class RequestResponseLoggingMiddleware(MiddlewareMixin):
         )
     
     def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
-        """Calculate request duration and log response details."""
+        """Calculate request duration and log response."""
         duration_ms = 0
         if hasattr(request, '_start_time'):
             duration = time.time() - request._start_time
@@ -78,7 +74,7 @@ class RequestResponseLoggingMiddleware(MiddlewareMixin):
         return response
     
     def process_exception(self, request: HttpRequest, exception: Exception) -> None:
-        """Log exceptions with full traceback and request context."""
+        """Log exceptions with full traceback."""
         duration_ms = 0
         if hasattr(request, '_start_time'):
             duration = time.time() - request._start_time

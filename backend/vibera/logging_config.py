@@ -12,47 +12,16 @@ from typing import Any, Dict
 
 
 def get_logger(name: str) -> logging.Logger:
-    """
-    Get a configured logger instance using Python's standard logging pattern.
-    
-    WHAT: Factory function that returns a properly configured logger.
-    WHY: Ensures all loggers use consistent configuration and formatting.
-    WHEN: Use this instead of logging.getLogger() to ensure proper setup.
-    
-    Args:
-        name: Logger name (typically __name__ of the calling module)
-              Creates hierarchical loggers (e.g., 'moods.views' inherits from 'moods')
-        
-    Returns:
-        Configured Logger instance
-    """
+    """Get a configured logger instance."""
     return logging.getLogger(name)
 
 
 class RequestResponseLogger:
-    """
-    Utility class for logging HTTP requests and responses.
-    
-    WHAT: Provides methods to format and log request/response data consistently.
-    WHY: Centralizes request/response logging logic for consistency and maintainability.
-    WHEN: Used by middleware to log incoming requests and outgoing responses.
-    """
+    """Utility class for logging HTTP requests and responses."""
     
     @staticmethod
     def format_request(request) -> Dict[str, Any]:
-        """
-        Format request data for logging.
-        
-        WHAT: Extracts and formats relevant request information.
-        WHY: Standardizes request logging format across the application.
-        WHEN: Called when a request is received.
-        
-        Args:
-            request: Django HttpRequest object
-            
-        Returns:
-            Dictionary with formatted request data
-        """
+        """Format request data for logging."""
         return {
             'method': request.method,
             'path': request.path,
@@ -64,20 +33,7 @@ class RequestResponseLogger:
     
     @staticmethod
     def format_response(response, duration_ms: float) -> Dict[str, Any]:
-        """
-        Format response data for logging.
-        
-        WHAT: Extracts and formats relevant response information.
-        WHY: Standardizes response logging format across the application.
-        WHEN: Called when a response is sent.
-        
-        Args:
-            response: Django HttpResponse object
-            duration_ms: Request processing duration in milliseconds
-            
-        Returns:
-            Dictionary with formatted response data
-        """
+        """Format response data for logging."""
         return {
             'status_code': response.status_code,
             'duration_ms': round(duration_ms, 2),
@@ -86,19 +42,7 @@ class RequestResponseLogger:
     
     @staticmethod
     def _get_client_ip(request) -> str:
-        """
-        Extract client IP address from request.
-        
-        WHAT: Gets the real client IP, handling proxy headers.
-        WHY: Important for security logging and rate limiting.
-        WHEN: Called when logging request information.
-        
-        Args:
-            request: Django HttpRequest object
-            
-        Returns:
-            Client IP address as string
-        """
+        """Extract client IP address from request."""
         x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
         if x_forwarded_for:
             # Take the first IP in the chain (original client)

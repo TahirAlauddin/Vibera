@@ -16,7 +16,7 @@ import os
 from pathlib import Path
 
 load_dotenv()
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
@@ -25,8 +25,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
-
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
@@ -79,7 +77,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "vibera.wsgi.application"
 
-
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
@@ -93,7 +90,6 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT"),
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -191,25 +187,20 @@ from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHan
 
 LOG_DIR = get_log_directory()
 
-# Configuration from environment variables
-LOG_ROTATION_TYPE = os.getenv('LOG_ROTATION_TYPE', 'date').lower()  # 'size' or 'date'
-LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()  # 'verbose', 'detailed', or 'simple'
-LOG_FILE_SIZE_MB = int(os.getenv('LOG_FILE_SIZE_MB', '5'))  # Size in MB (5 or 10)
-LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))  # Days to keep date-based logs (0 = keep all)
-LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '10'))  # Number of size-based backup files (0 = no backups)
-
-# Convert MB to bytes for handler
+# Environment variables
+LOG_ROTATION_TYPE = os.getenv('LOG_ROTATION_TYPE', 'date').lower()
+LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
+LOG_FILE_SIZE_MB = int(os.getenv('LOG_FILE_SIZE_MB', '5'))
+LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
+LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '10'))
 LOG_FILE_SIZE_BYTES = LOG_FILE_SIZE_MB * 1024 * 1024
 
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     
-    # ========================================================================
-    # FORMATTERS
-    # ========================================================================
+    # Formatters
     'formatters': {
-        # Most detailed: timestamp, level, logger, process, thread
         'verbose': {
             'format': '[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}',
             'style': '{',
@@ -237,11 +228,8 @@ LOGGING = {
         },
     },
     
-    # ========================================================================
-    # HANDLERS
-    # ========================================================================
+    # Handlers
     'handlers': {
-        # Daily rotation: creates new file each day (format: "2026-Jan-07.logs")
         'date_file': {
             '()': DateRotatingFileHandler,
             'log_dir': LOG_DIR,
@@ -270,7 +258,6 @@ LOGGING = {
             'level': 'ERROR',
         },
         
-        # Console output for development
         'console': {
             'class': 'logging.StreamHandler',
             'formatter': LOG_FORMATTER,
@@ -278,9 +265,7 @@ LOGGING = {
         },
     },
     
-    # ========================================================================
-    # LOGGERS
-    # ========================================================================
+    # Loggers
     'loggers': {
         # Root logger: catches all unhandled logs from third-party libraries
         '': {

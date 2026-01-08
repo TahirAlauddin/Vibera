@@ -1,12 +1,4 @@
-"""
-Django management command to test and validate logging to stdout.
-
-This command tests that logs are properly written to stdout and can be
-accessed via docker logs.
-
-Usage:
-    python manage.py test_logging
-"""
+"""Django management command to test and validate logging to stdout."""
 
 from django.core.management.base import BaseCommand
 from vibera.logging_config import get_logger
