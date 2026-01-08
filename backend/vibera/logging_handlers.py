@@ -79,16 +79,17 @@ class DateRotatingFileHandler(TimedRotatingFileHandler):
 class SizeRotatingFileHandler(RotatingFileHandler):
     """Custom size-based rotating file handler."""
     
-    def __init__(self, log_dir: Path, max_bytes: int = 5 * 1024 * 1024, backup_count: int = 10, *args, **kwargs):
+    def __init__(self, log_dir: Path, max_bytes: int = 5 * 1024 * 1024, *args, **kwargs):
         """Initialize size-based rotating file handler."""
         log_dir.mkdir(parents=True, exist_ok=True)
         filename = str(log_dir / 'vibera.log')
         
         # Initialize parent with size-based rotation
+        # backupCount=0 means no backup files - file will be overwritten when size limit is reached
         super().__init__(
             filename=filename,
             maxBytes=max_bytes,
-            backupCount=backup_count,
+            backupCount=0,
             *args,
             **kwargs
         )
