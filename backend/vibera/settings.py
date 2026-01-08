@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "djoser",
+    "vibera.apps.ViberaConfig",  # Must be before other apps to initialize QueueListener
     "users",
     "moods",
     "social",
@@ -181,19 +182,22 @@ AUTH_USER_MODEL = "users.User"
 # ============================================================================
 # LOGGING CONFIGURATION
 # ============================================================================
+# 
+# Non-blocking logging architecture:
+# - QueueHandler: Enqueues log records instantly (no I/O blocking)
+# - QueueListener: Background thread handles actual I/O (stdout/file writes)
+# - Application code never waits for log writes
+# - Production-safe: Uses Python's standard logging infrastructure
 
-
-from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler, get_log_directory
-
-LOG_DIR = get_log_directory()
+import queue
+from logging.handlers import QueueHandler, QueueListener, StreamHandler
 
 # Environment variables
-LOG_ROTATION_TYPE = os.getenv('LOG_ROTATION_TYPE', 'date').lower()
 LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
-LOG_FILE_SIZE_MB = int(os.getenv('LOG_FILE_SIZE_MB', '5'))
-LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
-LOG_BACKUP_COUNT = int(os.getenv('LOG_BACKUP_COUNT', '10'))
-LOG_FILE_SIZE_BYTES = LOG_FILE_SIZE_MB * 1024 * 1024
+
+# Create a queue for log records
+# This queue is shared between QueueHandler (enqueues) and QueueListener (dequeues)
+LOG_QUEUE = queue.Queue(-1)  # -1 = unlimited size
 
 LOGGING = {
     'version': 1,
@@ -229,36 +233,19 @@ LOGGING = {
     },
     
     # Handlers
+    # QueueHandler: Non-blocking handler that enqueues log records
+    # QueueListener (started in apps.py) dequeues and writes to actual handlers
     'handlers': {
-        'date_file': {
-            '()': DateRotatingFileHandler,
-            'log_dir': LOG_DIR,
-            'retention_days': LOG_RETENTION_DAYS,
-            'formatter': LOG_FORMATTER,
-            'level': 'DEBUG',
+        # QueueHandler: Enqueues instantly, never blocks
+        # This is what loggers use - returns immediately
+        'queue': {
+            'class': 'logging.handlers.QueueHandler',
+            'queue': LOG_QUEUE,
         },
         
-        # Size rotation: rotates when file reaches max size
-        'size_file': {
-            '()': SizeRotatingFileHandler,
-            'log_dir': LOG_DIR,
-            'max_bytes': LOG_FILE_SIZE_BYTES,
-            'backup_count': LOG_BACKUP_COUNT,
-            'formatter': LOG_FORMATTER,
-            'level': 'DEBUG',
-        },
-        
-        # Error-only file: separate file for ERROR and CRITICAL messages
-        'error_file': {
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': str(LOG_DIR / 'errors.log'),
-            'maxBytes': 10 * 1024 * 1024,  # 10 MB
-            'backupCount': LOG_BACKUP_COUNT,  # Keep specified number of backups
-            'formatter': 'error',
-            'level': 'ERROR',
-        },
-        
-        'console': {
+        # Actual output handler: Writes to stdout for Docker collection
+        # This is used by QueueListener (background thread), not directly by loggers
+        'stdout': {
             'class': 'logging.StreamHandler',
             'formatter': LOG_FORMATTER,
             'stream': 'ext://sys.stdout',
@@ -266,122 +253,82 @@ LOGGING = {
     },
     
     # Loggers
+    # All loggers use 'queue' handler for non-blocking behavior
+    # QueueListener (started in apps.py) handles actual I/O in background
     'loggers': {
         # Root logger: catches all unhandled logs from third-party libraries
         '': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Django framework: middleware, templates, cache
         'django': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Django requests: HTTP requests and responses
         'django.request': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': 'INFO',
             'propagate': False,
         },
         
         # Django server: startup, shutdown, console output
         'django.server': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-            ],
+            'handlers': ['queue'],
             'level': 'INFO',
             'propagate': False,
         },
         
         # Django database: SQL queries and connections
         'django.db.backends': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-            ],
+            'handlers': ['queue'],
             'level': 'DEBUG' if DEBUG else 'WARNING',
             'propagate': False,
         },
         
         # Vibera middleware: request/response logging and timing
         'vibera.middleware': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Users app: registration, authentication, profile management
         'users': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Moods app: mood tracking and journal entries
         'moods': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Social app: social interactions and community features
         'social': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # REST Framework: API authentication, permissions, viewsets
         'rest_framework': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': 'INFO',
             'propagate': False,
         },
         
         # Django security: CSRF failures, suspicious activities
         'django.security': {
-            'handlers': [
-                'console',
-                'date_file' if LOG_ROTATION_TYPE == 'date' else 'size_file',
-                'error_file',
-            ],
+            'handlers': ['queue'],
             'level': 'WARNING',
             'propagate': False,
         },

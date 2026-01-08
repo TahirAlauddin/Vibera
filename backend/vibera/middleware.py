@@ -1,58 +1,81 @@
 """
 Custom Django middleware for request/response logging.
 Logs all HTTP requests, responses, and exceptions with timing information.
+
+This middleware is synchronous and non-blocking because:
+- Logging calls use QueueHandler (configured in LOGGING settings)
+- QueueHandler enqueues log records instantly without I/O
+- QueueListener (started at app initialization) handles actual I/O in background
+- Request/response cycle never waits for log writes
 """
 
-import threading
 import time
 from typing import Callable
 
 from django.http import HttpRequest, HttpResponse
-from django.utils.deprecation import MiddlewareMixin
 
 from vibera.logging_config import RequestResponseLogger, get_logger
 
 logger = get_logger(__name__)
 
 
-class RequestResponseLoggingMiddleware(MiddlewareMixin):
-    """Middleware to log HTTP requests and responses."""
+class RequestResponseLoggingMiddleware:
+    """
+    Synchronous middleware for request/response logging.
     
-    @staticmethod
-    def _log_async(log_func, message, exc_info=False):
-        """Log in a background thread without blocking."""
-        def _log():
-            try:
-                if exc_info:
-                    log_func(message, exc_info=True)
-                else:
-                    log_func(message)
-            except Exception:
-                pass
+    Uses Python's QueueHandler for non-blocking behavior:
+    - Logging calls return immediately (enqueue to queue)
+    - QueueListener handles I/O in background thread
+    - Compatible with both sync and async Django views via __call__
+    """
+    
+    def __init__(self, get_response: Callable):
+        """
+        Initialize middleware.
         
-        try:
-            thread = threading.Thread(target=_log, daemon=True)
-            thread.start()
-        except Exception:
-            try:
-                if exc_info:
-                    log_func(message, exc_info=True)
-                else:
-                    log_func(message)
-            except Exception:
-                pass
+        Args:
+            get_response: The next middleware or view in the chain
+        """
+        self.get_response = get_response
     
-    def process_request(self, request: HttpRequest) -> None:
-        """Log incoming request and store start time."""
+    def __call__(self, request: HttpRequest) -> HttpResponse:
+        """
+        Process request and response.
+        
+        This method works for both sync and async views:
+        - Django automatically handles async views
+        - Logging is synchronous but non-blocking (QueueHandler)
+        """
+        # Store start time for duration calculation
         request._start_time = time.time()
+        
+        # Log incoming request
+        # QueueHandler ensures this returns immediately without blocking
         request_data = RequestResponseLogger.format_request(request)
-        self._log_async(
-            logger.info,
-            f"Incoming request: {request.method} {request.path} | User: {request_data['user']} | IP: {request_data['ip_address']}"
+        logger.info(
+            f"Incoming request: {request.method} {request.path} | "
+            f"User: {request_data['user']} | IP: {request_data['ip_address']}"
         )
-    
-    def process_response(self, request: HttpRequest, response: HttpResponse) -> HttpResponse:
-        """Calculate request duration and log response."""
+        
+        # Process request through the middleware chain
+        try:
+            response = self.get_response(request)
+        except Exception as exception:
+            # Log exception with duration
+            duration_ms = 0
+            if hasattr(request, '_start_time'):
+                duration = time.time() - request._start_time
+                duration_ms = duration * 1000
+            
+            logger.error(
+                f"Unhandled exception: {type(exception).__name__} - {str(exception)} | "
+                f"Request: {request.method} {request.path} | "
+                f"Duration: {round(duration_ms, 2)}ms",
+                exc_info=True
+            )
+            raise
+        
+        # Calculate duration and log response
         duration_ms = 0
         if hasattr(request, '_start_time'):
             duration = time.time() - request._start_time
@@ -60,27 +83,21 @@ class RequestResponseLoggingMiddleware(MiddlewareMixin):
         
         response_data = RequestResponseLogger.format_response(response, duration_ms)
         
+        # Choose log level based on status code
         if response.status_code >= 500:
-            log_level = logger.error
+            logger.error(
+                f"Outgoing response: {request.method} {request.path} | "
+                f"Status: {response.status_code} | Duration: {response_data['duration_ms']}ms"
+            )
         elif response.status_code >= 400:
-            log_level = logger.warning
+            logger.warning(
+                f"Outgoing response: {request.method} {request.path} | "
+                f"Status: {response.status_code} | Duration: {response_data['duration_ms']}ms"
+            )
         else:
-            log_level = logger.info
-        self._log_async(
-            log_level,
-            f"Outgoing response: {request.method} {request.path} | Status: {response.status_code} | Duration: {response_data['duration_ms']}ms"
-        )
+            logger.info(
+                f"Outgoing response: {request.method} {request.path} | "
+                f"Status: {response.status_code} | Duration: {response_data['duration_ms']}ms"
+            )
         
         return response
-    
-    def process_exception(self, request: HttpRequest, exception: Exception) -> None:
-        """Log exceptions with full traceback."""
-        duration_ms = 0
-        if hasattr(request, '_start_time'):
-            duration = time.time() - request._start_time
-            duration_ms = duration * 1000
-        self._log_async(
-            logger.error,
-            f"Unhandled exception: {type(exception).__name__} - {str(exception)} | Request: {request.method} {request.path} | Duration: {round(duration_ms, 2)}ms",
-            exc_info=True
-        )
