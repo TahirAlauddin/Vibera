@@ -196,6 +196,77 @@ logger.critical("Critical error - app may stop")
 
 This is the **standard Python logging pattern** recommended by Python's official documentation.
 
+**Example Log Output:**
+
+When using `logger.info()` and `logger.error()`, here's how the logs appear:
+
+**Example 1: `logger.info()`**
+
+```python
+logger.info("User successfully created a new mood")
+```
+
+**Output (verbose formatter - default):**
+
+```
+[INFO    ] 2026-12-06 10:30:45 | moods.views              | Process:12345 | Thread:MainThread | User successfully created a new mood
+```
+
+**Output (detailed formatter):**
+
+```
+[INFO    ] 2026-12-06 10:30:45 | moods.views              | User successfully created a new mood
+```
+
+**Output (simple formatter):**
+
+```
+[INFO    ] User successfully created a new mood
+```
+
+**Example 2: `logger.error()`**
+
+```python
+logger.error("Failed to authenticate user: Invalid credentials")
+```
+
+**Output (verbose formatter - default):**
+
+```
+[ERROR   ] 2026-12-06 10:30:45 | users.views              | Process:12345 | Thread:MainThread | Failed to authenticate user: Invalid credentials
+```
+
+**Output (detailed formatter):**
+
+```
+[ERROR   ] 2026-12-06 10:30:45 | users.views              | Failed to authenticate user: Invalid credentials
+```
+
+**Output (simple formatter):**
+
+```
+[ERROR   ] Failed to authenticate user: Invalid credentials
+```
+
+**Example 3: `logger.error()` with exception traceback**
+
+```python
+logger.error(f"Failed to process share: {str(e)}", exc_info=True)
+```
+
+**Output (verbose formatter - default):**
+
+```
+[ERROR   ] 2026-12-06 10:30:45 | social.views             | Process:12345 | Thread:MainThread | Failed to process share: Connection timeout
+Traceback (most recent call last):
+  File "/path/to/social/views.py", line 42, in process_share
+    result = api_call()
+  ...
+ConnectionTimeout: Connection timeout
+```
+
+**Note:** ERROR and CRITICAL level logs are also written to `errors.log`.
+
 ### Logging with Context
 
 ```python
