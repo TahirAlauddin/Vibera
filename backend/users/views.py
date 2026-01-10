@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
-from django_otp.plugins.otp_email.models import EmailDevice
+from .utils import create_and_send_otp, verify_user_otp
 
 
 User = get_user_model()
@@ -28,7 +28,7 @@ def mask_email(email: str) -> str:
 class LoginStep1View(APIView):
     """
     Step 1: Username + Password → Send OTP
-    POST /api/users/auth/2fa/step1/
+    POST /api/users/auth/2fa/login/
 
     Request body:
         {
@@ -40,7 +40,7 @@ class LoginStep1View(APIView):
         {
             "success": true,
             "message": "OTP sent to your email",
-            "email_hint": "***@example.com"
+            "email_hint": "joh***@example.com"
         }
     """
 
@@ -63,25 +63,36 @@ class LoginStep1View(APIView):
                 {"success": False, "error": "Invalid credentials"}, status=401
             )
 
-        # Get user's 2FA device
-        device = EmailDevice.objects.filter(user=user, confirmed=True).first()
+        if not user.is_2fa_enabled:
+            # 2FA not enabled, return JWT tokens directly
+            refresh = RefreshToken.for_user(user)
+            return Response(
+                {
+                    "success": True,
+                    "requires_2fa": False,
+                    "access": str(refresh.access_token),
+                    "refresh": str(refresh),
+                }
+            )
 
-        if not device:
+        # 2FA enabled, send OTP
+        otp, email_sent = create_and_send_otp(user=user)
+
+        if not email_sent:
             return Response(
                 {
                     "success": False,
-                    "error": "2FA device not configured. Please contact support.",
+                    "error": "Failed to send OTP email. Please try again.",
                 },
-                status=400,
+                status=500,
             )
 
-        # Send OTP email
-        device.generate_challenge()
         request.session["pending_2fa_user"] = user.id
 
         return Response(
             {
                 "success": True,
+                "requires_2fa": True,
                 "message": "OTP sent to your email",
                 "email_hint": mask_email(user.email),
             }
@@ -91,7 +102,7 @@ class LoginStep1View(APIView):
 class LoginStep2View(APIView):
     """
     Step 2: Verify OTP → Return JWT tokens
-    POST /api/users/auth/2fa/step2/
+    POST /api/users/auth/2fa/verify/
 
     Request body:
         {
@@ -120,7 +131,7 @@ class LoginStep2View(APIView):
         if not pending_user_id:
             return Response(
                 {"success": False, "error": "Session expired. Please login again."},
-                status=400,
+                status=408,
             )
 
         try:
@@ -128,14 +139,10 @@ class LoginStep2View(APIView):
         except User.DoesNotExist:
             return Response({"success": False, "error": "User not found"}, status=400)
 
-        device = EmailDevice.objects.filter(user=user, confirmed=True).first()
+        # Verify OTP
+        success, error_message = verify_user_otp(user=user, otp_code=token)
 
-        if not device:
-            return Response(
-                {"success": False, "error": "2FA device not found"}, status=400
-            )
-
-        if device.verify_token(token):
+        if success:
             # OTP valid, clear session and return JWT tokens
             del request.session["pending_2fa_user"]
             refresh = RefreshToken.for_user(user)
@@ -148,9 +155,7 @@ class LoginStep2View(APIView):
                 }
             )
         else:
-            return Response(
-                {"success": False, "error": "Invalid or expired OTP"}, status=400
-            )
+            return Response({"success": False, "error": error_message}, status=400)
 
 
 class ResendOTPView(APIView):
@@ -180,15 +185,17 @@ class ResendOTPView(APIView):
         except User.DoesNotExist:
             return Response({"success": False, "error": "User not found"}, status=400)
 
-        device = EmailDevice.objects.filter(user=user, confirmed=True).first()
-
-        if not device:
-            return Response(
-                {"success": False, "error": "2FA device not found"}, status=400
-            )
-
         # Resend OTP
-        device.generate_challenge()
+        otp, email_sent = create_and_send_otp(user=user)
+
+        if not email_sent:
+            return Response(
+                {
+                    "success": False,
+                    "error": "Failed to send OTP email. Please try again.",
+                },
+                status=500,
+            )
 
         return Response(
             {

@@ -43,10 +43,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
-    "django_otp",
-    "django_otp.plugins.otp_email",  # Email OTP
-    "two_factor",
-    "two_factor.plugins.email",  # Email delivery
     "djoser",
     "users",
     "moods",
@@ -59,7 +55,6 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
-    "django_otp.middleware.OTPMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -197,8 +192,11 @@ DJOSER = {
 # Custom User Model
 AUTH_USER_MODEL = "users.User"
 
-LOGIN_URL = "two_factor:login"
-LOGIN_REDIRECT_URL = "/"
-LOGOUT_REDIRECT_URL = "two_factor:login"
+# OTP Settings
+OTP_EXPIRY_MINUTES = 5 # otp expires in 5 minutes
+OTP_MAX_ATTEMPTS = 3
 
-TWO_FACTOR_PATCH_ADMIN = True
+# Session Settings (for 2FA pending state)
+# https://docs.djangoproject.com/en/6.0/ref/settings/#sessions
+SESSION_COOKIE_AGE = 300  # 5 minutes session timeout
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session ends when browser closes

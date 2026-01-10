@@ -7,6 +7,7 @@ A mood tracking and journaling application built with Django REST Framework and 
 - **Backend**: Django 6.0
 - **API**: Django REST Framework
 - **Authentication**: JWT (Djoser + SimpleJWT)
+- **2FA**: Email-based OTP
 - **Database**: PostgreSQL
 
 ## Installation & Setup
@@ -41,6 +42,15 @@ DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
 ALLOWED_HOSTS=127.0.0.1,localhost
+
+# Email Configuration (for 2FA OTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_USE_SSL=False
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=your-email@gmail.com
 ```
 
 ### 4. Run Migrations
@@ -61,17 +71,29 @@ API Base URL: `http://127.0.0.1:8000/`
 ## Database Models
 
 ### User Model
+
 - `email`, `username` (unique, for login)
 - `first_name`, `last_name` (optional)
-- `is_active`, `is_staff`, `date_joined`
+- `is_active`, `is_staff`, `is_2fa_enabled`, `date_joined`
+
+### EmailOTP Model (Two-Factor Authentication)
+
+- `user` - ForeignKey to User
+- `hashed_code` - Securely hashed OTP code
+- `expires_at` - OTP expiration time
+- `is_used` - Whether OTP has been used
+- `attempts` - Failed verification attempts
+- `created_at` - Creation timestamp
 
 ### Mood Model
+
 - `user` - ForeignKey to User
 - `emoji` - Mood emoji (😊 Happy, 😔 Sad, 😡 Angry, 😰 Anxious, 😴 Tired, 😌 Calm)
 - `reason` - Optional text
 - `created_at`, `updated_at`
 
 ### EmojiJournalEntry Model
+
 - `mood` - ForeignKey to Mood
 - `user` - ForeignKey to User
 - `note` - Journal text
@@ -95,6 +117,7 @@ docker run -d \
   -p 5432:5432 \
   postgres:18
 ```
+
 ## API Endpoints
 
 ### Authentication
@@ -106,6 +129,44 @@ docker run -d \
 | Refresh Token     | POST   | `/api/auth/jwt/refresh/` |
 | Verify Token      | POST   | `/api/auth/jwt/verify/`  |
 | Current User Info | GET    | `/api/auth/users/me/`    |
+
+### Two-Factor Authentication (2FA)
+
+| Action              | Method | URL                           | Description                          |
+| ------------------- | ------ | ----------------------------- | ------------------------------------ |
+| Login (Request OTP) | POST   | `/api/users/auth/2fa/login/`  | Validate credentials, send OTP email |
+| Verify OTP          | POST   | `/api/users/auth/2fa/verify/` | Verify OTP, get JWT tokens           |
+| Resend OTP          | POST   | `/api/users/auth/2fa/resend/` | Send a new OTP to email              |
+
+#### 2FA Login Flow
+
+1. **Login with credentials:**
+
+   ```
+   POST /api/users/auth/2fa/login/
+   Body: {"username": "testuser", "password": "TestPassword123"}
+   Response: {"success": true, "requires_2fa": true, "message": "OTP sent to your email", "email_hint": "tes***@example.com"}
+   ```
+
+2. **Check your email for the 6-digit OTP code**
+
+3. **Verify OTP:**
+
+   ```
+   POST /api/users/auth/2fa/verify/
+   Headers: Cookie: sessionid=<session-id-from-login>
+   Body: {"token": "123456"}
+   Response: {"success": true, "access": "...", "refresh": "..."}
+   ```
+
+4. **Resend OTP (optional):**
+   ```
+   POST /api/users/auth/2fa/resend/
+   Headers: Cookie: sessionid=<session-id-from-login>
+   Response: {"success": true, "message": "OTP sent to your email"}
+   ```
+
+> **Note:** 2FA is enabled by default for all users. OTP codes expire after 5 minutes. Maximum 3 verification attempts per OTP.
 
 ### Mood Tracking
 
@@ -119,12 +180,14 @@ docker run -d \
 ### 1. Register & Login
 
 **Register:**
+
 ```
 POST /api/auth/users/
 Body: {"email": "user@example.com", "username": "testuser", "password": "TestPassword123"}
 ```
 
 **Login:**
+
 ```
 POST /api/auth/jwt/create/
 Body: {"username": "testuser", "password": "TestPassword123"}
