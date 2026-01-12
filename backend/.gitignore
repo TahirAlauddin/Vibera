@@ -12,6 +12,11 @@ venv/
 staticfiles/
 media/
 
+# Logs
+logs/
+*.logs
+*.log
+
 # VS Code
 .vscode/
 
