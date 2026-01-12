@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "djoser",
-    "vibera",  # Using app name instead of full AppConfig path
+    "vibera.apps.ViberaConfig",  # Using full AppConfig path
     "users",
     "moods",
     "social",
@@ -81,20 +81,25 @@ WSGI_APPLICATION = "vibera.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
+DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
+
+# Base database configuration
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv("DB_ENGINE"),
-        "NAME": os.getenv("DB_NAME"),
+        "ENGINE": DB_ENGINE,
+        "NAME": os.getenv("DB_NAME", BASE_DIR / "db.sqlite3"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": os.getenv("DB_HOST"),
         "PORT": os.getenv("DB_PORT"),
-        # Database logging configuration
-        "OPTIONS": {
-            "connect_timeout": 10,
-        },
     }
 }
+
+# Add PostgreSQL-specific options only for PostgreSQL
+if "postgresql" in DB_ENGINE:
+    DATABASES["default"]["OPTIONS"] = {
+        "connect_timeout": 10,
+    }
 
 # Database logging configuration
 DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
