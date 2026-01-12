@@ -5,8 +5,8 @@
 import { getAccessToken, isTokenExpired } from './auth';
 import { refreshToken } from './auth-api';
 
-// Get API base URL from environment variable
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+// Get API base URL from environment variable, default to localhost
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 /**
  * Options for apiFetch
