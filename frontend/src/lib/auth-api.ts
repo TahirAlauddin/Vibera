@@ -6,7 +6,7 @@
 import { setTokens, clearTokens, getAccessToken, getRefreshToken } from './auth';
 
 // Get API base URL from environment variable, default to localhost
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
 
 /**
  * Response type for JWT token creation (login)
