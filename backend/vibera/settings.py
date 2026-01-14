@@ -18,7 +18,35 @@ from pathlib import Path
 load_dotenv()
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+# Database logging configuration
+DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
+WSGI_APPLICATION = "vibera.wsgi.application"
+# Database
+# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
+# Custom User Model
+AUTH_USER_MODEL = "users.User"
+# Internationalization
+# https://docs.djangoproject.com/en/6.0/topics/i18n/
 
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
+USE_I18N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/6.0/howto/static-files/
+
+STATIC_URL = "static/"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# Environment variables
+LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
+LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
+LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', str(5 * 1024 * 1024)))  # Default: 5MB
+ENABLE_SIZE_ROTATION = os.getenv('ENABLE_SIZE_ROTATION', 'false').lower() == 'true'
+
+# Get log directory
+LOG_DIR = get_log_directory()
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -42,7 +70,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "djoser",
-    "vibera.apps.ViberaConfig",  # Using full AppConfig path
+    "vibera",  # Using full AppConfig path
     "users",
     "moods",
     "social",
@@ -76,13 +104,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "vibera.wsgi.application"
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
-
 # Base database configuration
 DATABASES = {
     "default": {
@@ -101,8 +122,6 @@ if "postgresql" in DB_ENGINE:
         "connect_timeout": 10,
     }
 
-# Database logging configuration
-DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -123,23 +142,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = "static/"
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django REST Framework
 REST_FRAMEWORK = {
@@ -188,8 +190,6 @@ DJOSER = {
     },
 }
 
-# Custom User Model
-AUTH_USER_MODEL = "users.User"
 
 # ============================================================================
 # LOGGING CONFIGURATION
@@ -202,15 +202,6 @@ AUTH_USER_MODEL = "users.User"
 
 # Import custom logging handlers
 from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler, get_log_directory
-
-# Environment variables
-LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
-LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
-LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', str(5 * 1024 * 1024)))  # Default: 5MB
-ENABLE_SIZE_ROTATION = os.getenv('ENABLE_SIZE_ROTATION', 'false').lower() == 'true'
-
-# Get log directory
-LOG_DIR = get_log_directory()
 
 # Build handlers dictionary conditionally
 LOGGING_HANDLERS = {
