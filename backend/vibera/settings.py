@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "djoser",
-    "vibera",  # Using app name instead of full AppConfig path
+    "vibera.apps.ViberaConfig",
     "users",
     "moods",
     "social",
