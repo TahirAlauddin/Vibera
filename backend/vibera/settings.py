@@ -14,6 +14,7 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+from vibera.logging_handlers import get_log_directory
 
 load_dotenv()
 # Build paths
@@ -201,7 +202,7 @@ DJOSER = {
 # - Date-based rotation is available as an optional handler
 
 # Import custom logging handlers
-from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler, get_log_directory
+from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler
 
 # Build handlers dictionary conditionally
 LOGGING_HANDLERS = {
