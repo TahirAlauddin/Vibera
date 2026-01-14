@@ -27,7 +27,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+allowed_hosts = os.getenv("ALLOWED_HOSTS")
+ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(",")] if allowed_hosts else []
 
 # Application definition
 
@@ -197,27 +198,11 @@ CORS_ALLOWED_ORIGINS = [
 # Allow credentials (cookies, authorization headers) to be included in CORS requests
 CORS_ALLOW_CREDENTIALS = True
 
-# Allow all common HTTP methods
-CORS_ALLOW_METHODS = [
-    "DELETE",
-    "GET",
-    "OPTIONS",
-    "PATCH",
-    "POST",
-    "PUT",
-]
 
-# Allow common headers including Authorization for JWT tokens
+# Allow essential headers for JWT authentication and JSON requests
 CORS_ALLOW_HEADERS = [
-    "accept",
-    "accept-encoding",
     "authorization",
     "content-type",
-    "dnt",
-    "origin",
-    "user-agent",
-    "x-csrftoken",
-    "x-requested-with",
 ]
 
 # ============================================================================
