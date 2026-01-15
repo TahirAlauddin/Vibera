@@ -1,9 +1,10 @@
 'use client'
-import { useState, FormEvent } from 'react'
+import React, { useState, FormEvent, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { signIn } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 
 export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
   const [showPassword, setShowPassword] = useState(false)
@@ -11,8 +12,15 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Redirect if already authenticated (using useEffect to avoid hydration issues)
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push('/')
+    }
+  }, [status, session, router])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -33,11 +41,21 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
     }
 
     try {
-      await login(username.trim(), password)
-      // Redirect to home page on success
-      router.push('/')
+      const result = await signIn('credentials', {
+        username: username.trim(),
+        password: password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Invalid username or password. Please try again.')
+      } else if (result?.ok) {
+        // Redirect to home page on success
+        router.push('/')
+        router.refresh()
+      }
     } catch (err) {
-      // Handle error from login function
+      // Handle error from signIn function
       if (err instanceof Error) {
         setError(err.message)
       } else {
