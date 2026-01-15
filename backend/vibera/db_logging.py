@@ -47,10 +47,6 @@ class LoggingCursorWrapper:
     def execute(self, sql, params=None):
         """
         Execute SQL query with logging.
-        
-        Args:
-            sql: SQL query string
-            params: Query parameters
         """
         start_time = time.time()
         error_occurred = False
@@ -66,9 +62,7 @@ class LoggingCursorWrapper:
             
             # Log database errors
             logger.error(
-                f"Database error: {error_type} - {error_message} | "
-                f"SQL: {self._format_sql(sql)} | "
-                f"Params: {self._format_params(params)}",
+                f"Database error: {error_type} - {error_message} | "f"SQL: {self._format_sql(sql)} | " f"Params: {self._format_params(params)}",
                 exc_info=True
             )
             raise
@@ -78,9 +72,7 @@ class LoggingCursorWrapper:
             # Log slow queries
             if execution_time >= SLOW_QUERY_THRESHOLD_MS:
                 logger.warning(
-                    f"Slow query detected: {execution_time:.2f}ms | "
-                    f"SQL: {self._format_sql(sql)} | "
-                    f"Params: {self._format_params(params)}"
+                    f"Slow query detected: {execution_time:.2f}ms | " f"SQL: {self._format_sql(sql)} | "f"Params: {self._format_params(params)}"
                 )
     
     def executemany(self, sql, param_list):
@@ -105,9 +97,7 @@ class LoggingCursorWrapper:
             
             # Log database errors
             logger.error(
-                f"Database error (executemany): {error_type} - {error_message} | "
-                f"SQL: {self._format_sql(sql)} | "
-                f"Param count: {len(param_list) if param_list else 0}",
+                f"Database error (executemany): {error_type} - {error_message} | "f"SQL: {self._format_sql(sql)} | "f"Param count: {len(param_list) if param_list else 0}",
                 exc_info=True
             )
             raise
@@ -117,9 +107,7 @@ class LoggingCursorWrapper:
             # Log slow queries
             if execution_time >= SLOW_QUERY_THRESHOLD_MS:
                 logger.warning(
-                    f"Slow query detected (executemany): {execution_time:.2f}ms | "
-                    f"SQL: {self._format_sql(sql)} | "
-                    f"Param count: {len(param_list) if param_list else 0}"
+                    f"Slow query detected (executemany): {execution_time:.2f}ms | "f"SQL: {self._format_sql(sql)} | " f"Param count: {len(param_list) if param_list else 0}"
                 )
     
     def _format_sql(self, sql: str) -> str:
@@ -146,10 +134,6 @@ def log_connection_created(sender, connection, **kwargs):
     """
     Log when a database connection is created.
     
-    Args:
-        sender: The database backend class
-        connection: The database connection object
-        **kwargs: Additional keyword arguments
     """
     db_name = connection.settings_dict.get('NAME', 'unknown')
     db_host = connection.settings_dict.get('HOST', 'localhost')
@@ -157,10 +141,7 @@ def log_connection_created(sender, connection, **kwargs):
     db_user = connection.settings_dict.get('USER', 'unknown')
     
     logger.info(
-        f"Database connection created | "
-        f"Database: {db_name} | "
-        f"Host: {db_host}:{db_port} | "
-        f"User: {db_user}"
+        f"Database connection created | "f"Database: {db_name} | "f"Host: {db_host}:{db_port} | "f"User: {db_user}"
     )
     
     # Wrap the cursor method to intercept queries
@@ -183,9 +164,7 @@ def log_connection_created(sender, connection, **kwargs):
             db_name = connection.settings_dict.get('NAME', 'unknown')
             db_host = connection.settings_dict.get('HOST', 'localhost')
             logger.info(
-                f"Database connection closed | "
-                f"Database: {db_name} | "
-                f"Host: {db_host}"
+                f"Database connection closed | "f"Database: {db_name} | "f"Host: {db_host}"
             )
             return connection._original_close()
         
