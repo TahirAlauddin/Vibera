@@ -1,9 +1,13 @@
 'use client'
-import { useState, FormEvent } from 'react'
+import React, { useState, FormEvent, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
+import { signIn } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
+
+// Get API base URL from environment variable
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000'
 
 export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
   const [showPassword, setShowPassword] = useState(false)
@@ -14,8 +18,15 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
   const [passwordRetype, setPasswordRetype] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
-  const { signup } = useAuth()
   const router = useRouter()
+  const { data: session, status } = useSession()
+
+  // Redirect if already authenticated (using useEffect to avoid hydration issues)
+  useEffect(() => {
+    if (status === 'authenticated' && session) {
+      router.push('/')
+    }
+  }, [status, session, router])
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -62,9 +73,53 @@ export default function SignUpPage({ onSwitch }: { onSwitch?: () => void }) {
     }
 
     try {
-      await signup(email.trim(), username.trim(), password, passwordRetype)
-      // Redirect to home page on success (auto-login happens in signup function)
-      router.push('/')
+      // Call Django backend to create user account
+      const response = await fetch(`${API_BASE_URL}/api/auth/users/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          username: username.trim(),
+          password,
+          re_password: passwordRetype,
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        
+        // Extract error messages from backend response
+        const errorMessages: string[] = []
+        for (const [key, value] of Object.entries(errorData)) {
+          if (Array.isArray(value)) {
+            errorMessages.push(...value)
+          } else if (typeof value === 'string') {
+            errorMessages.push(value)
+          }
+        }
+        
+        const errorMessage = errorMessages.length > 0 
+          ? errorMessages.join('. ')
+          : 'Signup failed. Please check your information.'
+        throw new Error(errorMessage)
+      }
+
+      // After successful signup, automatically sign in
+      const result = await signIn('credentials', {
+        username: username.trim(),
+        password: password,
+        redirect: false,
+      })
+
+      if (result?.error) {
+        setError('Account created successfully, but automatic login failed. Please login manually.')
+      } else if (result?.ok) {
+        // Redirect to home page on success
+        router.push('/')
+        router.refresh()
+      }
     } catch (err) {
       // Handle error from signup function
       if (err instanceof Error) {

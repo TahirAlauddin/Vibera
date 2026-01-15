@@ -4,18 +4,21 @@ import { useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/contexts/AuthContext'
+import { useSession, signOut } from 'next-auth/react'
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
-  const { isAuthenticated, user, logout } = useAuth()
+  const { data: session, status } = useSession()
   const router = useRouter()
+  const isAuthenticated = status === 'authenticated'
+  const user = session?.user
 
-  const handleLogout = () => {
-    logout()
+  const handleLogout = async () => {
+    await signOut({ redirect: false })
     setMenuOpen(false)
     router.push('/login')
+    router.refresh()
   }
 
   return (
@@ -57,7 +60,7 @@ export default function Navbar() {
             {/* User info - Desktop */}
             <div className="hidden md:flex items-center gap-2 text-sm text-gray-700">
               <User className="w-4 h-4" />
-              <span className="truncate max-w-[100px]">{user?.username || user?.email}</span>
+              <span className="truncate max-w-[100px]">{user?.username || user?.name || user?.email}</span>
             </div>
 
             {/* Mobile / Tablet Search Icon */}
@@ -126,9 +129,9 @@ export default function Navbar() {
               {user && (
                 <div className="px-3 py-2 border-b border-gray-200 mb-2">
                   <p className="text-sm font-semibold text-gray-900 truncate">
-                    {user.username || user.email}
+                    {user.username || user.name || user.email}
                   </p>
-                  {user.email && user.email !== user.username && (
+                  {user.email && user.email !== user.username && user.email !== user.name && (
                     <p className="text-xs text-gray-500 truncate">{user.email}</p>
                   )}
                 </div>
