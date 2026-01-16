@@ -232,6 +232,9 @@ CORS_ALLOW_HEADERS = [
 # Import custom logging handlers
 from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler
 
+# Get log directory path
+LOG_DIR = get_log_directory()
+
 # Build handlers dictionary conditionally
 LOGGING_HANDLERS = {
     'stdout': {
