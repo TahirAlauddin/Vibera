@@ -16,7 +16,6 @@ import os
 from pathlib import Path
 from vibera.logging_handlers import get_log_directory
 
-load_dotenv()
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
 # Database logging configuration
@@ -46,17 +45,27 @@ LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
 LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', str(5 * 1024 * 1024)))  # Default: 5MB
 ENABLE_SIZE_ROTATION = os.getenv('ENABLE_SIZE_ROTATION', 'true').lower() == 'true'
 
-# Get log directory
-LOG_DIR = get_log_directory()
+# Load environment variables from .env file in the backend directory
+env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
+
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is required. Please set it in your .env file.")
+
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in (os.getenv("ALLOWED_HOSTS") or "").split(",")
+    if host.strip()
+]
+
 
 # Application definition
 
@@ -67,6 +76,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
@@ -79,6 +89,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -191,6 +202,23 @@ DJOSER = {
     },
 }
 
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in (os.getenv("CORS_ALLOWED_ORIGINS") or "").split(",")
+    if origin.strip()
+]
+
+# Allow credentials (cookies, authorization headers) to be included in CORS requests
+CORS_ALLOW_CREDENTIALS = True
+
+
+# Allow essential headers for JWT authentication and JSON requests
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+]
 
 # ============================================================================
 # LOGGING CONFIGURATION

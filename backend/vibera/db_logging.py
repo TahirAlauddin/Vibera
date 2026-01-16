@@ -44,6 +44,14 @@ class LoggingCursorWrapper:
         """Delegate attribute access to the underlying cursor."""
         return getattr(self.cursor, attr)
     
+    def __enter__(self):
+        """Support context manager protocol."""
+        return self
+    
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """Support context manager protocol."""
+        return False
+    
     def execute(self, sql, params=None):
         """
         Execute SQL query with logging.
