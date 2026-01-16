@@ -15,9 +15,12 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 
-load_dotenv()
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file in the backend directory
+env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,10 +28,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is required. Please set it in your .env file.")
+
 DEBUG = True
 
-allowed_hosts = os.getenv("ALLOWED_HOSTS")
-ALLOWED_HOSTS = [host.strip() for host in allowed_hosts.split(",")] if allowed_hosts else []
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in (os.getenv("ALLOWED_HOSTS") or "").split(",")
+    if host.strip()
+]
+
 
 # Application definition
 
@@ -191,8 +201,9 @@ AUTH_USER_MODEL = "users.User"
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
+    origin.strip()
+    for origin in (os.getenv("CORS_ALLOWED_ORIGINS") or "").split(",")
+    if origin.strip()
 ]
 
 # Allow credentials (cookies, authorization headers) to be included in CORS requests
