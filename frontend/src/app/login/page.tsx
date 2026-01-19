@@ -18,7 +18,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
   // Redirect if already authenticated (using useEffect to avoid hydration issues)
   useEffect(() => {
     if (status === 'authenticated' && session) {
-      router.push('/')
+      router.push('/home')
     }
   }, [status, session, router])
 
@@ -51,7 +51,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
         setError('Invalid username or password. Please try again.')
       } else if (result?.ok) {
         // Redirect to home page on success
-        router.push('/')
+        router.push('/home')
         router.refresh()
       }
     } catch (err) {
