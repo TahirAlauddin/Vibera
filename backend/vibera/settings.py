@@ -135,6 +135,17 @@ if "postgresql" in DB_ENGINE:
     }
 
 
+# Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -202,6 +213,17 @@ DJOSER = {
     },
 }
 
+# Custom User Model
+AUTH_USER_MODEL = "users.User"
+
+# OTP Settings
+OTP_EXPIRY_MINUTES = 5 # otp expires in 5 minutes
+OTP_MAX_ATTEMPTS = 3
+
+# Session Settings (for 2FA pending state)
+# https://docs.djangoproject.com/en/6.0/ref/settings/#sessions
+SESSION_COOKIE_AGE = 300  # 5 minutes session timeout
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session ends when browser closes
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [

@@ -21,3 +21,4 @@ logs/
 .vscode/
 
 pull_request.md
+.cursorignore
