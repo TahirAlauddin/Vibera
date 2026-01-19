@@ -49,14 +49,6 @@ class RequestResponseLoggingMiddleware:
         # Store start time for duration calculation
         request._start_time = time.time()
         
-        # Log incoming request
-        # QueueHandler ensures this returns immediately without blocking
-        request_data = RequestResponseLogger.format_request(request)
-        logger.info(
-            f"Incoming request: {request.method} {request.path} | "
-            f"User: {request_data['user']} | IP: {request_data['ip_address']}"
-        )
-        
         # Process request through the middleware chain
         try:
             response = self.get_response(request)
@@ -91,11 +83,6 @@ class RequestResponseLoggingMiddleware:
             )
         elif response.status_code >= 400:
             logger.warning(
-                f"Outgoing response: {request.method} {request.path} | "
-                f"Status: {response.status_code} | Duration: {response_data['duration_ms']}ms"
-            )
-        else:
-            logger.info(
                 f"Outgoing response: {request.method} {request.path} | "
                 f"Status: {response.status_code} | Duration: {response_data['duration_ms']}ms"
             )

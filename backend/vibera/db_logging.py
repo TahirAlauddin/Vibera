@@ -140,18 +140,9 @@ class LoggingCursorWrapper:
 @receiver(connection_created)
 def log_connection_created(sender, connection, **kwargs):
     """
-    Log when a database connection is created.
+    Set up query logging wrapper when a database connection is created.
     
     """
-    db_name = connection.settings_dict.get('NAME', 'unknown')
-    db_host = connection.settings_dict.get('HOST', 'localhost')
-    db_port = connection.settings_dict.get('PORT', '5432')
-    db_user = connection.settings_dict.get('USER', 'unknown')
-    
-    logger.info(
-        f"Database connection created | "f"Database: {db_name} | "f"Host: {db_host}:{db_port} | "f"User: {db_user}"
-    )
-    
     # Wrap the cursor method to intercept queries
     if not hasattr(connection, '_original_cursor'):
         connection._original_cursor = connection.cursor
@@ -168,12 +159,7 @@ def log_connection_created(sender, connection, **kwargs):
         connection._original_close = connection.close
         
         def wrapped_close():
-            """Log connection closure before closing."""
-            db_name = connection.settings_dict.get('NAME', 'unknown')
-            db_host = connection.settings_dict.get('HOST', 'localhost')
-            logger.info(
-                f"Database connection closed | "f"Database: {db_name} | "f"Host: {db_host}"
-            )
+            """Close database connection."""
             return connection._original_close()
         
         connection.close = wrapped_close

@@ -35,25 +35,8 @@ class MoodLogView(APIView):
 
     def get(self, request):
         """Retrieve all mood logs for the authenticated user"""
-        logger.info(
-            "Fetching mood logs",
-            extra={
-                'type': 'mood_log_fetch',
-                'user_id': request.user.id,
-            }
-        )
-        
         moods = Mood.objects.filter(user=request.user)
         serializer = MoodLogSerializer(moods, many=True)
-        
-        logger.info(
-            "Mood logs retrieved successfully",
-            extra={
-                'type': 'mood_log_fetch_success',
-                'user_id': request.user.id,
-                'count': moods.count(),
-            }
-        )
         
         return Response(
             {"count": moods.count(), "data": serializer.data}, status=status.HTTP_200_OK
@@ -61,26 +44,10 @@ class MoodLogView(APIView):
 
     def post(self, request):
         """Create a new mood log for the authenticated user"""
-        logger.info(
-            "Creating mood log",
-            extra={
-                'type': 'mood_log_create',
-                'user_id': request.user.id,
-            }
-        )
-        
         serializer = MoodLogSerializer(data=request.data, context={"request": request})
 
         if serializer.is_valid():
             mood = serializer.save()
-            logger.info(
-                "Mood log created successfully",
-                extra={
-                    'type': 'mood_log_create_success',
-                    'user_id': request.user.id,
-                    'mood_id': mood.id,
-                }
-            )
             return Response(
                 {"message": "Mood logged successfully", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
