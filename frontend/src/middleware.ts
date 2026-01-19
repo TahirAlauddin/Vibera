@@ -5,15 +5,15 @@ import { auth } from '@/auth'
 /**
  * Middleware to protect routes and handle authentication redirects
  * 
- * Public routes: /login, /signup
+ * Public routes: /, /login, /signup
  * Protected routes: All other routes (except public assets)
  */
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Define public routes that don't require authentication
-  const publicRoutes = ['/login', '/signup']
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  const publicRoutes = ['/', '/login', '/signup']
+  const isPublicRoute = publicRoutes.some(route => pathname === route || (route !== '/' && pathname.startsWith(route)))
 
   // Allow public routes and static files
   if (isPublicRoute || pathname.startsWith('/_next') || pathname.startsWith('/api/auth') || pathname.startsWith('/assets')) {
@@ -31,8 +31,8 @@ export async function middleware(request: NextRequest) {
   }
 
   // If authenticated and trying to access login/signup, redirect to home
-  if (session && isPublicRoute) {
-    return NextResponse.redirect(new URL('/', request.url))
+  if (session && isPublicRoute && (pathname.startsWith('/login') || pathname.startsWith('/signup'))) {
+    return NextResponse.redirect(new URL('/home', request.url))
   }
 
   return NextResponse.next()
