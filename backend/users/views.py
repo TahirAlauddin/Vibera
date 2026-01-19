@@ -3,29 +3,14 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
-from .utils import create_and_send_otp, verify_user_otp
-
-
+from .utils import create_and_send_otp, verify_user_otp, mask_email
 User = get_user_model()
 
 
-def mask_email(email: str) -> str:
-    """
-    Mask email for display: john.doe@example.com → joh***@example.com
-    """
-    if not email or "@" not in email:
-        return "***"
-
-    local, domain = email.split("@", 1)
-    if len(local) <= 2:
-        masked_local = local[0] + "***"
-    else:
-        masked_local = local[:3] + "***"
-
-    return f"{masked_local}@{domain}"
 
 
-class LoginStep1View(APIView):
+
+class OtpRequestView(APIView):
     """
     Step 1: Username + Password → Send OTP
     POST /api/users/auth/2fa/login/
@@ -99,7 +84,7 @@ class LoginStep1View(APIView):
         )
 
 
-class LoginStep2View(APIView):
+class OtpVerifyView(APIView):
     """
     Step 2: Verify OTP → Return JWT tokens
     POST /api/users/auth/2fa/verify/
@@ -158,7 +143,7 @@ class LoginStep2View(APIView):
             return Response({"success": False, "error": error_message}, status=400)
 
 
-class ResendOTPView(APIView):
+class OtpResendView(APIView):
     """
     Resend OTP to user's email
     POST /api/users/auth/2fa/resend/

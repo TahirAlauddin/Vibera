@@ -1,9 +1,9 @@
 from django.urls import path
-from .views import LoginStep1View, LoginStep2View, ResendOTPView
+from .views import OtpRequestView, OtpVerifyView, OtpResendView
 
 urlpatterns = [
     # 2FA Authentication Endpoints
-    path("auth/2fa/login/", LoginStep1View.as_view(), name="otp-request"),
-    path("auth/2fa/verify/", LoginStep2View.as_view(), name="otp-verify"),
-    path("auth/2fa/resend/", ResendOTPView.as_view(), name="otp-resend"),
+    path("auth/2fa/login/", OtpRequestView.as_view(), name="otp-request"),
+    path("auth/2fa/verify/", OtpVerifyView.as_view(), name="otp-verify"),
+    path("auth/2fa/resend/", OtpResendView.as_view(), name="otp-resend"),
 ]

@@ -3,6 +3,22 @@ from django.core.mail import send_mail
 from .models import EmailOTP
 
 
+def mask_email(email: str) -> str:
+    """
+    Mask email for display: john.doe@example.com → joh***@example.com
+    """
+    if not email or "@" not in email:
+        return "***"
+
+    local, domain = email.split("@", 1)
+    if len(local) <= 2:
+        masked_local = local[0] + "***"
+    else:
+        masked_local = local[:3] + "***"
+
+    return f"{masked_local}@{domain}"
+
+    
 def send_otp_email(user, otp_code: str) -> bool:
     """
     Send OTP code to user's email.
