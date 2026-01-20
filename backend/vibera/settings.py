@@ -43,7 +43,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
 LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
 LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', str(5 * 1024 * 1024)))  # Default: 5MB
-ENABLE_SIZE_ROTATION = os.getenv('ENABLE_SIZE_ROTATION', 'true').lower() == 'true'
 
 # Load environment variables from .env file in the backend directory
 env_path = BASE_DIR / ".env"
@@ -242,25 +241,29 @@ LOGGING_HANDLERS = {
         'formatter': LOG_FORMATTER,
         'stream': 'ext://sys.stdout',
     },
-    'file_size': {
-        '()': SizeRotatingFileHandler,
-        'log_dir': LOG_DIR,
-        'max_bytes': LOG_MAX_BYTES,
-        'formatter': LOG_FORMATTER,
-        'level': 'DEBUG',
-    },
 }
 
-# Add date-based handler if explicitly enabled (optional)
+# Determine file handler: date-based (if enabled) or size-based (default)
 ENABLE_DATE_ROTATION = os.getenv('ENABLE_DATE_ROTATION', 'false').lower() == 'true'
 if ENABLE_DATE_ROTATION:
-    LOGGING_HANDLERS['file_date'] = {
+    LOGGING_HANDLERS['file'] = {
         '()': DateRotatingFileHandler,
         'log_dir': LOG_DIR,
         'retention_days': LOG_RETENTION_DAYS,
         'formatter': LOG_FORMATTER,
         'level': 'DEBUG',
     }
+    FILE_HANDLER = 'file'
+else:
+    # Size-based rotation is the default
+    LOGGING_HANDLERS['file'] = {
+        '()': SizeRotatingFileHandler,
+        'log_dir': LOG_DIR,
+        'max_bytes': LOG_MAX_BYTES,
+        'formatter': LOG_FORMATTER,
+        'level': 'DEBUG',
+    }
+    FILE_HANDLER = 'file'
 
 LOGGING = {
     'version': 1,
@@ -301,88 +304,88 @@ LOGGING = {
     'handlers': LOGGING_HANDLERS,
     
     # Loggers
-    # All loggers write to both stdout and file_size handlers
+    # All loggers write to both stdout and file handlers
     'loggers': {
         # Root logger: catches all unhandled logs from third-party libraries
         '': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Django framework: middleware, templates, cache
         'django': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Django requests: HTTP requests and responses
         'django.request': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': 'INFO',
             'propagate': False,
         },
         
         # Django server: startup, shutdown, console output
         'django.server': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': 'INFO',
             'propagate': False,
         },
         
         # Django database: SQL queries and connections
         'django.db.backends': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': 'DEBUG' if DEBUG else 'WARNING',
             'propagate': False,
         },
         
         # PostgreSQL-specific logging: connections, slow queries, errors
         'django.db.backends.postgresql': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': 'INFO',  # Always log connections and errors, even in production
             'propagate': False,
         },
         
         # Vibera middleware: request/response logging and timing
         'vibera.middleware': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Users app: registration, authentication, profile management
         'users': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Moods app: mood tracking and journal entries
         'moods': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # Social app: social interactions and community features
         'social': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         
         # REST Framework: API authentication, permissions, viewsets
         'rest_framework': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': 'INFO',
             'propagate': False,
         },
         
         # Django security: CSRF failures, suspicious activities
         'django.security': {
-            'handlers': ['stdout', 'file_size'],
+            'handlers': ['stdout', FILE_HANDLER],
             'level': 'WARNING',
             'propagate': False,
         },
