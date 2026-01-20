@@ -18,6 +18,11 @@ from vibera.logging_handlers import get_log_directory
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file FIRST (before any os.getenv calls)
+env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
+
 # Database logging configuration
 DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
 WSGI_APPLICATION = "vibera.wsgi.application"
@@ -40,14 +45,10 @@ USE_TZ = True
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Environment variables
-LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
-LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
-LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', str(5 * 1024 * 1024)))  # Default: 5MB
-ENABLE_SIZE_ROTATION = os.getenv('ENABLE_SIZE_ROTATION', 'true').lower() == 'true'
-
-# Load environment variables from .env file in the backend directory
-env_path = BASE_DIR / ".env"
-load_dotenv(dotenv_path=env_path)
+LOG_FORMATTER = os.getenv("LOG_FORMATTER", "verbose").lower()
+LOG_RETENTION_DAYS = int(os.getenv("LOG_RETENTION_DAYS", "30"))
+LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", str(5 * 1024 * 1024)))  # Default: 5MB
+ENABLE_SIZE_ROTATION = os.getenv("ENABLE_SIZE_ROTATION", "true").lower() == "true"
 
 
 # Quick-start development settings - unsuitable for production
@@ -56,7 +57,9 @@ load_dotenv(dotenv_path=env_path)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable is required. Please set it in your .env file.")
+    raise ValueError(
+        "SECRET_KEY environment variable is required. Please set it in your .env file."
+    )
 
 DEBUG = True
 
@@ -165,7 +168,6 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-
 # Django REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -217,7 +219,7 @@ DJOSER = {
 AUTH_USER_MODEL = "users.User"
 
 # OTP Settings
-OTP_EXPIRY_MINUTES = 5 # otp expires in 5 minutes
+OTP_EXPIRY_MINUTES = 5  # otp expires in 5 minutes
 OTP_MAX_ATTEMPTS = 3
 
 # Session Settings (for 2FA pending state)
@@ -245,7 +247,7 @@ CORS_ALLOW_HEADERS = [
 # ============================================================================
 # LOGGING CONFIGURATION
 # ============================================================================
-# 
+#
 # Dual output logging:
 # - All loggers write to both stdout (for Docker) and files (for persistence)
 # - Size-based rotation is the default file handler
@@ -259,154 +261,137 @@ LOG_DIR = get_log_directory()
 
 # Build handlers dictionary conditionally
 LOGGING_HANDLERS = {
-    'stdout': {
-        'class': 'logging.StreamHandler',
-        'formatter': LOG_FORMATTER,
-        'stream': 'ext://sys.stdout',
+    "stdout": {
+        "class": "logging.StreamHandler",
+        "formatter": LOG_FORMATTER,
+        "stream": "ext://sys.stdout",
     },
-    'file_size': {
-        '()': SizeRotatingFileHandler,
-        'log_dir': LOG_DIR,
-        'max_bytes': LOG_MAX_BYTES,
-        'formatter': LOG_FORMATTER,
-        'level': 'DEBUG',
+    "file_size": {
+        "()": SizeRotatingFileHandler,
+        "log_dir": LOG_DIR,
+        "max_bytes": LOG_MAX_BYTES,
+        "formatter": LOG_FORMATTER,
+        "level": "DEBUG",
     },
 }
 
 # Add date-based handler if explicitly enabled (optional)
-ENABLE_DATE_ROTATION = os.getenv('ENABLE_DATE_ROTATION', 'false').lower() == 'true'
+ENABLE_DATE_ROTATION = os.getenv("ENABLE_DATE_ROTATION", "false").lower() == "true"
 if ENABLE_DATE_ROTATION:
-    LOGGING_HANDLERS['file_date'] = {
-        '()': DateRotatingFileHandler,
-        'log_dir': LOG_DIR,
-        'retention_days': LOG_RETENTION_DAYS,
-        'formatter': LOG_FORMATTER,
-        'level': 'DEBUG',
+    LOGGING_HANDLERS["file_date"] = {
+        "()": DateRotatingFileHandler,
+        "log_dir": LOG_DIR,
+        "retention_days": LOG_RETENTION_DAYS,
+        "formatter": LOG_FORMATTER,
+        "level": "DEBUG",
     }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    
+    "version": 1,
+    "disable_existing_loggers": False,
     # Formatters
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        
         # Balanced: timestamp, level, logger name, message
-        'detailed': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "detailed": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        
         # Minimal: level and message only
-        'simple': {
-            'format': '[{levelname:8}] {message}',
-            'style': '{',
+        "simple": {
+            "format": "[{levelname:8}] {message}",
+            "style": "{",
         },
-        
         # Error format: includes file path and line number
-        'error': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | {pathname}:{lineno} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "error": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | {pathname}:{lineno} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    
     # Handlers
     # StreamHandler: Writes directly to stdout for Docker log collection
     # File handlers: Write to files with rotation for persistence
-    'handlers': LOGGING_HANDLERS,
-    
+    "handlers": LOGGING_HANDLERS,
     # Loggers
     # All loggers write to both stdout and file_size handlers
-    'loggers': {
+    "loggers": {
         # Root logger: catches all unhandled logs from third-party libraries
-        '': {
-            'handlers': ['stdout', 'file_size'],
-            'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "": {
+            "handlers": ["stdout", "file_size"],
+            "level": os.getenv("ROOT_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Django framework: middleware, templates, cache
-        'django': {
-            'handlers': ['stdout', 'file_size'],
-            'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "django": {
+            "handlers": ["stdout", "file_size"],
+            "level": os.getenv("FRAMEWORK_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Django requests: HTTP requests and responses
-        'django.request': {
-            'handlers': ['stdout', 'file_size'],
-            'level': 'INFO',
-            'propagate': False,
+        "django.request": {
+            "handlers": ["stdout", "file_size"],
+            "level": "INFO",
+            "propagate": False,
         },
-        
         # Django server: startup, shutdown, console output
-        'django.server': {
-            'handlers': ['stdout', 'file_size'],
-            'level': 'INFO',
-            'propagate': False,
+        "django.server": {
+            "handlers": ["stdout", "file_size"],
+            "level": "INFO",
+            "propagate": False,
         },
-        
         # Django database: SQL queries and connections
-        'django.db.backends': {
-            'handlers': ['stdout', 'file_size'],
-            'level': 'DEBUG' if DEBUG else 'WARNING',
-            'propagate': False,
+        "django.db.backends": {
+            "handlers": ["stdout", "file_size"],
+            "level": "DEBUG" if DEBUG else "WARNING",
+            "propagate": False,
         },
-        
         # PostgreSQL-specific logging: connections, slow queries, errors
-        'django.db.backends.postgresql': {
-            'handlers': ['stdout', 'file_size'],
-            'level': 'INFO',  # Always log connections and errors, even in production
-            'propagate': False,
+        "django.db.backends.postgresql": {
+            "handlers": ["stdout", "file_size"],
+            "level": "INFO",  # Always log connections and errors, even in production
+            "propagate": False,
         },
-        
         # Vibera middleware: request/response logging and timing
-        'vibera.middleware': {
-            'handlers': ['stdout', 'file_size'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "vibera.middleware": {
+            "handlers": ["stdout", "file_size"],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Users app: registration, authentication, profile management
-        'users': {
-            'handlers': ['stdout', 'file_size'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "users": {
+            "handlers": ["stdout", "file_size"],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Moods app: mood tracking and journal entries
-        'moods': {
-            'handlers': ['stdout', 'file_size'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "moods": {
+            "handlers": ["stdout", "file_size"],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Social app: social interactions and community features
-        'social': {
-            'handlers': ['stdout', 'file_size'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "social": {
+            "handlers": ["stdout", "file_size"],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # REST Framework: API authentication, permissions, viewsets
-        'rest_framework': {
-            'handlers': ['stdout', 'file_size'],
-            'level': 'INFO',
-            'propagate': False,
+        "rest_framework": {
+            "handlers": ["stdout", "file_size"],
+            "level": "INFO",
+            "propagate": False,
         },
-        
         # Django security: CSRF failures, suspicious activities
-        'django.security': {
-            'handlers': ['stdout', 'file_size'],
-            'level': 'WARNING',
-            'propagate': False,
+        "django.security": {
+            "handlers": ["stdout", "file_size"],
+            "level": "WARNING",
+            "propagate": False,
         },
     },
 }

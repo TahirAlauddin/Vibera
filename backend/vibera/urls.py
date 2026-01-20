@@ -28,6 +28,8 @@ urlpatterns = [
     path("api/users/", include("users.urls")),
     # Moods endpoints
     path("api/moods/", include("moods.urls")),
+    # Social endpoints
+    path("api/social/", include("social.urls")),
     # Test endpoint
     path("api/test/", moods_views.test_api, name="test_api"),
 ]

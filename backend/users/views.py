@@ -4,10 +4,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate, get_user_model
 from .utils import create_and_send_otp, verify_user_otp, mask_email
+
 User = get_user_model()
-
-
-
 
 
 class OtpRequestView(APIView):

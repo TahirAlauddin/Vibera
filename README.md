@@ -99,6 +99,14 @@ API Base URL: `http://127.0.0.1:8000/`
 - `note` - Journal text
 - `created_at`, `updated_at`
 
+### Follow Model
+
+- `follower` - ForeignKey to User (the user who follows)
+- `following` - ForeignKey to User (the user being followed)
+- `created_at` - Timestamp when follow was created
+- **Constraints**: Unique together (follower, following), Self-follow prevention
+- **Indexes**: Optimized for follower/following lookups and relationship checks
+
 The JWT endpoints are configured at `/api/auth/`:
 
 - User registration, login, and profile management via Djoser
@@ -309,6 +317,17 @@ docker logs --tail 50 vibera-postgres
 | Create Mood Log | POST   | `/api/moods/` | Yes           |
 | Get All Moods   | GET    | `/api/moods/` | Yes           |
 
+### Social (Follow/Unfollow)
+
+| Action                    | Method | URL                              | Auth Required |
+| ------------------------- | ------ | -------------------------------- | ------------- |
+| Follow a User             | POST   | `/api/social/follow/<user_id>/`  | Yes           |
+| Unfollow a User           | DELETE | `/api/social/unfollow/<user_id>/`| Yes           |
+| Get My Followers          | GET    | `/api/social/followers/`         | Yes           |
+| Get My Following          | GET    | `/api/social/following/`         | Yes           |
+| Get User's Followers      | GET    | `/api/social/followers/<user_id>/` | Yes         |
+| Get User's Following      | GET    | `/api/social/following/<user_id>/` | Yes         |
+
 ## Testing with Postman
 
 ### 1. Register & Login
@@ -343,6 +362,38 @@ Body: {"emoji": "😊", "reason": "Had a great day!"}
 ```
 GET /api/moods/
 Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+### 4. Follow a User (Requires Token)
+
+```
+POST /api/social/follow/2/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"id": 1, "follower": {...}, "following": {...}, "created_at": "..."}
+```
+
+### 5. Unfollow a User (Requires Token)
+
+```
+DELETE /api/social/unfollow/2/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"message": "Successfully unfollowed username"}
+```
+
+### 6. Get Followers (Requires Token)
+
+```
+GET /api/social/followers/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"count": 2, "results": [...]}
+```
+
+### 7. Get Following (Requires Token)
+
+```
+GET /api/social/following/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"count": 1, "results": [...]}
 ```
 
 ## JWT Configuration
