@@ -9,13 +9,14 @@ This Django application uses file-based logging with automatic rotation. Logs ar
 ```
 backend/
   ├── logs/              # Log files directory (created automatically)
-  │   ├── 2026-Jan-06.logs  # Date-based log files (if LOG_ROTATION_TYPE=date)
-  │   ├── 2026-jan-07.logs
-  │   ├── vibera.log     # Size-based log file (if LOG_ROTATION_TYPE=size)
+  │   ├── 2026-Jan-06.logs  # Date-based log files (if ENABLE_DATE_ROTATION=true)
+  │   ├── 2026-Jan-07.logs
+  │   ├── vibera.log     # Size-based log file (default, if ENABLE_DATE_ROTATION=false)
   │   └── errors.log     # Error-only log file (always present)
   └── vibera/
       ├── logging_config.py
       ├── logging_handlers.py
+      ├── db_logging.py   # PostgreSQL-specific logging
       └── settings.py
 ```
 
@@ -25,34 +26,30 @@ Configure logging behavior via environment variables:
 
 ### Rotation Type
 
-- `LOG_ROTATION_TYPE`: `'date'` or `'size'` (default: `'date'`)
-  - `'date'`: Creates new log file each day (format: `2026-Jan-07.logs`)
-  - `'size'`: Rotates when file reaches specified size
+- `ENABLE_DATE_ROTATION`: `'true'` or `'false'` (default: `'false'`)
+  - `'true'`: Creates new log file each day (format: `2026-Jan-07.logs`)
+  - `'false'`: Uses size-based rotation (default behavior)
+  - When `'false'`, logs rotate by size using `LOG_MAX_BYTES`
 
 ### Formatter
 
-- `LOG_FORMATTER`: `'verbose'`, `'detailed'`, or `'simple'` (default: `'verbose'`)
+- `LOG_FORMATTER`: `'verbose'`, `'detailed'`, `'simple'`, or `'error'` (default: `'verbose'`)
   - `'verbose'`: Most detailed - includes process, thread, logger name
   - `'detailed'`: Includes timestamp, level, logger name, message
   - `'simple'`: Minimal - only level and message
+  - `'error'`: Includes file path and line number - useful for debugging
 
-### Retention and Backup Settings
+### Retention and Size Settings
 
 - `LOG_RETENTION_DAYS`: Number of days to keep date-based log files (default: `30`)
-
   - Set to `0` to keep all log files indefinitely
   - Old files are automatically deleted after this period
-  - Only applies to date-based rotation
+  - Only applies to date-based rotation (`ENABLE_DATE_ROTATION=true`)
 
-- `LOG_BACKUP_COUNT`: Number of backup files to keep for size-based rotation (default: `10`)
-  - Set to `0` to disable backups (old files are overwritten)
-  - Applies to size-based rotation and error log files
-  - Example: With `LOG_BACKUP_COUNT=5`, you'll have `vibera.log`, `vibera.log.1`, ..., `vibera.log.5`
-
-### Size-Based Rotation Settings
-
-- `LOG_FILE_SIZE_MB`: Size in MB before rotation (default: `5`)
-  - Common values: `5` or `10`
+- `LOG_MAX_BYTES`: Maximum size in bytes before size-based rotation (default: `5242880` = 5MB)
+  - Common values: `5242880` (5MB) or `10485760` (10MB)
+  - Only applies when `ENABLE_DATE_ROTATION=false` (default)
+  - Note: Size-based rotation does not create backup files (old files are overwritten)
 
 ### Log Levels
 
@@ -70,7 +67,8 @@ The application uses a hierarchical logger structure organized by domain:
 - **`django`**: Core Django framework operations
 - **`django.request`**: HTTP request/response handling
 - **`django.server`**: Development server lifecycle
-- **`django.db.backends`**: Database queries and connections
+- **`django.db.backends`**: Database queries and connections (all database backends)
+- **`django.db.backends.postgresql`**: PostgreSQL-specific logging (connections, slow queries, errors)
 - **`django.security`**: Security events and threats
 - **`rest_framework`**: Django REST Framework API operations
 
@@ -87,10 +85,33 @@ The application uses a hierarchical logger structure organized by domain:
 
 ## Configuration Examples
 
-### Date-Based Rotation (Default)
+### Size-Based Rotation (Default)
 
 ```bash
-export LOG_ROTATION_TYPE=date
+# No configuration needed - this is the default
+# Or explicitly set:
+export ENABLE_DATE_ROTATION=false
+export LOG_MAX_BYTES=5242880  # 5MB in bytes
+export LOG_FORMATTER=verbose
+```
+
+This creates:
+
+- `vibera.log` (current log file)
+- When size limit is reached, the file is overwritten (no backup files are created)
+
+### Size-Based Rotation (10MB)
+
+```bash
+export ENABLE_DATE_ROTATION=false
+export LOG_MAX_BYTES=10485760  # 10MB in bytes
+export LOG_FORMATTER=detailed
+```
+
+### Date-Based Rotation
+
+```bash
+export ENABLE_DATE_ROTATION=true
 export LOG_FORMATTER=verbose
 export LOG_RETENTION_DAYS=30  # Keep last 30 days of logs
 ```
@@ -103,32 +124,6 @@ This creates daily log files like:
 
 **Automatic Cleanup**: Files older than `LOG_RETENTION_DAYS` are automatically deleted. Set to `0` to keep all files.
 
-### Size-Based Rotation (5MB)
-
-```bash
-export LOG_ROTATION_TYPE=size
-export LOG_FILE_SIZE_MB=5
-export LOG_BACKUP_COUNT=10  # Keep last 10 rotated files
-export LOG_FORMATTER=detailed
-```
-
-This creates:
-
-- `vibera.log` (current log file)
-- `vibera.log.1` (first backup)
-- `vibera.log.2` (second backup)
-- ... up to `vibera.log.10`
-
-**Backup Control**: Set `LOG_BACKUP_COUNT=0` to disable backups (old files overwritten). Default is `10`.
-
-### Size-Based Rotation (10MB)
-
-```bash
-export LOG_ROTATION_TYPE=size
-export LOG_FILE_SIZE_MB=10
-export LOG_FORMATTER=simple
-```
-
 ## Log Files
 
 ### Main Log Files
@@ -136,16 +131,18 @@ export LOG_FORMATTER=simple
 - **Date-based**: `{year}-{month}-{day}.logs` (e.g., `2026-Jan-07.logs`)
   - Automatically cleaned up after `LOG_RETENTION_DAYS` (default: 30 days)
   - Set `LOG_RETENTION_DAYS=0` to keep all files indefinitely
-- **Size-based**: `vibera.log` with backups (`vibera.log.1`, `vibera.log.2`, etc.)
-  - Number of backups controlled by `LOG_BACKUP_COUNT` (default: 10)
-  - Set `LOG_BACKUP_COUNT=0` to disable backups
+  - Only created when `ENABLE_DATE_ROTATION=true`
+- **Size-based**: `vibera.log` (default)
+  - Rotates when file reaches `LOG_MAX_BYTES` (default: 5MB)
+  - No backup files are created - old file is overwritten when size limit is reached
+  - This is the default rotation method
 
 ### Error Log File
 
 - **Always present**: `errors.log`
 - Contains only ERROR and CRITICAL level messages
 - Rotates at 10MB
-- Number of backups controlled by `LOG_BACKUP_COUNT` (default: 10)
+- No backup files are created
 
 ## Log Formats
 
@@ -166,6 +163,14 @@ export LOG_FORMATTER=simple
 ```
 [INFO    ] Incoming request: GET /api/moods/ | User: user123 | IP: 192.168.1.1
 ```
+
+### Error Format
+
+```
+[ERROR   ] 2026-12-06 10:30:45 | users.views              | /path/to/users/views.py:42 | Failed to authenticate user: Invalid credentials
+```
+
+**Note:** The error formatter includes the file path and line number, making it easier to locate the source of errors.
 
 ## Using Logging in Your Code
 
@@ -291,14 +296,18 @@ except Exception as e:
 
 ### Automatic Logging (via Middleware)
 
-- All HTTP requests (method, path, user, IP, user agent)
-- All HTTP responses (status code, duration)
-- All exceptions (full traceback, request context)
+- All HTTP responses (status code, duration, method, path)
+  - INFO level for successful responses (2xx)
+  - WARNING level for client errors (4xx)
+  - ERROR level for server errors (5xx)
+- All unhandled exceptions (full traceback, request context, duration)
 
 ### Framework Logging
 
 - Django server startup/shutdown
-- Database queries (only in DEBUG mode)
+- Database queries (only in DEBUG mode for `django.db.backends`)
+- PostgreSQL-specific logging (connections, slow queries, errors) via `django.db.backends.postgresql`
+  - Slow queries are logged when execution time exceeds `DB_SLOW_QUERY_THRESHOLD_MS` (default: 1000ms)
 - Security events (failed logins, etc.)
 - REST Framework events (authentication, permissions)
 
@@ -415,8 +424,8 @@ docker logs <container_name> | grep "Testing Logging"
 
 ### Log files not rotating
 
-1. Check `LOG_ROTATION_TYPE` environment variable
-2. For size-based: Verify `LOG_FILE_SIZE_MB` is set correctly
+1. Check `ENABLE_DATE_ROTATION` environment variable
+2. For size-based: Verify `LOG_MAX_BYTES` is set correctly (in bytes, not MB)
 3. Check file permissions on log directory
 
 ### Too many logs
@@ -428,9 +437,9 @@ docker logs <container_name> | grep "Testing Logging"
 ### Disk space issues
 
 1. Reduce `LOG_RETENTION_DAYS` for date-based rotation (e.g., `7` for last week only)
-2. Reduce `LOG_BACKUP_COUNT` for size-based rotation (e.g., `5` instead of `10`)
-3. Use smaller `LOG_FILE_SIZE_MB` for size-based rotation
-4. Set `LOG_RETENTION_DAYS=7` and `LOG_BACKUP_COUNT=5` for minimal disk usage
+2. Reduce `LOG_MAX_BYTES` for size-based rotation (e.g., `2621440` for 2.5MB instead of 5MB)
+3. Use date-based rotation with shorter retention: `ENABLE_DATE_ROTATION=true` and `LOG_RETENTION_DAYS=7`
+4. Set `LOG_RETENTION_DAYS=7` for minimal disk usage with date-based rotation
 
 ## Log Rotation Details
 
@@ -442,29 +451,35 @@ docker logs <container_name> | grep "Testing Logging"
 - **Configuration**: Set `LOG_RETENTION_DAYS=0` to keep all files indefinitely
 - **Best for**: Daily log analysis, easy date-based searching, automatic cleanup
 
-### Size-Based Rotation
+### Size-Based Rotation (Default)
 
-- **When**: Rotates when file reaches specified size
-- **Format**: `vibera.log` with numbered backups (`vibera.log.1`, `vibera.log.2`, etc.)
-- **Backup**: Keeps last `LOG_BACKUP_COUNT` files (default: 10)
-- **Configuration**: Set `LOG_BACKUP_COUNT=0` to disable backups (overwrites old files)
-- **Best for**: Preventing large files, production environments, controlled backup retention
+- **When**: Rotates when file reaches `LOG_MAX_BYTES` (default: 5MB)
+- **Format**: `vibera.log` (single file, no backups)
+- **Backup**: No backup files are created - old file is overwritten when size limit is reached
+- **Configuration**: Set `LOG_MAX_BYTES` in bytes (default: `5242880` = 5MB)
+- **Best for**: Preventing large files, production environments, minimal disk usage
 
 ## Example Log Output
 
-### Request Log
-
-```
-[INFO    ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Incoming request: GET /api/moods/ | User: user123 | IP: 192.168.1.1
-```
-
-### Response Log
+### Response Log (Success)
 
 ```
 [INFO    ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Outgoing response: GET /api/moods/ | Status: 200 | Duration: 45.23ms
 ```
 
-### Error Log
+### Response Log (Client Error)
+
+```
+[WARNING ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Outgoing response: POST /api/moods/ | Status: 400 | Duration: 12.34ms
+```
+
+### Response Log (Server Error)
+
+```
+[ERROR   ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Outgoing response: POST /api/moods/ | Status: 500 | Duration: 234.56ms
+```
+
+### Exception Log
 
 ```
 [ERROR   ] 2026-12-06 10:30:45 | vibera.middleware | Process:12345 | Thread:MainThread | Unhandled exception: ValueError - Invalid input | Request: POST /api/moods/ | Duration: 12.34ms
@@ -473,4 +488,16 @@ Traceback (most recent call last):
     result = process_data()
   ...
 ValueError: Invalid input
+```
+
+### PostgreSQL Slow Query Log
+
+```
+[WARNING ] 2026-12-06 10:30:45 | django.db.backends.postgresql | Process:12345 | Thread:MainThread | Slow query detected: 1250.50ms | SQL: SELECT * FROM moods_mood WHERE user_id = %s | Params: (123,)
+```
+
+### PostgreSQL Connection Log
+
+```
+[INFO    ] 2026-12-06 10:30:45 | django.db.backends.postgresql | Process:12345 | Thread:MainThread | Database connection established
 ```
