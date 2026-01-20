@@ -10,6 +10,13 @@ import type { NextAuthConfig } from 'next-auth'
 // Get API base URL from environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
+// Validate required environment variables
+if (!API_BASE_URL) {
+  throw new Error(
+    'NEXT_PUBLIC_API_URL environment variable is required. Please set it in your .env file.'
+  )
+}
+
 /**
  * User type from backend
  */
@@ -32,6 +39,11 @@ interface TokenResponse {
 }
 
 /**
+ * Token refresh lock to prevent concurrent refresh attempts
+ */
+let refreshTokenPromise: Promise<string | null> | null = null
+
+/**
  * NextAuth configuration
  */
 export const authConfig = {
@@ -44,7 +56,7 @@ export const authConfig = {
       },
       async authorize(credentials) {
         if (!credentials?.username || !credentials?.password) {
-          return null
+          throw new Error('Username and password are required')
         }
 
         try {
@@ -61,10 +73,27 @@ export const authConfig = {
           })
 
           if (!response.ok) {
-            return null
+            // Try to extract error details from response
+            let errorMessage = 'Invalid username or password'
+            try {
+              const errorData = await response.json()
+              if (typeof errorData.detail === 'string') {
+                errorMessage = errorData.detail
+              } else if (typeof errorData.non_field_errors === 'object' && Array.isArray(errorData.non_field_errors)) {
+                errorMessage = errorData.non_field_errors[0] || errorMessage
+              }
+            } catch {
+              // If response is not JSON, use default error message
+            }
+            throw new Error(errorMessage)
           }
 
           const tokens: TokenResponse = await response.json()
+
+          // Validate tokens received
+          if (!tokens.access || !tokens.refresh) {
+            throw new Error('Invalid response from authentication server')
+          }
 
           // Fetch user data
           const userResponse = await fetch(`${API_BASE_URL}/api/auth/users/me/`, {
@@ -76,10 +105,15 @@ export const authConfig = {
           })
 
           if (!userResponse.ok) {
-            return null
+            throw new Error('Failed to fetch user information')
           }
 
           const user: User = await userResponse.json()
+
+          // Validate user data
+          if (!user.id || !user.email || !user.username) {
+            throw new Error('Invalid user data received from server')
+          }
 
           // Return user object with tokens
           return {
@@ -91,15 +125,21 @@ export const authConfig = {
             refreshToken: tokens.refresh,
           }
         } catch (error) {
+          // Re-throw error to provide better error messages to user
+          if (error instanceof Error) {
+            console.error('Auth error:', error.message)
+            throw error
+          }
           console.error('Auth error:', error)
-          return null
+          throw new Error('An unexpected error occurred during authentication')
         }
       },
     }),
   ],
   session: {
     strategy: 'jwt',
-    maxAge: 60 * 60, // 1 hour (matches backend access token lifetime)
+    // 7 days to match refresh token lifetime (access token will be refreshed automatically)
+    maxAge: 60 * 60 * 24 * 7, // 7 days
   },
   callbacks: {
     async jwt({ token, user, trigger }) {
@@ -113,11 +153,21 @@ export const authConfig = {
         token.name = user.name
       }
 
-      // Check if access token is expired and refresh if needed
-      if (token.accessToken && isTokenExpired(token.accessToken as string)) {
-        if (token.refreshToken) {
+      // Check if access token is expired or close to expiring (within 5 minutes)
+      if (token.accessToken && token.refreshToken) {
+        const accessToken = token.accessToken as string
+        const shouldRefresh = isTokenExpired(accessToken) || isTokenExpiringSoon(accessToken, 5) // 5 minutes buffer
+
+        if (shouldRefresh) {
           try {
-            const newAccessToken = await refreshAccessToken(token.refreshToken as string)
+            // Use refresh lock to prevent concurrent refresh attempts
+            if (!refreshTokenPromise) {
+              refreshTokenPromise = refreshAccessToken(token.refreshToken as string)
+            }
+
+            const newAccessToken = await refreshTokenPromise
+            refreshTokenPromise = null // Clear the lock
+
             if (newAccessToken) {
               token.accessToken = newAccessToken
             } else {
@@ -126,6 +176,7 @@ export const authConfig = {
               token.refreshToken = null
             }
           } catch (error) {
+            refreshTokenPromise = null // Clear the lock on error
             console.error('Token refresh error:', error)
             token.accessToken = null
             token.refreshToken = null
@@ -187,8 +238,9 @@ function isTokenExpired(token: string): boolean {
       decoded = JSON.parse(atob(padded))
     }
 
+    // If token doesn't have expiration claim, treat it as expired for security
     if (!decoded.exp) {
-      return false
+      return true
     }
 
     const expirationTime = decoded.exp * 1000
@@ -201,9 +253,49 @@ function isTokenExpired(token: string): boolean {
 }
 
 /**
+ * Check if token is expiring soon (within specified minutes)
+ */
+function isTokenExpiringSoon(token: string, minutesBuffer: number): boolean {
+  try {
+    const parts = token.split('.')
+    if (parts.length !== 3) {
+      return true
+    }
+
+    const payload = parts[1]
+    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
+
+    let decoded: any
+    if (typeof window === 'undefined') {
+      decoded = JSON.parse(Buffer.from(padded, 'base64').toString('utf-8'))
+    } else {
+      decoded = JSON.parse(atob(padded))
+    }
+
+    if (!decoded.exp) {
+      return true
+    }
+
+    const expirationTime = decoded.exp * 1000
+    const currentTime = Date.now()
+    const bufferTime = minutesBuffer * 60 * 1000 // Convert minutes to milliseconds
+
+    // Return true if token expires within the buffer time
+    return expirationTime - currentTime <= bufferTime
+  } catch (error) {
+    return true
+  }
+}
+
+/**
  * Refresh the access token using refresh token
  */
 async function refreshAccessToken(refreshToken: string): Promise<string | null> {
+  if (!refreshToken) {
+    return null
+  }
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/jwt/refresh/`, {
       method: 'POST',
@@ -218,6 +310,11 @@ async function refreshAccessToken(refreshToken: string): Promise<string | null> 
     }
 
     const data: { access: string } = await response.json()
+    
+    if (!data.access) {
+      return null
+    }
+
     return data.access
   } catch (error) {
     console.error('Refresh token error:', error)

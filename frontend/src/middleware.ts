@@ -12,8 +12,14 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   // Define public routes that don't require authentication
+  // Use exact matching for root and prefix matching for others
   const publicRoutes = ['/', '/login', '/signup']
-  const isPublicRoute = publicRoutes.some(route => pathname === route || (route !== '/' && pathname.startsWith(route)))
+  const isPublicRoute =
+    pathname === '/' ||
+    pathname === '/login' ||
+    pathname === '/signup' ||
+    pathname.startsWith('/login/') ||
+    pathname.startsWith('/signup/')
 
   // Allow public routes and static files
   if (isPublicRoute || pathname.startsWith('/_next') || pathname.startsWith('/api/auth') || pathname.startsWith('/assets')) {
