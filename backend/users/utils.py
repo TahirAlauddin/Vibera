@@ -18,7 +18,7 @@ def mask_email(email: str) -> str:
 
     return f"{masked_local}@{domain}"
 
-    
+
 def send_otp_email(user, otp_code: str) -> bool:
     """
     Send OTP code to user's email.
