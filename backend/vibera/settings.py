@@ -235,23 +235,26 @@ from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHan
 LOG_DIR = get_log_directory()
 
 # Build handlers dictionary conditionally
+# Handler level allows INFO (for application code), but Django loggers are set to WARNING
 LOGGING_HANDLERS = {
     'stdout': {
         'class': 'logging.StreamHandler',
         'formatter': LOG_FORMATTER,
         'stream': 'ext://sys.stdout',
+        # No level filter here - let individual loggers control their levels
     },
 }
 
-# Determine file handler: date-based (if enabled) or size-based (default)
+    # Determine file handler: date-based (if enabled) or size-based (default)
 ENABLE_DATE_ROTATION = os.getenv('ENABLE_DATE_ROTATION', 'false').lower() == 'true'
+# Handler level allows INFO (for application code), but Django loggers are set to WARNING
 if ENABLE_DATE_ROTATION:
     LOGGING_HANDLERS['file'] = {
         '()': DateRotatingFileHandler,
         'log_dir': LOG_DIR,
         'retention_days': LOG_RETENTION_DAYS,
         'formatter': LOG_FORMATTER,
-        'level': 'DEBUG',
+        # No level filter here - let individual loggers control their levels
     }
     FILE_HANDLER = 'file'
 else:
@@ -261,7 +264,7 @@ else:
         'log_dir': LOG_DIR,
         'max_bytes': LOG_MAX_BYTES,
         'formatter': LOG_FORMATTER,
-        'level': 'DEBUG',
+        # No level filter here - let individual loggers control their levels
     }
     FILE_HANDLER = 'file'
 
@@ -307,44 +310,51 @@ LOGGING = {
     # All loggers write to both stdout and file handlers
     'loggers': {
         # Root logger: catches all unhandled logs from third-party libraries
+        # Production: Only WARNING and ERROR to reduce noise
         '': {
             'handlers': ['stdout', FILE_HANDLER],
-            'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('ROOT_LOG_LEVEL', 'WARNING'),
             'propagate': False,
         },
         
         # Django framework: middleware, templates, cache
+        # Production: Only WARNING and ERROR for Django internals
         'django': {
             'handlers': ['stdout', FILE_HANDLER],
-            'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'INFO'),
+            'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'WARNING'),
             'propagate': False,
         },
         
         # Django requests: HTTP requests and responses
+        # Production: Only WARNING and ERROR (4xx/5xx responses)
         'django.request': {
             'handlers': ['stdout', FILE_HANDLER],
-            'level': 'INFO',
+            'level': 'WARNING',
             'propagate': False,
         },
         
         # Django server: startup, shutdown, console output
+        # Production: Only WARNING and ERROR
         'django.server': {
             'handlers': ['stdout', FILE_HANDLER],
-            'level': 'INFO',
+            'level': 'WARNING',
             'propagate': False,
         },
         
         # Django database: SQL queries and connections
+        # Production: SILENT - No DEBUG SQL logs, only WARNING and ERROR
         'django.db.backends': {
             'handlers': ['stdout', FILE_HANDLER],
-            'level': 'DEBUG' if DEBUG else 'WARNING',
+            'level': 'WARNING',  # Always WARNING in production, regardless of DEBUG setting
             'propagate': False,
         },
         
         # PostgreSQL-specific logging: connections, slow queries, errors
+        # Production: Only WARNING (slow queries) and ERROR (database errors)
+        # Note: Custom db_logging.py handles slow queries at WARNING level
         'django.db.backends.postgresql': {
             'handlers': ['stdout', FILE_HANDLER],
-            'level': 'INFO',  # Always log connections and errors, even in production
+            'level': 'WARNING',  # Only slow queries and errors, no DEBUG/INFO SQL logs
             'propagate': False,
         },
         
@@ -377,9 +387,10 @@ LOGGING = {
         },
         
         # REST Framework: API authentication, permissions, viewsets
+        # Production: Only WARNING and ERROR
         'rest_framework': {
             'handlers': ['stdout', FILE_HANDLER],
-            'level': 'INFO',
+            'level': 'WARNING',
             'propagate': False,
         },
         
