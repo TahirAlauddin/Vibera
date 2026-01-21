@@ -27,10 +27,6 @@ load_dotenv(dotenv_path=env_path)
 DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
 WSGI_APPLICATION = "vibera.wsgi.application"
 
-# Load environment variables from .env file in the backend directory FIRST
-# This must be done before reading DB_ENGINE to ensure PostgreSQL is used
-env_path = BASE_DIR / ".env"
-load_dotenv(dotenv_path=env_path)
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
