@@ -28,7 +28,7 @@ class Follow(models.Model):
         # Add database-level constraint for self-follow prevention
         constraints = [
             models.CheckConstraint(
-                check=~models.Q(follower=models.F("following")),
+                condition=~models.Q(follower=models.F("following")),
                 name="prevent_self_follow",
             )
         ]
