@@ -6,6 +6,7 @@
 import NextAuth from 'next-auth'
 import Credentials from 'next-auth/providers/credentials'
 import type { NextAuthConfig } from 'next-auth'
+import type { BackendUser, TokenResponse } from '@/types/next-auth'
 
 // Get API base URL from environment variable
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
@@ -15,27 +16,6 @@ if (!API_BASE_URL) {
   throw new Error(
     'NEXT_PUBLIC_API_URL environment variable is required. Please set it in your .env file.'
   )
-}
-
-/**
- * User type from backend
- */
-export interface User {
-  id: number
-  email: string
-  username: string
-  first_name?: string
-  last_name?: string
-  is_active: boolean
-  date_joined: string
-}
-
-/**
- * JWT token response from backend
- */
-interface TokenResponse {
-  access: string
-  refresh: string
 }
 
 /**
@@ -108,7 +88,7 @@ export const authConfig = {
             throw new Error('Failed to fetch user information')
           }
 
-          const user: User = await userResponse.json()
+          const user: BackendUser = await userResponse.json()
 
           // Validate user data
           if (!user.id || !user.email || !user.username) {

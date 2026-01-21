@@ -5,6 +5,27 @@
 import 'next-auth';
 import 'next-auth/jwt';
 
+/**
+ * User type from backend API response
+ */
+export interface BackendUser {
+  id: number
+  email: string
+  username: string
+  first_name?: string
+  last_name?: string
+  is_active: boolean
+  date_joined: string
+}
+
+/**
+ * JWT token response from backend API
+ */
+export interface TokenResponse {
+  access: string
+  refresh: string
+}
+
 declare module 'next-auth' {
   interface Session {
     user: {
