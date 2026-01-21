@@ -30,6 +30,8 @@ urlpatterns = [
     path("api/moods/", include("moods.urls")),
     # Social endpoints
     path("api/social/", include("social.urls")),
+    # Notifications endpoints
+    path("api/notifications/", include("notifications.urls")),
     # Test endpoint
     path("api/test/", moods_views.test_api, name="test_api"),
 ]
