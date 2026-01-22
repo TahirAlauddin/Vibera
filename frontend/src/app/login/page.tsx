@@ -13,7 +13,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-  const { data: session, status } = useSession()
+  const { data: session, status, update } = useSession()
 
   // Redirect if already authenticated (using useEffect to avoid hydration issues)
   useEffect(() => {
@@ -50,9 +50,10 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
       if (result?.error) {
         setError('Invalid username or password. Please try again.')
       } else if (result?.ok) {
-        // Redirect to home page on success
-        router.push('/home')
-        router.refresh()
+        // Update session to ensure it's refreshed
+        await update()
+        // Use window.location for a hard redirect to ensure session is properly recognized
+        window.location.href = '/home'
       }
     } catch (err) {
       // Handle error from signIn function
