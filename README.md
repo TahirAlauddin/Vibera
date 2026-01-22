@@ -7,6 +7,7 @@ A mood tracking and journaling application built with Django REST Framework and 
 - **Backend**: Django 6.0
 - **API**: Django REST Framework
 - **Authentication**: JWT (Djoser + SimpleJWT)
+- **2FA**: Email-based OTP
 - **Database**: PostgreSQL
 
 ## Installation & Setup
@@ -41,6 +42,15 @@ DB_PASSWORD=your_password
 DB_HOST=localhost
 DB_PORT=5432
 ALLOWED_HOSTS=127.0.0.1,localhost
+
+# Email Configuration (for 2FA OTP)
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_USE_SSL=False
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+DEFAULT_FROM_EMAIL=your-email@gmail.com
 ```
 
 ### 4. Run Migrations
@@ -64,7 +74,16 @@ API Base URL: `http://127.0.0.1:8000/`
 
 - `email`, `username` (unique, for login)
 - `first_name`, `last_name` (optional)
-- `is_active`, `is_staff`, `date_joined`
+- `is_active`, `is_staff`, `is_2fa_enabled`, `date_joined`
+
+### EmailOTP Model (Two-Factor Authentication)
+
+- `user` - ForeignKey to User
+- `hashed_code` - Securely hashed OTP code
+- `expires_at` - OTP expiration time
+- `is_used` - Whether OTP has been used
+- `attempts` - Failed verification attempts
+- `created_at` - Creation timestamp
 
 ### Mood Model
 
@@ -79,6 +98,14 @@ API Base URL: `http://127.0.0.1:8000/`
 - `user` - ForeignKey to User
 - `note` - Journal text
 - `created_at`, `updated_at`
+
+### Follow Model
+
+- `follower` - ForeignKey to User (the user who follows)
+- `following` - ForeignKey to User (the user being followed)
+- `created_at` - Timestamp when follow was created
+- **Constraints**: Unique together (follower, following), Self-follow prevention
+- **Indexes**: Optimized for follower/following lookups and relationship checks
 
 The JWT endpoints are configured at `/api/auth/`:
 
@@ -245,12 +272,61 @@ docker logs --tail 50 vibera-postgres
 | Verify Token      | POST   | `/api/auth/jwt/verify/`  |
 | Current User Info | GET    | `/api/auth/users/me/`    |
 
+### Two-Factor Authentication (2FA)
+
+| Action              | Method | URL                           | Description                          |
+| ------------------- | ------ | ----------------------------- | ------------------------------------ |
+| Login (Request OTP) | POST   | `/api/users/auth/2fa/login/`  | Validate credentials, send OTP email |
+| Verify OTP          | POST   | `/api/users/auth/2fa/verify/` | Verify OTP, get JWT tokens           |
+| Resend OTP          | POST   | `/api/users/auth/2fa/resend/` | Send a new OTP to email              |
+
+#### 2FA Login Flow
+
+1. **Login with credentials:**
+
+   ```
+   POST /api/users/auth/2fa/login/
+   Body: {"username": "testuser", "password": "TestPassword123"}
+   Response: {"success": true, "requires_2fa": true, "message": "OTP sent to your email", "email_hint": "tes***@example.com"}
+   ```
+
+2. **Check your email for the 6-digit OTP code**
+
+3. **Verify OTP:**
+
+   ```
+   POST /api/users/auth/2fa/verify/
+   Headers: Cookie: sessionid=<session-id-from-login>
+   Body: {"token": "123456"}
+   Response: {"success": true, "access": "...", "refresh": "..."}
+   ```
+
+4. **Resend OTP (optional):**
+   ```
+   POST /api/users/auth/2fa/resend/
+   Headers: Cookie: sessionid=<session-id-from-login>
+   Response: {"success": true, "message": "OTP sent to your email"}
+   ```
+
+> **Note:** 2FA is enabled by default for all users. OTP codes expire after 5 minutes. Maximum 3 verification attempts per OTP.
+
 ### Mood Tracking
 
 | Action          | Method | URL           | Auth Required |
 | --------------- | ------ | ------------- | ------------- |
 | Create Mood Log | POST   | `/api/moods/` | Yes           |
 | Get All Moods   | GET    | `/api/moods/` | Yes           |
+
+### Social (Follow/Unfollow)
+
+| Action                    | Method | URL                              | Auth Required |
+| ------------------------- | ------ | -------------------------------- | ------------- |
+| Follow a User             | POST   | `/api/social/follow/<user_id>/`  | Yes           |
+| Unfollow a User           | DELETE | `/api/social/unfollow/<user_id>/`| Yes           |
+| Get My Followers          | GET    | `/api/social/followers/`         | Yes           |
+| Get My Following          | GET    | `/api/social/following/`         | Yes           |
+| Get User's Followers      | GET    | `/api/social/followers/<user_id>/` | Yes         |
+| Get User's Following      | GET    | `/api/social/following/<user_id>/` | Yes         |
 
 ## Testing with Postman
 
@@ -286,6 +362,38 @@ Body: {"emoji": "😊", "reason": "Had a great day!"}
 ```
 GET /api/moods/
 Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+```
+
+### 4. Follow a User (Requires Token)
+
+```
+POST /api/social/follow/2/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"id": 1, "follower": {...}, "following": {...}, "created_at": "..."}
+```
+
+### 5. Unfollow a User (Requires Token)
+
+```
+DELETE /api/social/unfollow/2/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"message": "Successfully unfollowed username"}
+```
+
+### 6. Get Followers (Requires Token)
+
+```
+GET /api/social/followers/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"count": 2, "results": [...]}
+```
+
+### 7. Get Following (Requires Token)
+
+```
+GET /api/social/following/
+Headers: Authorization: JWT YOUR_ACCESS_TOKEN
+Response: {"count": 1, "results": [...]}
 ```
 
 ## JWT Configuration

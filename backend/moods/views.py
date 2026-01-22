@@ -37,7 +37,7 @@ class MoodLogView(APIView):
         """Retrieve all mood logs for the authenticated user"""
         moods = Mood.objects.filter(user=request.user)
         serializer = MoodLogSerializer(moods, many=True)
-        
+
         return Response(
             {"count": moods.count(), "data": serializer.data}, status=status.HTTP_200_OK
         )
@@ -56,9 +56,9 @@ class MoodLogView(APIView):
         logger.warning(
             "Mood log creation failed - validation errors",
             extra={
-                'type': 'mood_log_create_validation_error',
-                'user_id': request.user.id,
-                'errors': serializer.errors,
-            }
+                "type": "mood_log_create_validation_error",
+                "user_id": request.user.id,
+                "errors": serializer.errors,
+            },
         )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

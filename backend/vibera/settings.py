@@ -18,9 +18,16 @@ from vibera.logging_handlers import get_log_directory
 
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file FIRST (before any os.getenv calls)
+env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
+
 # Database logging configuration
 DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
 WSGI_APPLICATION = "vibera.wsgi.application"
+
+
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
@@ -55,7 +62,9 @@ load_dotenv(dotenv_path=env_path)
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable is required. Please set it in your .env file.")
+    raise ValueError(
+        "SECRET_KEY environment variable is required. Please set it in your .env file."
+    )
 
 DEBUG = True
 
@@ -84,6 +93,7 @@ INSTALLED_APPS = [
     "users",
     "moods",
     "social",
+    "notifications",
 ]
 
 MIDDLEWARE = [
@@ -134,6 +144,17 @@ if "postgresql" in DB_ENGINE:
     }
 
 
+# Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
 
@@ -151,7 +172,6 @@ AUTH_PASSWORD_VALIDATORS = [
         "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
-
 
 
 # Django REST Framework
@@ -201,6 +221,17 @@ DJOSER = {
     },
 }
 
+# Custom User Model
+AUTH_USER_MODEL = "users.User"
+
+# OTP Settings
+OTP_EXPIRY_MINUTES = 5  # otp expires in 5 minutes
+OTP_MAX_ATTEMPTS = 3
+
+# Session Settings (for 2FA pending state)
+# https://docs.djangoproject.com/en/6.0/ref/settings/#sessions
+SESSION_COOKIE_AGE = 300  # 5 minutes session timeout
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session ends when browser closes
 
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = [
@@ -222,7 +253,7 @@ CORS_ALLOW_HEADERS = [
 # ============================================================================
 # LOGGING CONFIGURATION
 # ============================================================================
-# 
+#
 # Dual output logging:
 # - All loggers write to both stdout (for Docker) and files (for persistence)
 # - Size-based rotation is the default file handler
@@ -269,43 +300,37 @@ else:
     FILE_HANDLER = 'file'
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    
+    "version": 1,
+    "disable_existing_loggers": False,
     # Formatters
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        
         # Balanced: timestamp, level, logger name, message
-        'detailed': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "detailed": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        
         # Minimal: level and message only
-        'simple': {
-            'format': '[{levelname:8}] {message}',
-            'style': '{',
+        "simple": {
+            "format": "[{levelname:8}] {message}",
+            "style": "{",
         },
-        
         # Error format: includes file path and line number
-        'error': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | {pathname}:{lineno} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "error": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | {pathname}:{lineno} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    
     # Handlers
     # StreamHandler: Writes directly to stdout for Docker log collection
     # File handlers: Write to files with rotation for persistence
-    'handlers': LOGGING_HANDLERS,
-    
+    "handlers": LOGGING_HANDLERS,
     # Loggers
     # All loggers write to both stdout and file handlers
     'loggers': {
@@ -316,7 +341,6 @@ LOGGING = {
             'level': os.getenv('ROOT_LOG_LEVEL', 'WARNING'),
             'propagate': False,
         },
-        
         # Django framework: middleware, templates, cache
         # Production: Only WARNING and ERROR for Django internals
         'django': {
@@ -324,7 +348,6 @@ LOGGING = {
             'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'WARNING'),
             'propagate': False,
         },
-        
         # Django requests: HTTP requests and responses
         # Production: Only WARNING and ERROR (4xx/5xx responses)
         'django.request': {
@@ -332,7 +355,6 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
-        
         # Django server: startup, shutdown, console output
         # Production: Only WARNING and ERROR
         'django.server': {
@@ -340,7 +362,6 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
-        
         # Django database: SQL queries and connections
         # Production: SILENT - No DEBUG SQL logs, only WARNING and ERROR
         'django.db.backends': {
@@ -348,7 +369,6 @@ LOGGING = {
             'level': 'WARNING',  # Always WARNING in production, regardless of DEBUG setting
             'propagate': False,
         },
-        
         # PostgreSQL-specific logging: connections, slow queries, errors
         # Production: Only WARNING (slow queries) and ERROR (database errors)
         # Note: Custom db_logging.py handles slow queries at WARNING level
@@ -357,35 +377,30 @@ LOGGING = {
             'level': 'WARNING',  # Only slow queries and errors, no DEBUG/INFO SQL logs
             'propagate': False,
         },
-        
         # Vibera middleware: request/response logging and timing
         'vibera.middleware': {
             'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        
         # Users app: registration, authentication, profile management
         'users': {
             'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        
         # Moods app: mood tracking and journal entries
         'moods': {
             'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        
         # Social app: social interactions and community features
         'social': {
             'handlers': ['stdout', FILE_HANDLER],
             'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
-        
         # REST Framework: API authentication, permissions, viewsets
         # Production: Only WARNING and ERROR
         'rest_framework': {
@@ -393,7 +408,6 @@ LOGGING = {
             'level': 'WARNING',
             'propagate': False,
         },
-        
         # Django security: CSRF failures, suspicious activities
         'django.security': {
             'handlers': ['stdout', FILE_HANDLER],
