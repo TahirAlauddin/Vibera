@@ -312,10 +312,14 @@ docker logs --tail 50 vibera-postgres
 
 ### Mood Tracking
 
-| Action          | Method | URL           | Auth Required |
-| --------------- | ------ | ------------- | ------------- |
-| Create Mood Log | POST   | `/api/moods/` | Yes           |
-| Get All Moods   | GET    | `/api/moods/` | Yes           |
+| Action          | Method | URL              | Auth Required |
+| --------------- | ------ | ---------------- | ------------- |
+| Create Mood Log | POST   | `/api/moods/`    | Yes           |
+| Get All Moods   | GET    | `/api/moods/`    | Yes           |
+| Get Single Mood | GET    | `/api/moods/<id>/` | Yes         |
+| Update Mood     | PUT    | `/api/moods/<id>/` | Yes         |
+| Partial Update  | PATCH  | `/api/moods/<id>/` | Yes         |
+| Delete Mood     | DELETE | `/api/moods/<id>/` | Yes         |
 
 ### Social (Follow/Unfollow)
 
@@ -362,9 +366,44 @@ Body: {"emoji": "😊", "reason": "Had a great day!"}
 ```
 GET /api/moods/
 Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {"count": 2, "data": [...]}
 ```
 
-### 4. Follow a User (Requires Token)
+### 4. Get Single Mood (Requires Token)
+
+```
+GET /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {"id": 1, "user": "testuser", "emoji": "😊", "reason": "...", "created_at": "...", "updated_at": "..."}
+```
+
+### 5. Update Mood (Requires Token)
+
+```
+PUT /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Body: {"emoji": "😔", "reason": "Feeling sad today"}
+Response: {"message": "Mood log updated successfully", "data": {...}}
+```
+
+### 6. Partial Update Mood (Requires Token)
+
+```
+PATCH /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Body: {"reason": "Updated reason only"}
+Response: {"message": "Mood log updated successfully", "data": {...}}
+```
+
+### 7. Delete Mood (Requires Token)
+
+```
+DELETE /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {"message": "Mood log deleted successfully"}
+```
+
+### 8. Follow a User (Requires Token)
 
 ```
 POST /api/social/follow/2/
@@ -372,7 +411,7 @@ Headers: Authorization: JWT YOUR_ACCESS_TOKEN
 Response: {"id": 1, "follower": {...}, "following": {...}, "created_at": "..."}
 ```
 
-### 5. Unfollow a User (Requires Token)
+### 9. Unfollow a User (Requires Token)
 
 ```
 DELETE /api/social/unfollow/2/
@@ -388,7 +427,7 @@ Headers: Authorization: JWT YOUR_ACCESS_TOKEN
 Response: {"count": 2, "results": [...]}
 ```
 
-### 7. Get Following (Requires Token)
+### 11. Get Following (Requires Token)
 
 ```
 GET /api/social/following/
