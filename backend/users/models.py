@@ -116,3 +116,28 @@ class EmailOTP(models.Model):
             self.attempts += 1
             self.save(update_fields=["attempts"])
             return False
+
+
+class UserProfile(models.Model):
+    """
+    Extended user profile information separate from authentication data.
+    Stores additional user details like avatar and bio.
+    """
+
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="profile",
+    )
+    avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
+    followers_count = models.PositiveIntegerField(default=0)
+    following_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "User Profile"
+        verbose_name_plural = "User Profiles"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.user.username}'s Profile"
