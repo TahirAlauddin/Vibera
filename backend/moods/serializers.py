@@ -3,7 +3,7 @@ from .models import Mood, MoodComment
 
 
 class MoodCommentSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
+    user = serializers.CharField(source="user.username", read_only=True)
     replies = serializers.SerializerMethodField()
     reply_count = serializers.SerializerMethodField()
 
@@ -42,7 +42,7 @@ class MoodCommentSerializer(serializers.ModelSerializer):
 
 
 class MoodLogSerializer(serializers.ModelSerializer):
-    user = serializers.StringRelatedField(read_only=True)
+    user = serializers.CharField(source="user.username", read_only=True)
     comment_count = serializers.SerializerMethodField()
 
     class Meta:
