@@ -2,6 +2,28 @@ from django.db import models
 from django.conf import settings
 
 
+class MoodTag(models.Model):
+    """
+    Predefined tags that can be associated with mood entries.
+    Tags help categorize moods (e.g., 'work', 'family', 'health').
+    """
+
+    name = models.CharField(max_length=50, unique=True)
+    color = models.CharField(
+        max_length=7,
+        default="#6366f1",
+        help_text="Hex color code for the tag (e.g., #6366f1)",
+    )
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Mood Tag"
+        verbose_name_plural = "Mood Tags"
+
+    def __str__(self):
+        return self.name
+
+
 class Mood(models.Model):
     """
     Represents a user's mood at a specific point in time, allowing them to track
@@ -22,6 +44,9 @@ class Mood(models.Model):
     )
     emoji = models.CharField(max_length=2, choices=MOOD_CHOICES)
     reason = models.TextField(blank=True, null=True, help_text="What caused this mood?")
+    tags = models.ManyToManyField(
+        MoodTag, blank=True, related_name="moods", help_text="Tags associated with this mood"
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -7,8 +7,8 @@ from rest_framework.views import APIView
 
 from vibera.logging_config import get_logger
 
-from .models import Mood
-from .serializers import MoodLogSerializer
+from .models import Mood, MoodTag
+from .serializers import MoodLogSerializer, MoodTagSerializer
 
 # Logger for moods domain - creates 'moods.views' logger
 # This automatically inherits from the 'moods' logger configuration in settings.py
@@ -220,4 +220,18 @@ class MoodLogDetailView(APIView):
         return Response(
             {"message": "Mood log deleted successfully"},
             status=status.HTTP_204_NO_CONTENT,
+        )
+
+
+class MoodTagListView(APIView):
+    """View for listing available mood tags"""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Retrieve all available tags"""
+        tags = MoodTag.objects.all()
+        serializer = MoodTagSerializer(tags, many=True)
+        return Response(
+            {"count": tags.count(), "data": serializer.data}, status=status.HTTP_200_OK
         )
