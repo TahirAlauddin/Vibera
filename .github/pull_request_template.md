@@ -23,13 +23,6 @@ Clearly explain **what** was added, removed, or modified.
 - 
 - 
 
----
-
-## Why This Change Is Needed
-Explain **why** this change is required.  
-What problem does it solve? What requirement does it fulfill?
-
----
 
 ## How to Test
 Provide clear steps so reviewers can test this PR.
@@ -39,12 +32,7 @@ Example:
 2. Call `POST /api/v1/moods`
 3. Verify mood entry is created
 
----
 
-## Screenshots / Recordings (Frontend Only)
-If this PR includes UI changes, attach screenshots or screen recordings.
-
----
 
 ## Checklist
 Before requesting review, ensure the following:
@@ -55,7 +43,7 @@ Before requesting review, ensure the following:
 - [ ] No debug logs or commented-out code
 - [ ] Changes are scoped to this PR only
 - [ ] Naming and structure follow project conventions
-
+- [ ] Updated API Docs
 ---
 
 ## Backend Checklist (if applicable)

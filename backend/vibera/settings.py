@@ -94,6 +94,7 @@ INSTALLED_APPS = [
     "moods",
     "social",
     "notifications",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
