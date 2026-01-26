@@ -24,3 +24,4 @@ pull_request.md
 .cursorignore
 
 vibera_db 
+test_*.py
