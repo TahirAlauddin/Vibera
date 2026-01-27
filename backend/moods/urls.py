@@ -3,6 +3,7 @@ from . import views
 
 urlpatterns = [
     path("", views.MoodLogView.as_view(), name="mood-log"),
+    path("<int:pk>/", views.MoodLogDetailView.as_view(), name="mood-log-detail"),
     # Comment endpoints
     path(
         "<int:mood_id>/comments/",
