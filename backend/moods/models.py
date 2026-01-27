@@ -84,3 +84,43 @@ class EmojiJournalEntry(models.Model):
 
     def __str__(self):
         return f"Entry: {self.mood.emoji} by {self.user.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class MoodComment(models.Model):
+    """
+    Represents a comment on a mood post. Supports nested replies through
+    the parent field. Comments are public and can be made by any authenticated user.
+    """
+
+    mood = models.ForeignKey(
+        Mood, on_delete=models.CASCADE, related_name="comments"
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="mood_comments",
+    )
+    parent = models.ForeignKey(
+        "self",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="replies",
+        help_text="Parent comment for nested replies. Null for top-level comments.",
+    )
+    content = models.TextField(help_text="Comment text content")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        verbose_name = "Mood Comment"
+        verbose_name_plural = "Mood Comments"
+        indexes = [
+            models.Index(fields=["mood"], name="mood_comment_mood_idx"),
+            models.Index(fields=["parent"], name="mood_comment_parent_idx"),
+        ]
+
+    def __str__(self):
+        preview = self.content[:50] + "..." if len(self.content) > 50 else self.content
+        return f"Comment by {self.user.username} on mood {self.mood.id}: {preview}"
