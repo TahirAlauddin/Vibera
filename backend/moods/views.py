@@ -4,11 +4,12 @@ from rest_framework import status
 from datetime import datetime
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
+from django.shortcuts import get_object_or_404
 
 from vibera.logging_config import get_logger
 
-from .models import Mood
-from .serializers import MoodLogSerializer
+from .models import Mood, MoodComment
+from .serializers import MoodLogSerializer, MoodCommentSerializer
 
 # Logger for moods domain - creates 'moods.views' logger
 # This automatically inherits from the 'moods' logger configuration in settings.py
@@ -114,6 +115,74 @@ class MoodLogDetailView(APIView):
 
         serializer = MoodLogSerializer(
             mood, data=request.data, context={"request": request}
+class MoodCommentListView(APIView):
+    """List and create comments for a specific mood"""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, mood_id):
+        """Retrieve all top-level comments for a mood (with nested replies)"""
+        mood = get_object_or_404(Mood, id=mood_id)
+        comments = mood.comments.filter(parent__isnull=True).order_by("-created_at")
+        serializer = MoodCommentSerializer(comments, many=True)
+        return Response(
+            {"count": comments.count(), "data": serializer.data},
+            status=status.HTTP_200_OK,
+        )
+
+    def post(self, request, mood_id):
+        """Create a new top-level comment on a mood"""
+        mood = get_object_or_404(Mood, id=mood_id)
+        serializer = MoodCommentSerializer(
+            data=request.data, context={"request": request}
+        )
+
+        if serializer.is_valid():
+            comment = serializer.save(mood=mood)
+            logger.info(
+                "Mood comment created",
+                extra={
+                    "type": "mood_comment_create",
+                    "user_id": request.user.id,
+                    "mood_id": mood_id,
+                    "comment_id": comment.id,
+                },
+            )
+            return Response(
+                {"message": "Comment created successfully", "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+
+        logger.warning(
+            "Mood comment creation failed - validation errors",
+            extra={
+                "type": "mood_comment_create_validation_error",
+                "user_id": request.user.id,
+                "mood_id": mood_id,
+                "errors": serializer.errors,
+            },
+        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class MoodCommentDetailView(APIView):
+    """Update and delete a specific comment"""
+
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, comment_id):
+        """Update a comment (full update)"""
+        comment = get_object_or_404(MoodComment, id=comment_id)
+
+        # Check if user owns the comment
+        if comment.user != request.user:
+            return Response(
+                {"error": "You do not have permission to update this comment."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = MoodCommentSerializer(
+            comment, data=request.data, context={"request": request}
         )
 
         if serializer.is_valid():
@@ -161,6 +230,33 @@ class MoodLogDetailView(APIView):
 
         serializer = MoodLogSerializer(
             mood, data=request.data, partial=True, context={"request": request}
+                "Mood comment updated",
+                extra={
+                    "type": "mood_comment_update",
+                    "user_id": request.user.id,
+                    "comment_id": comment_id,
+                },
+            )
+            return Response(
+                {"message": "Comment updated successfully", "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, comment_id):
+        """Partially update a comment"""
+        comment = get_object_or_404(MoodComment, id=comment_id)
+
+        # Check if user owns the comment
+        if comment.user != request.user:
+            return Response(
+                {"error": "You do not have permission to update this comment."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        serializer = MoodCommentSerializer(
+            comment, data=request.data, partial=True, context={"request": request}
         )
 
         if serializer.is_valid():
@@ -221,3 +317,82 @@ class MoodLogDetailView(APIView):
             {"message": "Mood log deleted successfully"},
             status=status.HTTP_204_NO_CONTENT,
         )
+                "Mood comment updated",
+                extra={
+                    "type": "mood_comment_update",
+                    "user_id": request.user.id,
+                    "comment_id": comment_id,
+                },
+            )
+            return Response(
+                {"message": "Comment updated successfully", "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, comment_id):
+        """Delete a comment"""
+        comment = get_object_or_404(MoodComment, id=comment_id)
+
+        # Check if user owns the comment
+        if comment.user != request.user:
+            return Response(
+                {"error": "You do not have permission to delete this comment."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        comment.delete()
+        logger.info(
+            "Mood comment deleted",
+            extra={
+                "type": "mood_comment_delete",
+                "user_id": request.user.id,
+                "comment_id": comment_id,
+            },
+        )
+        return Response(
+            {"message": "Comment deleted successfully"}, status=status.HTTP_200_OK
+        )
+
+
+class MoodCommentReplyView(APIView):
+    """Create a reply to an existing comment"""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, comment_id):
+        """Create a reply to an existing comment"""
+        parent_comment = get_object_or_404(MoodComment, id=comment_id)
+
+        serializer = MoodCommentSerializer(
+            data=request.data, context={"request": request}
+        )
+
+        if serializer.is_valid():
+            # Create reply with parent and same mood as parent
+            reply = serializer.save(mood=parent_comment.mood, parent=parent_comment)
+            logger.info(
+                "Mood comment reply created",
+                extra={
+                    "type": "mood_comment_reply_create",
+                    "user_id": request.user.id,
+                    "parent_comment_id": comment_id,
+                    "reply_id": reply.id,
+                },
+            )
+            return Response(
+                {"message": "Reply created successfully", "data": serializer.data},
+                status=status.HTTP_201_CREATED,
+            )
+
+        logger.warning(
+            "Mood comment reply creation failed - validation errors",
+            extra={
+                "type": "mood_comment_reply_create_validation_error",
+                "user_id": request.user.id,
+                "parent_comment_id": comment_id,
+                "errors": serializer.errors,
+            },
+        )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
