@@ -26,6 +26,8 @@ load_dotenv(dotenv_path=env_path)
 # Database logging configuration
 DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
 WSGI_APPLICATION = "vibera.wsgi.application"
+
+
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
@@ -45,10 +47,13 @@ USE_TZ = True
 STATIC_URL = "static/"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Environment variables
-LOG_FORMATTER = os.getenv("LOG_FORMATTER", "verbose").lower()
-LOG_RETENTION_DAYS = int(os.getenv("LOG_RETENTION_DAYS", "30"))
-LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", str(5 * 1024 * 1024)))  # Default: 5MB
-ENABLE_SIZE_ROTATION = os.getenv("ENABLE_SIZE_ROTATION", "true").lower() == "true"
+LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
+LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
+LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', str(5 * 1024 * 1024)))  # Default: 5MB
+
+# Load environment variables from .env file in the backend directory
+env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
 
 
 # Quick-start development settings - unsuitable for production
@@ -261,31 +266,38 @@ from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHan
 LOG_DIR = get_log_directory()
 
 # Build handlers dictionary conditionally
+# Handler level allows INFO (for application code), but Django loggers are set to WARNING
 LOGGING_HANDLERS = {
-    "stdout": {
-        "class": "logging.StreamHandler",
-        "formatter": LOG_FORMATTER,
-        "stream": "ext://sys.stdout",
-    },
-    "file_size": {
-        "()": SizeRotatingFileHandler,
-        "log_dir": LOG_DIR,
-        "max_bytes": LOG_MAX_BYTES,
-        "formatter": LOG_FORMATTER,
-        "level": "DEBUG",
+    'stdout': {
+        'class': 'logging.StreamHandler',
+        'formatter': LOG_FORMATTER,
+        'stream': 'ext://sys.stdout',
+        # No level filter here - let individual loggers control their levels
     },
 }
 
-# Add date-based handler if explicitly enabled (optional)
-ENABLE_DATE_ROTATION = os.getenv("ENABLE_DATE_ROTATION", "false").lower() == "true"
+    # Determine file handler: date-based (if enabled) or size-based (default)
+ENABLE_DATE_ROTATION = os.getenv('ENABLE_DATE_ROTATION', 'false').lower() == 'true'
+# Handler level allows INFO (for application code), but Django loggers are set to WARNING
 if ENABLE_DATE_ROTATION:
-    LOGGING_HANDLERS["file_date"] = {
-        "()": DateRotatingFileHandler,
-        "log_dir": LOG_DIR,
-        "retention_days": LOG_RETENTION_DAYS,
-        "formatter": LOG_FORMATTER,
-        "level": "DEBUG",
+    LOGGING_HANDLERS['file'] = {
+        '()': DateRotatingFileHandler,
+        'log_dir': LOG_DIR,
+        'retention_days': LOG_RETENTION_DAYS,
+        'formatter': LOG_FORMATTER,
+        # No level filter here - let individual loggers control their levels
     }
+    FILE_HANDLER = 'file'
+else:
+    # Size-based rotation is the default
+    LOGGING_HANDLERS['file'] = {
+        '()': SizeRotatingFileHandler,
+        'log_dir': LOG_DIR,
+        'max_bytes': LOG_MAX_BYTES,
+        'formatter': LOG_FORMATTER,
+        # No level filter here - let individual loggers control their levels
+    }
+    FILE_HANDLER = 'file'
 
 LOGGING = {
     "version": 1,
@@ -320,79 +332,87 @@ LOGGING = {
     # File handlers: Write to files with rotation for persistence
     "handlers": LOGGING_HANDLERS,
     # Loggers
-    # All loggers write to both stdout and file_size handlers
-    "loggers": {
+    # All loggers write to both stdout and file handlers
+    'loggers': {
         # Root logger: catches all unhandled logs from third-party libraries
-        "": {
-            "handlers": ["stdout", "file_size"],
-            "level": os.getenv("ROOT_LOG_LEVEL", "INFO"),
-            "propagate": False,
+        # Production: Only WARNING and ERROR to reduce noise
+        '': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': os.getenv('ROOT_LOG_LEVEL', 'WARNING'),
+            'propagate': False,
         },
         # Django framework: middleware, templates, cache
-        "django": {
-            "handlers": ["stdout", "file_size"],
-            "level": os.getenv("FRAMEWORK_LOG_LEVEL", "INFO"),
-            "propagate": False,
+        # Production: Only WARNING and ERROR for Django internals
+        'django': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'WARNING'),
+            'propagate': False,
         },
         # Django requests: HTTP requests and responses
-        "django.request": {
-            "handlers": ["stdout", "file_size"],
-            "level": "INFO",
-            "propagate": False,
+        # Production: Only WARNING and ERROR (4xx/5xx responses)
+        'django.request': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': 'WARNING',
+            'propagate': False,
         },
         # Django server: startup, shutdown, console output
-        "django.server": {
-            "handlers": ["stdout", "file_size"],
-            "level": "INFO",
-            "propagate": False,
+        # Production: Only WARNING and ERROR
+        'django.server': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': 'WARNING',
+            'propagate': False,
         },
         # Django database: SQL queries and connections
-        "django.db.backends": {
-            "handlers": ["stdout", "file_size"],
-            "level": "DEBUG" if DEBUG else "WARNING",
-            "propagate": False,
+        # Production: SILENT - No DEBUG SQL logs, only WARNING and ERROR
+        'django.db.backends': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': 'WARNING',  # Always WARNING in production, regardless of DEBUG setting
+            'propagate': False,
         },
         # PostgreSQL-specific logging: connections, slow queries, errors
-        "django.db.backends.postgresql": {
-            "handlers": ["stdout", "file_size"],
-            "level": "INFO",  # Always log connections and errors, even in production
-            "propagate": False,
+        # Production: Only WARNING (slow queries) and ERROR (database errors)
+        # Note: Custom db_logging.py handles slow queries at WARNING level
+        'django.db.backends.postgresql': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': 'WARNING',  # Only slow queries and errors, no DEBUG/INFO SQL logs
+            'propagate': False,
         },
         # Vibera middleware: request/response logging and timing
-        "vibera.middleware": {
-            "handlers": ["stdout", "file_size"],
-            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
-            "propagate": False,
+        'vibera.middleware': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
         # Users app: registration, authentication, profile management
-        "users": {
-            "handlers": ["stdout", "file_size"],
-            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
-            "propagate": False,
+        'users': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
         # Moods app: mood tracking and journal entries
-        "moods": {
-            "handlers": ["stdout", "file_size"],
-            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
-            "propagate": False,
+        'moods': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
         # Social app: social interactions and community features
-        "social": {
-            "handlers": ["stdout", "file_size"],
-            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
-            "propagate": False,
+        'social': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
+            'propagate': False,
         },
         # REST Framework: API authentication, permissions, viewsets
-        "rest_framework": {
-            "handlers": ["stdout", "file_size"],
-            "level": "INFO",
-            "propagate": False,
+        # Production: Only WARNING and ERROR
+        'rest_framework': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': 'WARNING',
+            'propagate': False,
         },
         # Django security: CSRF failures, suspicious activities
-        "django.security": {
-            "handlers": ["stdout", "file_size"],
-            "level": "WARNING",
-            "propagate": False,
+        'django.security': {
+            'handlers': ['stdout', FILE_HANDLER],
+            'level': 'WARNING',
+            'propagate': False,
         },
     },
 }
