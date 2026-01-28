@@ -2,19 +2,15 @@
 Database logging for PostgreSQL connections, slow queries, and errors.
 
 This module provides:
-- Connection logging (open/close events)
+- Connection setup for query interception
 - Slow query detection and logging
 - Database error logging
 
 Uses Django's database signals and wraps the database cursor to intercept queries.
 """
 
-import logging
 import os
 import time
-from typing import Any, Dict
-
-from django.db import connection
 from django.db.backends.signals import connection_created
 from django.dispatch import receiver
 
@@ -28,18 +24,16 @@ SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"
 
 class LoggingCursorWrapper:
     """Wrapper for database cursor to log queries and errors."""
-
-    def __init__(self, cursor, connection):
+    
+    def __init__(self, cursor):
         """
         Initialize cursor wrapper.
 
         Args:
             cursor: The database cursor to wrap
-            connection: The database connection
         """
         self.cursor = cursor
-        self.connection = connection
-
+    
     def __getattr__(self, attr):
         """Delegate attribute access to the underlying cursor."""
         return getattr(self.cursor, attr)
@@ -57,14 +51,11 @@ class LoggingCursorWrapper:
         Execute SQL query with logging.
         """
         start_time = time.time()
-        error_occurred = False
-        error_message = None
-
+        
         try:
             result = self.cursor.execute(sql, params)
             return result
         except Exception as e:
-            error_occurred = True
             error_message = str(e)
             error_type = type(e).__name__
 
@@ -98,14 +89,11 @@ class LoggingCursorWrapper:
             param_list: List of parameter tuples
         """
         start_time = time.time()
-        error_occurred = False
-        error_message = None
-
+        
         try:
             result = self.cursor.executemany(sql, param_list)
             return result
         except Exception as e:
-            error_occurred = True
             error_message = str(e)
             error_type = type(e).__name__
 
@@ -160,16 +148,9 @@ def log_connection_created(sender, connection, **kwargs):
         def wrapped_cursor(*args, **kwargs):
             """Return wrapped cursor for query logging."""
             cursor_obj = connection._original_cursor(*args, **kwargs)
-            return LoggingCursorWrapper(cursor_obj, connection)
-
+            return LoggingCursorWrapper(cursor_obj)
+        
         connection.cursor = wrapped_cursor
 
-    # Wrap the close method to log connection closure
-    if not hasattr(connection, "_original_close"):
-        connection._original_close = connection.close
-
-        def wrapped_close():
-            """Close database connection."""
-            return connection._original_close()
 
         connection.close = wrapped_close

@@ -99,6 +99,15 @@ API Base URL: `http://127.0.0.1:8000/`
 - `note` - Journal text
 - `created_at`, `updated_at`
 
+### UserProfile Model
+
+- `user` - OneToOneField to User (one profile per user)
+- `avatar` - ImageField for profile picture (optional)
+- `followers_count` - PositiveIntegerField (read-only, auto-calculated)
+- `following_count` - PositiveIntegerField (read-only, auto-calculated)
+- `created_at` - Profile creation timestamp
+- **Note**: Profile is automatically created when a user is registered via signal
+
 ### Follow Model
 
 - `follower` - ForeignKey to User (the user who follows)
@@ -310,12 +319,81 @@ docker logs --tail 50 vibera-postgres
 
 > **Note:** 2FA is enabled by default for all users. OTP codes expire after 5 minutes. Maximum 3 verification attempts per OTP.
 
+### User Profile
+
+| Action                    | Method | URL                              | Auth Required | Description                                    |
+| ------------------------- | ------ | -------------------------------- | ------------- | ---------------------------------------------- |
+| Get Own Profile           | GET    | `/api/users/profile/`            | Yes           | Retrieve authenticated user's profile          |
+| Update Own Profile        | PUT    | `/api/users/profile/`            | Yes           | Full update of authenticated user's profile    |
+| Partial Update Own Profile| PATCH  | `/api/users/profile/`            | Yes           | Partial update of authenticated user's profile |
+| Get User Profile by ID    | GET    | `/api/users/profile/<user_id>/`  | Yes           | Retrieve another user's profile by user ID      |
+
+#### Profile Fields
+
+- `id` - Profile ID (read-only)
+- `user` - User ID (read-only)
+- `avatar` - Profile avatar image path (writable)
+- `followers_count` - Number of followers (read-only, auto-calculated)
+- `following_count` - Number of users following (read-only, auto-calculated)
+- `created_at` - Profile creation timestamp (read-only)
+
+> **Note:** Profiles are automatically created when a user is registered via signal. If a profile doesn't exist, the API returns a 404 error with `{"error": "Profile does not exist"}`.
+
+#### Example Requests
+
+**Get Own Profile:**
+```
+GET /api/users/profile/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {
+  "id": 1,
+  "user": 1,
+  "avatar": null,
+  "followers_count": 0,
+  "following_count": 0,
+  "created_at": "2025-01-23T10:30:00Z"
+}
+```
+
+**Update Own Profile (PATCH):**
+```
+PATCH /api/users/profile/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Body: {"avatar": "avatars/profile_picture.jpg"}
+Response: {
+  "id": 1,
+  "user": 1,
+  "avatar": "avatars/profile_picture.jpg",
+  "followers_count": 0,
+  "following_count": 0,
+  "created_at": "2025-01-23T10:30:00Z"
+}
+```
+
+**Get Other User's Profile:**
+```
+GET /api/users/profile/2/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {
+  "id": 2,
+  "user": 2,
+  "avatar": "avatars/user2.jpg",
+  "followers_count": 5,
+  "following_count": 3,
+  "created_at": "2025-01-20T08:15:00Z"
+}
+```
+
 ### Mood Tracking
 
-| Action          | Method | URL           | Auth Required |
-| --------------- | ------ | ------------- | ------------- |
-| Create Mood Log | POST   | `/api/moods/` | Yes           |
-| Get All Moods   | GET    | `/api/moods/` | Yes           |
+| Action          | Method | URL              | Auth Required |
+| --------------- | ------ | ---------------- | ------------- |
+| Create Mood Log | POST   | `/api/moods/`    | Yes           |
+| Get All Moods   | GET    | `/api/moods/`    | Yes           |
+| Get Single Mood | GET    | `/api/moods/<id>/` | Yes         |
+| Update Mood     | PUT    | `/api/moods/<id>/` | Yes         |
+| Partial Update  | PATCH  | `/api/moods/<id>/` | Yes         |
+| Delete Mood     | DELETE | `/api/moods/<id>/` | Yes         |
 
 ### Social (Follow/Unfollow)
 
@@ -362,9 +440,44 @@ Body: {"emoji": "😊", "reason": "Had a great day!"}
 ```
 GET /api/moods/
 Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {"count": 2, "data": [...]}
 ```
 
-### 4. Follow a User (Requires Token)
+### 4. Get Single Mood (Requires Token)
+
+```
+GET /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {"id": 1, "user": "testuser", "emoji": "😊", "reason": "...", "created_at": "...", "updated_at": "..."}
+```
+
+### 5. Update Mood (Requires Token)
+
+```
+PUT /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Body: {"emoji": "😔", "reason": "Feeling sad today"}
+Response: {"message": "Mood log updated successfully", "data": {...}}
+```
+
+### 6. Partial Update Mood (Requires Token)
+
+```
+PATCH /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Body: {"reason": "Updated reason only"}
+Response: {"message": "Mood log updated successfully", "data": {...}}
+```
+
+### 7. Delete Mood (Requires Token)
+
+```
+DELETE /api/moods/1/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {"message": "Mood log deleted successfully"}
+```
+
+### 8. Follow a User (Requires Token)
 
 ```
 POST /api/social/follow/2/
@@ -372,7 +485,7 @@ Headers: Authorization: JWT YOUR_ACCESS_TOKEN
 Response: {"id": 1, "follower": {...}, "following": {...}, "created_at": "..."}
 ```
 
-### 5. Unfollow a User (Requires Token)
+### 9. Unfollow a User (Requires Token)
 
 ```
 DELETE /api/social/unfollow/2/
@@ -388,12 +501,58 @@ Headers: Authorization: JWT YOUR_ACCESS_TOKEN
 Response: {"count": 2, "results": [...]}
 ```
 
-### 7. Get Following (Requires Token)
+### 11. Get Following (Requires Token)
 
 ```
 GET /api/social/following/
 Headers: Authorization: JWT YOUR_ACCESS_TOKEN
 Response: {"count": 1, "results": [...]}
+```
+
+### 12. Get Own Profile (Requires Token)
+
+```
+GET /api/users/profile/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {
+  "id": 1,
+  "user": 1,
+  "avatar": null,
+  "followers_count": 0,
+  "following_count": 0,
+  "created_at": "2025-01-23T10:30:00Z"
+}
+```
+
+### 13. Update Own Profile (Requires Token)
+
+```
+PATCH /api/users/profile/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Body: {"avatar": "avatars/my_profile.jpg"}
+Response: {
+  "id": 1,
+  "user": 1,
+  "avatar": "avatars/my_profile.jpg",
+  "followers_count": 0,
+  "following_count": 0,
+  "created_at": "2025-01-23T10:30:00Z"
+}
+```
+
+### 14. Get Other User's Profile (Requires Token)
+
+```
+GET /api/users/profile/2/
+Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
+Response: {
+  "id": 2,
+  "user": 2,
+  "avatar": "avatars/user2.jpg",
+  "followers_count": 5,
+  "following_count": 3,
+  "created_at": "2025-01-20T08:15:00Z"
+}
 ```
 
 ## JWT Configuration

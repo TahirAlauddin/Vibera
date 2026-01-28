@@ -37,7 +37,6 @@ class MoodLogViewSet(viewsets.ModelViewSet):
             comment_count=Count('comments')  # DRF will map this to serializer field
         ).select_related("user").order_by("-created_at")
 
-
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
