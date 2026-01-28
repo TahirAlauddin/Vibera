@@ -1,261 +1,108 @@
+from rest_framework import viewsets, permissions, serializers as drf_serializers
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from rest_framework import status
-from datetime import datetime
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.db.models import Count
 
 from .models import Mood, MoodComment
 from .serializers import MoodLogSerializer, MoodCommentSerializer
 
+# --- Custom Permissions ---
 
-@api_view(["GET"])
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    """
+    Object-level permission: 
+    - SAFE_METHODS (GET, HEAD, OPTIONS) allowed for any authenticated user.
+    - Write methods (PUT, PATCH, DELETE) allowed only for the creator.
+    """
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.user == request.user
+
+# --- ViewSets ---
+
+class MoodLogViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing mood logs.
+    - Authenticated users can see all logs.
+    - Only the creator can update or delete their log.
+    """
+    serializer_class = MoodLogSerializer
+    # Apply the custom permission here
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+
+    def get_queryset(self):
+        return Mood.objects.all().annotate(
+            comment_count=Count('comments')  # DRF will map this to serializer field
+        ).select_related("user").order_by("-created_at")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class MoodCommentViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet for managing mood comments.
+    - Authenticated users can see comments.
+    - Only the creator can update or delete their comment.
+    """
+    serializer_class = MoodCommentSerializer
+    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    lookup_url_kwarg = "comment_id"
+
+    def get_queryset(self):
+        """
+        Base queryset for comments:
+        - If a mood_id is present in the URL, limit to top-level comments for that mood.
+        - Otherwise, return all comments (used for detail routes).
+        """
+        mood_id = self.kwargs.get("mood_id")
+        queryset = MoodComment.objects.select_related("user", "mood").prefetch_related(
+            "replies__user", "replies__mood"
+        ).annotate(
+            reply_count=Count("replies")
+        )
+
+        if mood_id:
+            # Top-level comments for a specific mood
+            return queryset.filter(mood_id=mood_id, parent__isnull=True).order_by(
+                "-created_at"
+            )
+
+        # Return all comments if no mood_id (for the detail view /comments/<id>/)
+        return queryset
+
+    def perform_create(self, serializer):
+        mood_id = self.kwargs.get("mood_id")
+        parent_id = self.kwargs.get("comment_id")
+        
+        # If creating a reply, get mood from parent comment
+        if parent_id:
+            parent = get_object_or_404(MoodComment, id=parent_id)
+            # Prevent nested replies beyond one level
+            if parent.parent is not None:
+                raise drf_serializers.ValidationError(
+                    {
+                        "parent": [
+                            "Cannot reply to a reply. Only top-level comments can have replies."
+                        ]
+                    }
+                )
+            mood = parent.mood
+        else:
+            # Creating a top-level comment, mood_id is required
+            if not mood_id:
+                raise drf_serializers.ValidationError(
+                    {"mood": "mood_id is required for top-level comments."}
+                )
+            mood = get_object_or_404(Mood, id=mood_id)
+            parent = None
+        
+        serializer.save(user=self.request.user, mood=mood, parent=parent)
+
+
+@api_view(['GET'])
 def test_api(request):
-    """
-    Test API endpoint to verify DRF installation.
-    Returns JSON with status, message, and timestamp.
-    """
-    data = {
-        "status": "success",
-        "message": "Django REST Framework is configured correctly!",
-        "timestamp": datetime.now().isoformat(),
-        "framework": "Django REST Framework",
-    }
-    return Response(data, status=status.HTTP_200_OK)
-
-
-class MoodLogView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request):
-        """Retrieve all mood logs for the authenticated user"""
-        moods = Mood.objects.filter(user=request.user)
-        serializer = MoodLogSerializer(moods, many=True)
-
-        return Response(
-            {"count": moods.count(), "data": serializer.data}, status=status.HTTP_200_OK
-        )
-
-    def post(self, request):
-        """Create a new mood log for the authenticated user"""
-        serializer = MoodLogSerializer(data=request.data, context={"request": request})
-
-        if serializer.is_valid():
-            mood = serializer.save()
-            return Response(
-                {"message": "Mood logged successfully", "data": serializer.data},
-                status=status.HTTP_201_CREATED,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MoodLogDetailView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self, pk, user):
-        """Helper method to get a mood object and verify ownership"""
-        try:
-            mood = Mood.objects.get(pk=pk, user=user)
-            return mood
-        except Mood.DoesNotExist:
-            return None
-
-    def get(self, request, pk):
-        """Retrieve a specific mood log by ID"""
-        mood = self.get_object(pk, request.user)
-
-        if mood is None:
-            return Response(
-                {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = MoodLogSerializer(mood)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    def put(self, request, pk):
-        """Update a mood log (full update)"""
-        mood = self.get_object(pk, request.user)
-
-        if mood is None:
-            return Response(
-                {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = MoodLogSerializer(
-            mood, data=request.data, context={"request": request}
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Mood log updated successfully", "data": serializer.data},
-                status=status.HTTP_200_OK,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request, pk):
-        """Partially update a mood log"""
-        mood = self.get_object(pk, request.user)
-
-        if mood is None:
-            return Response(
-                {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        serializer = MoodLogSerializer(
-            mood, data=request.data, partial=True, context={"request": request}
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Mood log updated successfully", "data": serializer.data},
-                status=status.HTTP_200_OK,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        """Delete a mood log"""
-        mood = self.get_object(pk, request.user)
-
-        if mood is None:
-            return Response(
-                {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        mood.delete()
-        return Response(
-            {"message": "Mood log deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT,
-        )
-
-
-class MoodCommentListView(APIView):
-    """List and create comments for a specific mood"""
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, mood_id):
-        """Retrieve all top-level comments for a mood (with nested replies)"""
-        mood = get_object_or_404(Mood, id=mood_id)
-        comments = mood.comments.filter(parent__isnull=True).order_by("-created_at")
-        serializer = MoodCommentSerializer(comments, many=True)
-        return Response(
-            {"count": comments.count(), "data": serializer.data},
-            status=status.HTTP_200_OK,
-        )
-
-    def post(self, request, mood_id):
-        """Create a new top-level comment on a mood"""
-        mood = get_object_or_404(Mood, id=mood_id)
-        serializer = MoodCommentSerializer(
-            data=request.data, context={"request": request}
-        )
-
-        if serializer.is_valid():
-            comment = serializer.save(mood=mood)
-            return Response(
-                {"message": "Comment created successfully", "data": serializer.data},
-                status=status.HTTP_201_CREATED,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class MoodCommentDetailView(APIView):
-    """Update and delete a specific comment"""
-
-    permission_classes = [IsAuthenticated]
-
-    def put(self, request, comment_id):
-        """Update a comment (full update)"""
-        comment = get_object_or_404(MoodComment, id=comment_id)
-
-        # Check if user owns the comment
-        if comment.user != request.user:
-            return Response(
-                {"error": "You do not have permission to update this comment."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        serializer = MoodCommentSerializer(
-            comment, data=request.data, context={"request": request}
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Comment updated successfully", "data": serializer.data},
-                status=status.HTTP_200_OK,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def patch(self, request, comment_id):
-        """Partially update a comment"""
-        comment = get_object_or_404(MoodComment, id=comment_id)
-
-        # Check if user owns the comment
-        if comment.user != request.user:
-            return Response(
-                {"error": "You do not have permission to update this comment."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        serializer = MoodCommentSerializer(
-            comment, data=request.data, partial=True, context={"request": request}
-        )
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {"message": "Comment updated successfully", "data": serializer.data},
-                status=status.HTTP_200_OK,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, comment_id):
-        """Delete a comment"""
-        comment = get_object_or_404(MoodComment, id=comment_id)
-
-        # Check if user owns the comment
-        if comment.user != request.user:
-            return Response(
-                {"error": "You do not have permission to delete this comment."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        comment.delete()
-        return Response(
-            {"message": "Comment deleted successfully"}, status=status.HTTP_200_OK
-        )
-
-
-class MoodCommentReplyView(APIView):
-    """Create a reply to an existing comment"""
-
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, comment_id):
-        """Create a reply to an existing comment"""
-        parent_comment = get_object_or_404(MoodComment, id=comment_id)
-
-        serializer = MoodCommentSerializer(
-            data=request.data, context={"request": request}
-        )
-
-        if serializer.is_valid():
-            # Create reply with parent and same mood as parent
-            reply = serializer.save(mood=parent_comment.mood, parent=parent_comment)
-            return Response(
-                {"message": "Reply created successfully", "data": serializer.data},
-                status=status.HTTP_201_CREATED,
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-      
+    """Test endpoint to verify API is working."""
+    return Response({"message": "Mood API is working!", "status": "ok"})
