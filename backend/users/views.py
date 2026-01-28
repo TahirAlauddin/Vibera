@@ -1,13 +1,13 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework import status, viewsets
+from rest_framework.decorators import action
 from django.contrib.auth import authenticate, get_user_model
 from .utils import create_and_send_otp, verify_user_otp, mask_email
 from .models import UserProfile
 from .serializers import UserProfileSerializer
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
 
 User = get_user_model()
 
@@ -193,67 +193,44 @@ class OtpResendView(APIView):
         )
 
 
-class UserProfileView(APIView):
+class UserProfileViewSet(viewsets.ModelViewSet):
     """
-    Get or update the authenticated user's profile
-    GET /api/users/profile/
-    PUT /api/users/profile/
-    PATCH /api/users/profile/
+    ViewSet for user profiles.
+
+    list:      GET /api/users/profiles/
+    retrieve:  GET /api/users/profiles/<user_id>/
+    me:        GET /api/users/profiles/me/
+    me:        PUT /api/users/profiles/me/
+    me:        PATCH /api/users/profiles/me/
     """
 
+    serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = "user_id"
 
-    def get(self, request):
-        """Retrieve the authenticated user's profile"""
+    def get_queryset(self):
+        return UserProfile.objects.select_related("user")
+
+    @action(detail=False, methods=["get", "put", "patch"])
+    def me(self, request):
+        """Get or update the authenticated user's profile"""
         try:
             profile = UserProfile.objects.get(user=request.user)
         except UserProfile.DoesNotExist:
             return Response(
                 {"error": "Profile does not exist"}, status=status.HTTP_404_NOT_FOUND
             )
-        serializer = UserProfileSerializer(profile)
+
+        if request.method in ("PUT", "PATCH"):
+            partial = request.method == "PATCH"
+            serializer = self.get_serializer(
+                profile, data=request.data, partial=partial
+            )
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        # GET
+        serializer = self.get_serializer(profile)
         return Response(serializer.data)
-
-    def _update_profile(self, request, partial=False):
-        """Helper method to handle profile updates"""
-        try:
-            profile = UserProfile.objects.get(user=request.user)
-        except UserProfile.DoesNotExist:
-            return Response(
-                {"error": "Profile does not exist"}, status=status.HTTP_404_NOT_FOUND
-            )
-        
-        serializer = UserProfileSerializer(profile, data=request.data, partial=partial)
-
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def put(self, request):
-        """Update the authenticated user's profile (full update)"""
-        return self._update_profile(request, partial=False)
-
-    def patch(self, request):
-        """Partially update the authenticated user's profile"""
-        return self._update_profile(request, partial=True)
-
-
-class UserProfileDetailView(APIView):
-    """
-    Get a user's profile by user ID
-    GET /api/users/profile/<user_id>/
-    """
-
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, user_id):
-        """Retrieve a user's profile by user ID"""
-        try:
-            profile = UserProfile.objects.select_related("user").get(user_id=user_id)
-            serializer = UserProfileSerializer(profile)
-            return Response(serializer.data)
-        except UserProfile.DoesNotExist:
-            return Response(
-                {"error": "Profile does not exist"}, status=status.HTTP_404_NOT_FOUND
-            )

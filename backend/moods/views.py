@@ -6,14 +6,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 
-from vibera.logging_config import get_logger
-
 from .models import Mood, MoodComment
 from .serializers import MoodLogSerializer, MoodCommentSerializer
-
-# Logger for moods domain - creates 'moods.views' logger
-# This automatically inherits from the 'moods' logger configuration in settings.py
-logger = get_logger(__name__)
 
 
 @api_view(["GET"])
@@ -54,14 +48,6 @@ class MoodLogView(APIView):
                 status=status.HTTP_201_CREATED,
             )
 
-        logger.warning(
-            "Mood log creation failed - validation errors",
-            extra={
-                "type": "mood_log_create_validation_error",
-                "user_id": request.user.id,
-                "errors": serializer.errors,
-            },
-        )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -81,14 +67,6 @@ class MoodLogDetailView(APIView):
         mood = self.get_object(pk, request.user)
 
         if mood is None:
-            logger.warning(
-                "Mood log retrieval failed - not found",
-                extra={
-                    "type": "mood_log_not_found",
-                    "user_id": request.user.id,
-                    "mood_id": pk,
-                },
-            )
             return Response(
                 {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
             )
@@ -101,20 +79,61 @@ class MoodLogDetailView(APIView):
         mood = self.get_object(pk, request.user)
 
         if mood is None:
-            logger.warning(
-                "Mood log update failed - not found",
-                extra={
-                    "type": "mood_log_update_not_found",
-                    "user_id": request.user.id,
-                    "mood_id": pk,
-                },
-            )
             return Response(
                 {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
             )
 
         serializer = MoodLogSerializer(
             mood, data=request.data, context={"request": request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Mood log updated successfully", "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, pk):
+        """Partially update a mood log"""
+        mood = self.get_object(pk, request.user)
+
+        if mood is None:
+            return Response(
+                {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        serializer = MoodLogSerializer(
+            mood, data=request.data, partial=True, context={"request": request}
+        )
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Mood log updated successfully", "data": serializer.data},
+                status=status.HTTP_200_OK,
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        """Delete a mood log"""
+        mood = self.get_object(pk, request.user)
+
+        if mood is None:
+            return Response(
+                {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+        mood.delete()
+        return Response(
+            {"message": "Mood log deleted successfully"},
+            status=status.HTTP_204_NO_CONTENT,
+        )
+
+
 class MoodCommentListView(APIView):
     """List and create comments for a specific mood"""
 
@@ -139,29 +158,11 @@ class MoodCommentListView(APIView):
 
         if serializer.is_valid():
             comment = serializer.save(mood=mood)
-            logger.info(
-                "Mood comment created",
-                extra={
-                    "type": "mood_comment_create",
-                    "user_id": request.user.id,
-                    "mood_id": mood_id,
-                    "comment_id": comment.id,
-                },
-            )
             return Response(
                 {"message": "Comment created successfully", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
 
-        logger.warning(
-            "Mood comment creation failed - validation errors",
-            extra={
-                "type": "mood_comment_create_validation_error",
-                "user_id": request.user.id,
-                "mood_id": mood_id,
-                "errors": serializer.errors,
-            },
-        )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -187,14 +188,6 @@ class MoodCommentDetailView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            logger.info(
-                "Mood comment updated",
-                extra={
-                    "type": "mood_comment_update",
-                    "user_id": request.user.id,
-                    "comment_id": comment_id,
-                },
-            )
             return Response(
                 {"message": "Comment updated successfully", "data": serializer.data},
                 status=status.HTTP_200_OK,
@@ -219,69 +212,6 @@ class MoodCommentDetailView(APIView):
 
         if serializer.is_valid():
             serializer.save()
-            logger.info(
-                "Mood log partially updated successfully",
-                extra={
-                    "type": "mood_log_patch_success",
-                    "user_id": request.user.id,
-                    "mood_id": pk,
-                },
-            )
-            return Response(
-                {"message": "Mood log updated successfully", "data": serializer.data},
-                status=status.HTTP_200_OK,
-            )
-
-        logger.warning(
-            "Mood log partial update failed - validation errors",
-            extra={
-                "type": "mood_log_patch_validation_error",
-                "user_id": request.user.id,
-                "mood_id": pk,
-                "errors": serializer.errors,
-            },
-        )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    def delete(self, request, pk):
-        """Delete a mood log"""
-        mood = self.get_object(pk, request.user)
-
-        if mood is None:
-            logger.warning(
-                "Mood log deletion failed - not found",
-                extra={
-                    "type": "mood_log_delete_not_found",
-                    "user_id": request.user.id,
-                    "mood_id": pk,
-                },
-            )
-            return Response(
-                {"error": "Mood log not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-        mood_id = mood.id
-        mood.delete()
-
-        logger.info(
-            "Mood log deleted successfully",
-            extra={
-                "type": "mood_log_delete_success",
-                "user_id": request.user.id,
-                "mood_id": mood_id,
-            },
-        )
-        return Response(
-            {"message": "Mood log deleted successfully"},
-            status=status.HTTP_204_NO_CONTENT,
-        )
-                "Mood comment updated",
-                extra={
-                    "type": "mood_comment_update",
-                    "user_id": request.user.id,
-                    "comment_id": comment_id,
-                },
-            )
             return Response(
                 {"message": "Comment updated successfully", "data": serializer.data},
                 status=status.HTTP_200_OK,
@@ -301,14 +231,6 @@ class MoodCommentDetailView(APIView):
             )
 
         comment.delete()
-        logger.info(
-            "Mood comment deleted",
-            extra={
-                "type": "mood_comment_delete",
-                "user_id": request.user.id,
-                "comment_id": comment_id,
-            },
-        )
         return Response(
             {"message": "Comment deleted successfully"}, status=status.HTTP_200_OK
         )
@@ -330,27 +252,9 @@ class MoodCommentReplyView(APIView):
         if serializer.is_valid():
             # Create reply with parent and same mood as parent
             reply = serializer.save(mood=parent_comment.mood, parent=parent_comment)
-            logger.info(
-                "Mood comment reply created",
-                extra={
-                    "type": "mood_comment_reply_create",
-                    "user_id": request.user.id,
-                    "parent_comment_id": comment_id,
-                    "reply_id": reply.id,
-                },
-            )
             return Response(
                 {"message": "Reply created successfully", "data": serializer.data},
                 status=status.HTTP_201_CREATED,
             )
 
-        logger.warning(
-            "Mood comment reply creation failed - validation errors",
-            extra={
-                "type": "mood_comment_reply_create_validation_error",
-                "user_id": request.user.id,
-                "parent_comment_id": comment_id,
-                "errors": serializer.errors,
-            },
-        )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

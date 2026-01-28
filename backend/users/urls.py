@@ -1,18 +1,20 @@
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from .views import (
     OtpRequestView,
     OtpVerifyView,
     OtpResendView,
-    UserProfileView,
-    UserProfileDetailView,
+    UserProfileViewSet,
 )
+
+router = DefaultRouter()
+router.register(r"profiles", UserProfileViewSet, basename="userprofile")
 
 urlpatterns = [
     # 2FA Authentication Endpoints
     path("auth/2fa/login/", OtpRequestView.as_view(), name="otp-request"),
     path("auth/2fa/verify/", OtpVerifyView.as_view(), name="otp-verify"),
     path("auth/2fa/resend/", OtpResendView.as_view(), name="otp-resend"),
-    # User Profile Endpoints
-    path("profile/", UserProfileView.as_view(), name="user-profile"),
-    path("profile/<int:user_id>/", UserProfileDetailView.as_view(), name="user-profile-detail"),
+    # User Profile Endpoints (via router)
+    path("", include(router.urls)),
 ]
