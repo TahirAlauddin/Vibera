@@ -8,38 +8,38 @@ Complete reference for all Vibera REST API endpoints, including request/response
 
 _You can click any endpoint path to jump to the detailed documentation for that endpoint below._
 
-| Method              | Endpoint                                                                 | Purpose                      | Auth required          |
-|---------------------|--------------------------------------------------------------------------|------------------------------|------------------------|
-| POST                | [`/api/auth/users/`](#post-apiauthusers-register)                        | Register                     | No                     |
-| POST                | [`/api/auth/jwt/create/`](#post-apiauthjwtcreate-login)                  | Login (JWT)                  | No                     |
-| POST                | [`/api/auth/jwt/refresh/`](#post-apiauthjwtrefresh-refresh-jwt)          | Refresh JWT                  | No (refresh token)     |
-| POST                | [`/api/auth/jwt/verify/`](#post-apiauthjwtverify-verify-jwt)             | Verify JWT                   | No                     |
-| GET                 | [`/api/auth/users/me/`](#get-apiauthusersme-current-user)                | Current user                 | Yes                    |
-| POST                | [`/api/users/auth/2fa/login/`](#post-apiusersauth2falogin-2fa-request-otp)         | 2FA: request OTP             | No                     |
-| POST                | [`/api/users/auth/2fa/verify/`](#post-apiusersauth2faverify-2fa-verify-otp-get-jwt) | 2FA: verify OTP, get JWT     | Session                |
-| POST                | [`/api/users/auth/2fa/resend/`](#post-apiusersauth2faresend-2fa-resend-otp)        | 2FA: resend OTP              | Session                |
-| GET                 | [`/api/users/profile/`](#get-apiusersprofile-own-profile)                | Own profile                  | Yes                    |
-| PUT / PATCH         | [`/api/users/profile/`](#put--patch-apiusersprofile-update-own-profile)  | Update own profile           | Yes                    |
-| GET                 | [`/api/users/profile/<id>/`](#get-apiusersprofileid-user-profile-by-id)  | User profile by ID           | Yes                    |
-| GET                 | [`/api/moods/`](#get-apimoods-list-moods)                               | List moods                   | Yes                    |
-| POST                | [`/api/moods/`](#post-apimoods-create-mood)                             | Create mood                  | Yes                    |
-| GET / PUT / PATCH / DELETE | [`/api/moods/<id>/`](#get--put--patch--delete-apimoodsid-mood-detail)    | Mood detail                  | Yes                    |
-| GET                 | [`/api/moods/tags/`](#get-apimoodstags-list-mood-tags)                  | List mood tags               | Yes                    |
-| POST                | [`/api/social/follow/<user_id>/`](#post-apisocialfollowuser_id-follow-user)     | Follow user                  | Yes                    |
-| DELETE              | [`/api/social/unfollow/<user_id>/`](#delete-apisocialunfollowuser_id-unfollow-user) | Unfollow user                | Yes                    |
-| GET                 | [`/api/social/followers/`](#get-apisocialfollowers-my-followers)                | My followers                 | Yes                    |
-| GET                 | [`/api/social/following/`](#get-apisocialfollowing-my-following)                | My following                 | Yes                    |
-| GET                 | [`/api/social/followers/<user_id>/`](#get-apisocialfollowersuser_id-users-followers)   | User’s followers             | Yes                    |
-| GET                 | [`/api/social/following/<user_id>/`](#get-apisocialfollowinguser_id-users-following)   | User’s following             | Yes                    |
-| GET                 | [`/api/notifications/`](#get-apinotifications-list-notifications)                | List notifications           | Yes                    |
-| GET                 | [`/api/notifications/unread-count/`](#get-apinotificationsunread-count-unread-count) | Unread count                 | Yes                    |
-| POST                | [`/api/notifications/mark-all-read/`](#post-apinotificationsmark-all-read-mark-all-read) | Mark all read                | Yes                    |
-| GET / PATCH / DELETE| [`/api/notifications/<id>/`](#get--patch--delete-apinotificationsid-notification-detail) | Notification detail          | Yes                    |
+| Method                     | Endpoint                                                                                    | Purpose                  | Auth required      |
+| -------------------------- | ------------------------------------------------------------------------------------------- | ------------------------ | ------------------ |
+| POST                       | [`/api/auth/users/`](#post-apiauthusers-register)                                           | Register                 | No                 |
+| POST                       | [`/api/auth/jwt/create/`](#post-apiauthjwtcreate-login)                                     | Login (JWT)              | No                 |
+| POST                       | [`/api/auth/jwt/refresh/`](#post-apiauthjwtrefresh-refresh-token)                           | Refresh JWT              | No (refresh token) |
+| POST                       | [`/api/auth/jwt/verify/`](#post-apiauthjwtverify-verify-token)                              | Verify JWT               | No                 |
+| GET                        | [`/api/auth/users/me/`](#get-apiauthusersme-current-user)                                   | Current user             | Yes                |
+| POST                       | [`/api/users/auth/2fa/login/`](#post-apiusersauth2falogin-2fa--request-otp)                 | 2FA: request OTP         | No                 |
+| POST                       | [`/api/users/auth/2fa/verify/`](#post-apiusersauth2faverify-2fa--verify-otp)                | 2FA: verify OTP, get JWT | Session            |
+| POST                       | [`/api/users/auth/2fa/resend/`](#post-apiusersauth2faresend-2fa--resend-otp)                | 2FA: resend OTP          | Session            |
+| GET                        | [`/api/users/profile/`](#get-apiusersprofile-own-profile)                                   | Own profile              | Yes                |
+| PUT / PATCH                | [`/api/users/profile/`](#get-apiusersprofile-own-profile)                      | Update own profile       | Yes                |
+| GET                        | [`/api/users/profile/<id>/`](#get-apiusersprofileuser_id-user-profile-by-id)                | User profile by ID       | Yes                |
+| GET                        | [`/api/moods/`](#get-apimoods-list-moods)                                                   | List moods               | Yes                |
+| POST                       | [`/api/moods/`](#post-apimoods-create-mood)                                                 | Create mood              | Yes                |
+| GET / PUT / PATCH / DELETE | [`/api/moods/<id>/`](#get-apimoodsid-get-single-mood)                                       | Mood detail              | Yes                |
+| GET                        | [`/api/moods/tags/`](#get-apimoodstags-list-mood-tags)                                      | List mood tags           | Yes                |
+| POST                       | [`/api/social/follow/<user_id>/`](#post-apisocialfollowuser_id-follow-user)                 | Follow user              | Yes                |
+| DELETE                     | [`/api/social/unfollow/<user_id>/`](#delete-apisocialunfollowuser_id-unfollow-user)         | Unfollow user            | Yes                |
+| GET                        | [`/api/social/followers/`](#get-apisocialfollowers-my-followers)                            | My followers             | Yes                |
+| GET                        | [`/api/social/following/`](#get-apisocialfollowing-my-following)                            | My following             | Yes                |
+| GET                        | [`/api/social/followers/<user_id>/`](#get-apisocialfollowersuser_id-users-followers)        | User’s followers         | Yes                |
+| GET                        | [`/api/social/following/<user_id>/`](#get-apisocialfollowinguser_id-users-following)        | User’s following         | Yes                |
+| GET                        | [`/api/notifications/`](#get-apinotifications-list-notifications)                           | List notifications       | Yes                |
+| GET                        | [`/api/notifications/unread-count/`](#get-apinotificationsunread-count-unread-count)        | Unread count             | Yes                |
+| POST                       | [`/api/notifications/mark-all-read/`](#post-apinotificationsmark-all-read-mark-all-as-read) | Mark all read            | Yes                |
+| GET / PATCH / DELETE       | [`/api/notifications/<id>/`](#get-apinotificationsid-get-notification)                      | Notification detail      | Yes                |
 
 _Tip: Each link jumps to the specific section with request and response examples for the given endpoint below!_
 
-
 ---
+
 ## Authentication Endpoints
 
 ### POST /api/auth/users/ (Register)
@@ -207,6 +207,7 @@ Authorization: Bearer <access_token>
 
 ---
 
+<a id="post-apiusersauth2falogin-2fa--request-otp"></a>
 ### POST /api/users/auth/2fa/login/ (2FA – request OTP)
 
 Validate credentials and send OTP by email (if 2FA enabled), or return JWT directly if not.
@@ -261,7 +262,9 @@ Content-Type: application/json
 
 ---
 
+<a id="post-apiusersauth2faverify-2fa--verify-otp"></a>
 ### POST /api/users/auth/2fa/verify/ (2FA – verify OTP)
+
 
 Verify OTP and receive JWT tokens. Requires session cookie from 2FA login.
 
@@ -303,7 +306,9 @@ Cookie: sessionid=<session_from_2fa_login>
 
 ---
 
+<a id="post-apiusersauth2faresend-2fa--resend-otp"></a>
 ### POST /api/users/auth/2fa/resend/ (2FA – resend OTP)
+
 
 Resend OTP to the user’s email.
 
@@ -469,9 +474,7 @@ Content-Type: application/json
     "user": "johndoe",
     "emoji": "😊",
     "reason": "Had a great day!",
-    "tags": [
-      { "id": 1, "name": "work", "color": "#6366f1" }
-    ],
+    "tags": [{ "id": 1, "name": "work", "color": "#6366f1" }],
     "created_at": "2025-01-23T10:30:00Z",
     "updated_at": "2025-01-23T10:30:00Z"
   }
@@ -527,7 +530,9 @@ Authorization: Bearer <access_token>
 
 ---
 
+<a id="get-apimoodsid-get-single-mood"></a>
 ### GET /api/moods/<id>/ (Get single mood)
+
 
 **Request**
 
@@ -563,7 +568,8 @@ Authorization: Bearer <access_token>
 
 ---
 
-### PUT /api/moods/<id>/ (Update mood – full)  
+### PUT /api/moods/<id>/ (Update mood – full)
+
 ### PATCH /api/moods/<id>/ (Update mood – partial)
 
 **Request**
@@ -726,7 +732,8 @@ Authorization: Bearer <access_token>
 
 ---
 
-### GET /api/social/followers/ (My followers)  
+### GET /api/social/followers/ (My followers)
+
 ### GET /api/social/followers/<user_id>/ (User’s followers)
 
 **Request**
@@ -763,7 +770,8 @@ Or `GET /api/social/followers/2/` for a specific user’s followers.
 
 ---
 
-### GET /api/social/following/ (My following)  
+### GET /api/social/following/ (My following)
+
 ### GET /api/social/following/<user_id>/ (User’s following)
 
 **Request**
@@ -806,10 +814,10 @@ Or `GET /api/social/following/2/` for a specific user’s following list.
 
 List notifications for the authenticated user. Supports filtering.
 
-| Query param | Type   | Description                                      |
-|-------------|--------|--------------------------------------------------|
-| `is_read`   | `true` / `false` | Filter by read status                    |
-| `type`      | string | Filter by type: `welcome`, `new_follower`, `followed_back`, `daily_mood` |
+| Query param | Type             | Description                                                              |
+| ----------- | ---------------- | ------------------------------------------------------------------------ |
+| `is_read`   | `true` / `false` | Filter by read status                                                    |
+| `type`      | string           | Filter by type: `welcome`, `new_follower`, `followed_back`, `daily_mood` |
 
 **Request**
 
@@ -887,8 +895,12 @@ Authorization: Bearer <access_token>
 
 ---
 
-### GET /api/notifications/<id>/ (Get notification)  
-### PATCH /api/notifications/<id>/ (Mark as read)  
+<a id="get-apinotificationsid-get-notification"></a>
+### GET /api/notifications/<id>/ (Get notification)
+
+
+### PATCH /api/notifications/<id>/ (Mark as read)
+
 ### DELETE /api/notifications/<id>/ (Delete notification)
 
 **Request – GET**
