@@ -6,7 +6,11 @@ import sys
 
 def main():
     """Run administrative tasks."""
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vibera.settings")
+    # Default to staging settings for local development
+    # Set DJANGO_SETTINGS_MODULE environment variable to override:
+    # - settings.stagging (staging/development)
+    # - settings.production (production)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.stagging")
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
