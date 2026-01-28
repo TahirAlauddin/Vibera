@@ -34,7 +34,7 @@ class MoodLogViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         return Mood.objects.all().annotate(
-            comment_count=Count('comments') # DRF will map this to serializer field
+            comment_count=Count('comments')  # DRF will map this to serializer field
         ).select_related("user").order_by("-created_at")
 
 
@@ -53,17 +53,24 @@ class MoodCommentViewSet(viewsets.ModelViewSet):
     lookup_url_kwarg = "comment_id"
 
     def get_queryset(self):
+        """
+        Base queryset for comments:
+        - If a mood_id is present in the URL, limit to top-level comments for that mood.
+        - Otherwise, return all comments (used for detail routes).
+        """
         mood_id = self.kwargs.get("mood_id")
         queryset = MoodComment.objects.select_related("user", "mood").prefetch_related(
             "replies__user", "replies__mood"
         ).annotate(
-            reply_count=Count('replies')
+            reply_count=Count("replies")
         )
-        
+
         if mood_id:
             # Top-level comments for a specific mood
-            return queryset.filter(mood_id=mood_id, parent__isnull=True).order_by("-created_at")
-        
+            return queryset.filter(mood_id=mood_id, parent__isnull=True).order_by(
+                "-created_at"
+            )
+
         # Return all comments if no mood_id (for the detail view /comments/<id>/)
         return queryset
 
@@ -77,7 +84,11 @@ class MoodCommentViewSet(viewsets.ModelViewSet):
             # Prevent nested replies beyond one level
             if parent.parent is not None:
                 raise drf_serializers.ValidationError(
-                    {"parent": "Cannot reply to a reply. Only top-level comments can have replies."}
+                    {
+                        "parent": [
+                            "Cannot reply to a reply. Only top-level comments can have replies."
+                        ]
+                    }
                 )
             mood = parent.mood
         else:

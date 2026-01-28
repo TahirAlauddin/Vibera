@@ -6,10 +6,11 @@ This guide provides a complete overview of how to test the mood comments feature
 
 1. [Running Automated Tests](#running-automated-tests)
 2. [Test Coverage Overview](#test-coverage-overview)
-3. [Manual Testing Checklist](#manual-testing-checklist)
-4. [API Testing with Tools](#api-testing-with-tools)
-5. [Edge Cases to Verify](#edge-cases-to-verify)
-6. [Performance Testing](#performance-testing)
+3. [API Contract](#api-contract)
+4. [Manual Testing Checklist](#manual-testing-checklist)
+5. [API Testing with Tools](#api-testing-with-tools)
+6. [Edge Cases to Verify](#edge-cases-to-verify)
+7. [Performance Testing](#performance-testing)
 
 ## Running Automated Tests
 
@@ -56,7 +57,7 @@ python manage.py test moods.tests.MoodCommentListCreateTests.test_create_comment
 
 ## Test Coverage Overview
 
-The test suite includes **60+ test cases** covering:
+The test suite includes **40+ test cases** covering:
 
 ### 1. Authentication & Authorization (8 tests)
 - ✅ Unauthenticated access prevention
@@ -72,8 +73,8 @@ The test suite includes **60+ test cases** covering:
 - ✅ Prevent updating/deleting others' comments
 
 ### 3. Nested Replies (8 tests)
-- ✅ Create replies to comments
-- ✅ Create replies to replies (nested)
+- ✅ Create replies to top-level comments
+- ✅ Prevent replies to replies (single-level nesting enforced)
 - ✅ Reply inheritance of mood
 - ✅ Multiple replies to same comment
 
@@ -86,11 +87,162 @@ The test suite includes **60+ test cases** covering:
 - ✅ Long content handling
 
 ### 5. Data Structure & Serialization (6 tests)
-- ✅ Nested reply serialization
-- ✅ Reply count calculation
-- ✅ Comment ordering (newest first)
-- ✅ Reply ordering (oldest first)
+- ✅ Nested reply serialization (only direct replies nested)
+- ✅ Reply count calculation (counts only direct replies)
+- ✅ Comment ordering (newest first for top-level comments)
+- ✅ Reply ordering (oldest first for replies)
 - ✅ Read-only field protection
+
+## API Contract
+
+This section documents the expected request/response shapes for the Mood Comments API,
+based on the current `ModelViewSet` implementation.
+
+### 1. List Comments for a Mood
+
+- **Endpoint**: `GET /api/moods/{mood_id}/comments/`
+- **Auth**: Required (JWT)
+- **Response 200 OK**:
+  - Returns a **JSON array** of top-level comments (no wrapper object):
+  ```json
+  [
+    {
+      "id": 1,
+      "user": "user1",
+      "content": "Top level comment",
+      "parent": null,
+      "replies": [
+        {
+          "id": 2,
+          "user": "user2",
+          "content": "Reply",
+          "created_at": "...",
+          "updated_at": "..."
+        }
+      ],
+      "reply_count": 1,
+      "created_at": "...",
+      "updated_at": "..."
+    }
+  ]
+  ```
+  - **Notes**:
+    - Only **top-level** comments are returned at the root level.
+    - `replies` contains **only direct replies**, ordered by `created_at` ascending
+      (oldest first).
+    - `reply_count` counts **only direct** replies.
+
+### 2. Create a Top-Level Comment
+
+- **Endpoint**: `POST /api/moods/{mood_id}/comments/`
+- **Auth**: Required (JWT)
+- **Body**:
+  ```json
+  { "content": "This is a comment" }
+  ```
+- **Response 201 Created**:
+  ```json
+  {
+    "id": 123,
+    "user": "user1",
+    "content": "This is a comment",
+    "parent": null,
+    "replies": [],
+    "reply_count": 0,
+    "created_at": "...",
+    "updated_at": "..."
+  }
+  ```
+- **Validation errors 400 Bad Request**:
+  ```json
+  { "content": ["Comment content cannot be empty."] }
+  ```
+- **Notes**:
+  - `content` must not be empty or whitespace-only.
+  - There is no artificial maximum length enforced at serializer level; database
+    limits still apply.
+
+### 3. Create a Reply
+
+- **Endpoint**: `POST /api/moods/comments/{comment_id}/replies/`
+- **Auth**: Required (JWT)
+- **Body**:
+  ```json
+  { "content": "This is a reply" }
+  ```
+- **Response 201 Created (for valid reply to top-level comment)**:
+  ```json
+  {
+    "id": 200,
+    "user": "user2",
+    "content": "This is a reply",
+    "parent": 123,
+    "created_at": "...",
+    "updated_at": "..."
+  }
+  ```
+- **Reply-to-reply rejected 400 Bad Request**:
+  ```json
+  {
+    "parent": [
+      "Cannot reply to a reply. Only top-level comments can have replies."
+    ]
+  }
+  ```
+- **Notes**:
+  - Replies automatically **inherit the mood** from the parent comment.
+  - Only **one level of nesting** is allowed (`comment -> reply`). Deeper nesting
+    attempts are rejected with the `parent` validation error above.
+
+### 4. Update a Comment
+
+- **Endpoint**:
+  - `PUT /api/moods/comments/{comment_id}/`
+  - `PATCH /api/moods/comments/{comment_id}/`
+- **Auth**: Required, owner-only
+- **Body** (example PATCH):
+  ```json
+  { "content": "Updated content" }
+  ```
+- **Response 200 OK**:
+  ```json
+  {
+    "id": 123,
+    "user": "user1",
+    "content": "Updated content",
+    "parent": null,
+    "replies": [],
+    "reply_count": 0,
+    "created_at": "...",
+    "updated_at": "..."
+  }
+  ```
+- **Permission failure 403 Forbidden** (non-owner):
+  ```json
+  { "detail": "You do not have permission to perform this action." }
+  ```
+
+### 5. Delete a Comment
+
+- **Endpoint**: `DELETE /api/moods/comments/{comment_id}/`
+- **Auth**: Required, owner-only
+- **Response 204 No Content**:
+  - Empty body on success.
+- **Permission failure 403 Forbidden**:
+  ```json
+  { "detail": "You do not have permission to perform this action." }
+  ```
+
+### 6. Common Error Responses
+
+- **401 Unauthorized** (no or invalid token):
+  ```json
+  { "detail": "Authentication credentials were not provided." }
+  ```
+- **404 Not Found** (non-existent mood or comment):
+  ```json
+  { "detail": "Not found." }
+  ```
 
 ### 6. Edge Cases & Cascades (8 tests)
 - ✅ Deleting comment with replies (CASCADE)
@@ -161,9 +313,10 @@ The test suite includes **60+ test cases** covering:
   - POST `/api/moods/comments/{comment_id}/replies/`
   - Verify: Reply appears nested under parent
   
-- [ ] **Nested Reply to Reply**
-  - POST `/api/moods/comments/{reply_id}/replies/`
-  - Verify: Multi-level nesting works
+- [ ] **Reply to Reply (Should Fail)**
+  - POST `/api/moods/comments/{reply_id}/replies/` where `{reply_id}` is itself a reply
+  - Verify: 400 Bad Request with a `parent` validation error indicating that only
+    top-level comments can have replies
   
 - [ ] **Multiple Replies**
   - Create multiple replies to same comment

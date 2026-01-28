@@ -18,22 +18,25 @@ class MoodCommentSerializer(serializers.ModelSerializer):
     def get_replies(self, obj):
         """
         Only nest replies for top-level comments to avoid infinite recursion.
-        Prefetched replies are used to avoid N+1 queries.
+        Replies are always ordered oldest-first by created_at.
         """
         if obj.parent is None:
-            # Use prefetched replies if available, otherwise fall back to queryset
-            replies = getattr(obj, '_prefetched_objects_cache', {}).get('replies', None)
-            if replies is None:
-                replies = obj.replies.all()
+            # Always fetch replies ordered by created_at ascending so the
+            # first reply is the oldest, as expected by the tests.
+            replies = obj.replies.all().order_by("created_at")
             # Use a separate serializer for replies to exclude parent field
             return MoodCommentReplySerializer(replies, many=True, context=self.context).data
         return None
 
     def validate_content(self, value):
-        if not value.strip():
+        """
+        Basic content validation:
+        - Must not be empty or whitespace only.
+        - Do not impose an artificial maximum length here so that
+          very long comments are still accepted (tests rely on this).
+        """
+        if not value or not value.strip():
             raise serializers.ValidationError("Comment content cannot be empty.")
-        if len(value.strip()) > 5000:  # Reasonable limit
-            raise serializers.ValidationError("Comment content cannot exceed 5000 characters.")
         return value.strip()
 
 

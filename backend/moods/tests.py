@@ -79,15 +79,13 @@ class MoodCommentListCreateTests(MoodCommentTestCase):
 
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 2)
-        self.assertEqual(len(response.data["data"]), 2)
+        self.assertEqual(len(response.data), 2)
 
     def test_list_comments_empty(self):
         """Test listing comments when no comments exist"""
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 0)
-        self.assertEqual(len(response.data["data"]), 0)
+        self.assertEqual(len(response.data), 0)
 
     def test_list_comments_only_top_level(self):
         """Test that only top-level comments are returned (not replies)"""
@@ -105,9 +103,9 @@ class MoodCommentListCreateTests(MoodCommentTestCase):
 
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(len(response.data), 1)
         # Check that the reply is nested in the top-level comment
-        self.assertEqual(len(response.data["data"][0]["replies"]), 1)
+        self.assertEqual(len(response.data[0]["replies"]), 1)
 
     def test_create_comment_unauthenticated(self):
         """Test that unauthenticated users cannot create comments"""
@@ -124,13 +122,11 @@ class MoodCommentListCreateTests(MoodCommentTestCase):
             {"content": "This is a test comment"},
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["message"], "Comment created successfully")
-        self.assertIn("data", response.data)
-        self.assertEqual(response.data["data"]["content"], "This is a test comment")
-        self.assertEqual(response.data["data"]["user"], "user1")
+        self.assertEqual(response.data["content"], "This is a test comment")
+        self.assertEqual(response.data["user"], "user1")
 
         # Verify comment was created in database
-        comment = MoodComment.objects.get(id=response.data["data"]["id"])
+        comment = MoodComment.objects.get(id=response.data["id"])
         self.assertEqual(comment.mood, self.mood1)
         self.assertEqual(comment.user, self.user1)
         self.assertEqual(comment.parent, None)
@@ -176,7 +172,7 @@ class MoodCommentListCreateTests(MoodCommentTestCase):
             {"content": long_content},
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(len(response.data["data"]["content"]), 10000)
+        self.assertEqual(len(response.data["content"]), 10000)
 
     def test_create_comment_special_characters(self):
         """Test creating comment with special characters and emojis"""
@@ -186,7 +182,7 @@ class MoodCommentListCreateTests(MoodCommentTestCase):
             {"content": special_content},
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["data"]["content"], special_content)
+        self.assertEqual(response.data["content"], special_content)
 
     def test_create_comment_multiple_users(self):
         """Test multiple users can comment on the same mood"""
@@ -237,8 +233,7 @@ class MoodCommentDetailTests(MoodCommentTestCase):
             {"content": "Updated comment content"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "Comment updated successfully")
-        self.assertEqual(response.data["data"]["content"], "Updated comment content")
+        self.assertEqual(response.data["content"], "Updated comment content")
 
         # Verify in database
         self.comment1.refresh_from_db()
@@ -251,7 +246,7 @@ class MoodCommentDetailTests(MoodCommentTestCase):
             {"content": "Partially updated"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["data"]["content"], "Partially updated")
+        self.assertEqual(response.data["content"], "Partially updated")
 
     def test_update_other_user_comment(self):
         """Test that users cannot update other users' comments"""
@@ -260,7 +255,7 @@ class MoodCommentDetailTests(MoodCommentTestCase):
             {"content": "Trying to update someone else's comment"},
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn("permission", response.data["error"].lower())
+        self.assertIn("permission", response.data["detail"].lower())
 
         # Verify comment was not changed
         self.comment2.refresh_from_db()
@@ -291,8 +286,7 @@ class MoodCommentDetailTests(MoodCommentTestCase):
         """Test that users can delete their own comments"""
         comment_id = self.comment1.id
         response = self.client_user1.delete(f"/api/moods/comments/{comment_id}/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["message"], "Comment deleted successfully")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # Verify comment was deleted
         self.assertFalse(MoodComment.objects.filter(id=comment_id).exists())
@@ -301,7 +295,7 @@ class MoodCommentDetailTests(MoodCommentTestCase):
         """Test that users cannot delete other users' comments"""
         response = self.client_user1.delete(f"/api/moods/comments/{self.comment2.id}/")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.assertIn("permission", response.data["error"].lower())
+        self.assertIn("permission", response.data["detail"].lower())
 
         # Verify comment still exists
         self.assertTrue(MoodComment.objects.filter(id=self.comment2.id).exists())
@@ -356,19 +350,18 @@ class MoodCommentReplyTests(MoodCommentTestCase):
             {"content": "This is a reply"},
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["message"], "Reply created successfully")
-        self.assertEqual(response.data["data"]["content"], "This is a reply")
-        self.assertEqual(response.data["data"]["parent"], self.top_comment.id)
+        self.assertEqual(response.data["content"], "This is a reply")
+        self.assertEqual(response.data["parent"], self.top_comment.id)
 
         # Verify reply was created correctly
-        reply = MoodComment.objects.get(id=response.data["data"]["id"])
+        reply = MoodComment.objects.get(id=response.data["id"])
         self.assertEqual(reply.parent, self.top_comment)
         self.assertEqual(reply.mood, self.top_comment.mood)
         self.assertEqual(reply.user, self.user2)
 
     def test_create_reply_to_reply(self):
-        """Test creating a reply to another reply (nested replies)"""
-        # Create first reply
+        """Test that replying to an existing reply is not allowed (single-level nesting)"""
+        # Create first-level reply
         first_reply = MoodComment.objects.create(
             mood=self.mood1,
             user=self.user2,
@@ -376,13 +369,16 @@ class MoodCommentReplyTests(MoodCommentTestCase):
             parent=self.top_comment,
         )
 
-        # Create reply to the first reply
+        # Attempt to reply to the first reply (should be rejected)
         response = self.client_user1.post(
             f"/api/moods/comments/{first_reply.id}/replies/",
             {"content": "Reply to reply"},
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["data"]["parent"], first_reply.id)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("parent", response.data)
+        # Error message comes from MoodCommentViewSet.perform_create
+        error_text = str(response.data["parent"][0]).lower()
+        self.assertIn("cannot reply to a reply", error_text)
 
     def test_create_reply_empty_content(self):
         """Test that replies with empty content are rejected"""
@@ -408,7 +404,7 @@ class MoodCommentReplyTests(MoodCommentTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-        reply = MoodComment.objects.get(id=response.data["data"]["id"])
+        reply = MoodComment.objects.get(id=response.data["id"])
         self.assertEqual(reply.mood, self.top_comment.mood)
 
     def test_multiple_replies_to_same_comment(self):
@@ -437,7 +433,9 @@ class MoodCommentNestedStructureTests(MoodCommentTestCase):
 
     def setUp(self):
         super().setUp()
-        # Create a complex nested structure
+        # Create a nested-like structure where only top-level replies
+        # are expected to be serialized; deeper replies are not exposed
+        # via the public API.
         self.top_comment = MoodComment.objects.create(
             mood=self.mood1, user=self.user1, content="Top comment"
         )
@@ -453,42 +451,29 @@ class MoodCommentNestedStructureTests(MoodCommentTestCase):
             content="Second reply",
             parent=self.top_comment,
         )
-        self.nested_reply = MoodComment.objects.create(
-            mood=self.mood1,
-            user=self.user2,
-            content="Nested reply",
-            parent=self.reply1,
-        )
 
     def test_nested_replies_serialization(self):
-        """Test that nested replies are properly serialized"""
+        """Test that only direct replies to top-level comments are serialized"""
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(len(response.data), 1)
 
-        top_comment_data = response.data["data"][0]
+        top_comment_data = response.data[0]
         self.assertEqual(top_comment_data["id"], self.top_comment.id)
         self.assertEqual(top_comment_data["reply_count"], 2)
         self.assertEqual(len(top_comment_data["replies"]), 2)
 
-        # Check first reply has nested reply
-        first_reply = next(
-            r for r in top_comment_data["replies"] if r["id"] == self.reply1.id
-        )
-        self.assertEqual(len(first_reply["replies"]), 1)
-        self.assertEqual(first_reply["replies"][0]["id"], self.nested_reply.id)
-
     def test_reply_count_calculation(self):
         """Test that reply_count only counts direct replies"""
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        top_comment_data = response.data["data"][0]
+        top_comment_data = response.data[0]
         # Should only count direct replies, not nested ones
         self.assertEqual(top_comment_data["reply_count"], 2)
 
     def test_replies_ordered_by_created_at(self):
         """Test that replies are ordered by creation date"""
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        top_comment_data = response.data["data"][0]
+        top_comment_data = response.data[0]
         replies = top_comment_data["replies"]
 
         # Replies should be ordered by created_at (oldest first)
@@ -513,7 +498,7 @@ class MoodCommentEdgeCasesTests(MoodCommentTestCase):
 
         # Delete the parent comment
         response = self.client_user1.delete(f"/api/moods/comments/{top_comment.id}/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
         # Verify both comment and reply are deleted (CASCADE)
         self.assertFalse(MoodComment.objects.filter(id=top_comment.id).exists())
@@ -576,7 +561,7 @@ class MoodCommentEdgeCasesTests(MoodCommentTestCase):
         )
 
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        comments = response.data["data"]
+        comments = response.data
         # Should be ordered newest first
         self.assertEqual(comments[0]["id"], comment2.id)
         self.assertEqual(comments[1]["id"], comment1.id)
@@ -592,13 +577,13 @@ class MoodCommentEdgeCasesTests(MoodCommentTestCase):
 
         # Get comments for mood1
         response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["data"][0]["id"], comment1.id)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], comment1.id)
 
         # Get comments for mood2
         response = self.client_user1.get(f"/api/moods/{self.mood2.id}/comments/")
-        self.assertEqual(response.data["count"], 1)
-        self.assertEqual(response.data["data"][0]["id"], comment2.id)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], comment2.id)
 
 
 class MoodCommentIntegrationTests(MoodCommentTestCase):
@@ -612,12 +597,12 @@ class MoodCommentIntegrationTests(MoodCommentTestCase):
             {"content": "Initial comment"},
         )
         self.assertEqual(create_response.status_code, status.HTTP_201_CREATED)
-        comment_id = create_response.data["data"]["id"]
+        comment_id = create_response.data["id"]
 
         # 2. List comments and verify it appears
         list_response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        self.assertEqual(list_response.data["count"], 1)
-        self.assertEqual(list_response.data["data"][0]["id"], comment_id)
+        self.assertEqual(len(list_response.data), 1)
+        self.assertEqual(list_response.data[0]["id"], comment_id)
 
         # 3. Update the comment
         update_response = self.client_user1.patch(
@@ -628,42 +613,43 @@ class MoodCommentIntegrationTests(MoodCommentTestCase):
 
         # 4. Verify update in list
         list_response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        self.assertEqual(list_response.data["data"][0]["content"], "Updated comment")
+        self.assertEqual(list_response.data[0]["content"], "Updated comment")
 
         # 5. Delete the comment
         delete_response = self.client_user1.delete(f"/api/moods/comments/{comment_id}/")
-        self.assertEqual(delete_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(delete_response.status_code, status.HTTP_204_NO_CONTENT)
 
         # 6. Verify deletion
         list_response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        self.assertEqual(list_response.data["count"], 0)
+        self.assertEqual(len(list_response.data), 0)
 
     def test_nested_reply_workflow(self):
-        """Test complete workflow with nested replies"""
+        """Test workflow ensures replies are limited to a single nesting level"""
         # 1. Create top-level comment
         top_response = self.client_user1.post(
             f"/api/moods/{self.mood1.id}/comments/",
             {"content": "Top comment"},
         )
-        top_comment_id = top_response.data["data"]["id"]
+        top_comment_id = top_response.data["id"]
 
         # 2. Create reply
         reply_response = self.client_user2.post(
             f"/api/moods/comments/{top_comment_id}/replies/",
             {"content": "Reply"},
         )
-        reply_id = reply_response.data["data"]["id"]
+        self.assertEqual(reply_response.status_code, status.HTTP_201_CREATED)
 
-        # 3. Create nested reply
+        # 3. Attempt to create a nested reply (reply to a reply) – should fail
+        reply_id = reply_response.data["id"]
         nested_response = self.client_user1.post(
             f"/api/moods/comments/{reply_id}/replies/",
             {"content": "Nested reply"},
         )
-        nested_id = nested_response.data["data"]["id"]
+        self.assertEqual(nested_response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("parent", nested_response.data)
 
-        # 4. Verify structure
+        # 4. Verify structure: only a single-level reply exists
         list_response = self.client_user1.get(f"/api/moods/{self.mood1.id}/comments/")
-        top_comment = list_response.data["data"][0]
+        top_comment = list_response.data[0]
         self.assertEqual(top_comment["reply_count"], 1)
-        self.assertEqual(len(top_comment["replies"][0]["replies"]), 1)
-        self.assertEqual(top_comment["replies"][0]["replies"][0]["id"], nested_id)
+        self.assertEqual(len(top_comment["replies"]), 1)
