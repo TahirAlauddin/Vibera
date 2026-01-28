@@ -1,608 +1,105 @@
 # Vibera
 
-A mood tracking and journaling application built with Django REST Framework and JWT authentication.
+[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/)
+[![Django 6](https://img.shields.io/badge/Django-6.0-green.svg)](https://www.djangoproject.com/)
+[![Next.js 16](https://img.shields.io/badge/Next.js-16-black.svg)](https://nextjs.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791.svg)](https://www.postgresql.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Tech Stack
+**A mood-tracking and journaling app** — log how you feel, add notes, follow friends, and get notifications. Built with Django REST + JWT and a Next.js frontend.
 
-- **Backend**: Django 6.0
-- **API**: Django REST Framework
-- **Authentication**: JWT (Djoser + SimpleJWT)
-- **2FA**: Email-based OTP
-- **Database**: PostgreSQL
+---
 
-## Installation & Setup
+---
 
-### 1. Clone the Repository
+## ✨ Key Features
+
+- 🎭 **Mood logging** — Track daily moods with emojis (Happy, Sad, Calm, etc.) and optional reasons
+- 📔 **Journal entries** — Attach reflective notes to moods
+- 👥 **Follow system** — Connect with others; see followers and following
+- 🔐 **JWT + 2FA** — Secure login with optional email OTP
+- 🔔 **Notifications** — Welcome, new follower, follow-back, and daily mood reminders
+- 📱 **REST API** — Open API for integrations and clients
+
+---
+
+## 🚀 Quick Start
 
 ```bash
+# 1. Clone the repository and navigate to the project root
 git clone https://github.com/TahirAlauddin/Vibera.git
 cd Vibera
-```
 
-### 2. Setup Backend
-
-```bash
+# 2. Set up the backend (Python virtual environment & dependencies)
 cd backend
 python -m venv venv
-venv\Scripts\activate  # Windows
-# source venv/bin/activate  # macOS / Linux
+source venv/bin/activate       # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-### 3. Configure Environment Variables
+# 3. Copy environment variables and configure
+cp .env.example .env           # Edit SECRET_KEY, ALLOWED_HOSTS, CORS_ALLOWED_ORIGINS in .env
 
-Copy `.env.example` to `.env` and update:
-
-```env
-SECRET_KEY=your_secret_key
-DB_ENGINE=django.db.backends.postgresql
-DB_NAME=vibera_db
-DB_USER=postgres
-DB_PASSWORD=your_password
-DB_HOST=localhost
-DB_PORT=5432
-ALLOWED_HOSTS=127.0.0.1,localhost
-
-# Email Configuration (for 2FA OTP)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_USE_SSL=False
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
-DEFAULT_FROM_EMAIL=your-email@gmail.com
-```
-
-### 4. Run Migrations
-
-```bash
+# 4. Run initial migrations and create a superuser
 python manage.py migrate
 python manage.py createsuperuser
+
+# 5. Set up the frontend (Next.js/React)
+cd ../frontend
+npm install
+npm run dev
 ```
 
-### 5. Start the Server
 
-```bash
-python manage.py runserver
-```
+**Then:** Activate `backend/venv`, run `python manage.py runserver`, and open [http://localhost:3000](http://localhost:3000).  
+**Read More:** [Getting Started](docs/guides/getting-started.md) · [Environment Setup](docs/guides/environment-setup.md)
 
-API Base URL: `http://127.0.0.1:8000/`
+---
 
-## Database Models
+## 🛠 Tech Stack
 
-### User Model
+| Layer       | Tech                          |
+|------------|-------------------------------|
+| **Frontend** | Next.js 16, React 19, Tailwind |
+| **Backend**  | Django 6, Django REST Framework |
+| **Auth**     | JWT (Djoser + Simple JWT), email 2FA |
+| **Database** | PostgreSQL 16 (or SQLite for dev) |
+| **Deploy**   | Docker Compose (DB); see [Deployment](docs/deployment/deployment.md) |
 
-- `email`, `username` (unique, for login)
-- `first_name`, `last_name` (optional)
-- `is_active`, `is_staff`, `is_2fa_enabled`, `date_joined`
+---
 
-### EmailOTP Model (Two-Factor Authentication)
+## 📚 Documentation
 
-- `user` - ForeignKey to User
-- `hashed_code` - Securely hashed OTP code
-- `expires_at` - OTP expiration time
-- `is_used` - Whether OTP has been used
-- `attempts` - Failed verification attempts
-- `created_at` - Creation timestamp
+**[📖 Documentation hub](docs/README.md)** — Index and navigation for all docs.
 
-### Mood Model
+| Doc | Description |
+|-----|-------------|
+| [Getting Started](docs/guides/getting-started.md) | Run the app, verify, useful commands |
+| [Environment Setup](docs/guides/environment-setup.md) | Env vars, database, IDE, Git workflow |
+| [API Overview](docs/api/overview.md) | Auth, base URL, request/response format |
+| [API Endpoints](docs/api/endpoints.md) | Full REST endpoint reference |
+| [Architecture](docs/ARCHITECTURE.md) | System design, scaling, deployment |
+| [Database Schema](docs/database/schema.md) | Tables, relationships, migrations |
 
-- `user` - ForeignKey to User
-- `emoji` - Mood emoji (😊 Happy, 😔 Sad, 😡 Angry, 😰 Anxious, 😴 Tired, 😌 Calm)
-- `reason` - Optional text
-- `created_at`, `updated_at`
+---
 
-### EmojiJournalEntry Model
+## 🤝 Contributing
 
-- `mood` - ForeignKey to Mood
-- `user` - ForeignKey to User
-- `note` - Journal text
-- `created_at`, `updated_at`
+1. **Fork** the repo and clone it.
+2. **Branch** from `main` using `feature/` or `fix/` (e.g. `feature/mood-filters`).
+3. **Commit** with clear messages (`feat: …`, `fix: …`).
+4. **Open a PR** and fill the description (What, Why, How to test).
+5. **Review** — address feedback; maintainers will merge when ready.
 
-### UserProfile Model
+📋 [Contributing guide](docs/contributing.md) · [Code of Conduct](docs/CODE_OF_CONDUCT.md)
 
-- `user` - OneToOneField to User (one profile per user)
-- `avatar` - ImageField for profile picture (optional)
-- `followers_count` - PositiveIntegerField (read-only, auto-calculated)
-- `following_count` - PositiveIntegerField (read-only, auto-calculated)
-- `created_at` - Profile creation timestamp
-- **Note**: Profile is automatically created when a user is registered via signal
+---
 
-### Follow Model
+## 📄 License · Author · Support
 
-- `follower` - ForeignKey to User (the user who follows)
-- `following` - ForeignKey to User (the user being followed)
-- `created_at` - Timestamp when follow was created
-- **Constraints**: Unique together (follower, following), Self-follow prevention
-- **Indexes**: Optimized for follower/following lookups and relationship checks
+- **License:** MIT
+- **Author:** [Tahir Alauddin](https://github.com/TahirAlauddin)
+- **Support:** [Open an issue](https://github.com/TahirAlauddin/Vibera/issues) for bugs or ideas.
 
-The JWT endpoints are configured at `/api/auth/`:
+---
 
-- User registration, login, and profile management via Djoser
-- Token creation, refresh, and verification via Simple JWT
-
-All configuration is already set up in `settings.py` and `urls.py`.
-
-## PostgreSQL Setup (Docker)
-
-### Using Docker Compose (Recommended)
-
-```bash
-cd backend
-docker compose -f docker-compose.yml up -d
-```
-
-This will start a PostgreSQL 16 container with the following configuration:
-
-- Database: `vibera_db`
-- User: `postgres`
-- Password: `postgres`
-- Port: `5432`
-
-### Using Docker Run
-
-```bash
-docker run -d \
-  --name vibera-postgres \
-  -e POSTGRES_DB=vibera_db \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -p 5432:5432 \
-  postgres:16
-```
-
-### Testing PostgreSQL Logging with Docker
-
-The project includes a comprehensive test command to validate PostgreSQL logging functionality when running with Docker Desktop. This is a standard industry practice for ensuring logging works correctly in containerized environments.
-
-#### Prerequisites
-
-- Docker Desktop installed and running
-- PostgreSQL container running (see setup above)
-- Database configured to use PostgreSQL in `.env` file:
-  ```env
-  DB_ENGINE=django.db.backends.postgresql
-  DB_NAME=vibera_db
-  DB_USER=postgres
-  DB_PASSWORD=postgres
-  DB_HOST=localhost
-  DB_PORT=5432
-  ```
-
-#### Running the Test
-
-```bash
-cd backend
-python manage.py test_postgres_logging
-```
-
-#### Test Options
-
-```bash
-# Basic test (checks Docker, starts container if needed)
-python manage.py test_postgres_logging
-
-# Include Docker container logs in output
-python manage.py test_postgres_logging --check-docker-logs
-
-# Skip Docker check (useful if Docker is not installed)
-python manage.py test_postgres_logging --skip-docker-check
-```
-
-#### What the Test Validates
-
-The test command comprehensively validates:
-
-1. **Docker Environment**
-
-   - Docker installation and availability
-   - Docker Desktop running status
-   - PostgreSQL container status (starts container if needed)
-
-2. **Database Connection Logging**
-
-   - Connection creation events
-   - Connection closure events
-   - Connection details (database, host, port, user)
-
-3. **Query Logging**
-
-   - SELECT queries
-   - INSERT operations
-   - UPDATE operations
-   - Query execution tracking
-
-4. **Slow Query Detection**
-
-   - Queries exceeding threshold (default: 1000ms)
-   - Slow query warnings with execution time
-   - Uses `pg_sleep()` for testing
-
-5. **Error Logging**
-
-   - Invalid SQL errors
-   - Constraint violations (e.g., unique constraints)
-   - Error details with exception information
-
-6. **Log Output Verification**
-   - Logs appear in log files (`backend/logs/`)
-   - Logs appear in stdout (for Docker log collection)
-   - Optional Docker container log verification
-
-#### Expected Output
-
-The test provides a detailed report showing:
-
-- Docker and container status
-- Test results for each category (passed/failed)
-- Log file location
-- Instructions for viewing Docker logs
-
-#### Viewing Logs
-
-**Log Files:**
-
-```bash
-# View current day's logs
-cat backend/logs/2026-Jan-09.logs
-
-# Or use any text editor
-```
-
-**Docker Container Logs:**
-
-```bash
-# View PostgreSQL container logs
-docker logs vibera-postgres
-
-# Follow logs in real-time
-docker logs -f vibera-postgres
-
-# View last 50 lines
-docker logs --tail 50 vibera-postgres
-```
-
-#### Troubleshooting
-
-- **Docker not detected**: Ensure Docker Desktop is running
-- **Container won't start**: Check if port 5432 is already in use
-- **Database connection fails**: Verify `.env` file has correct PostgreSQL settings
-- **Tests skipped**: If database is not PostgreSQL, tests will be skipped with a warning
-
-## API Endpoints
-
-### Authentication
-
-| Action            | Method | URL                      |
-| ----------------- | ------ | ------------------------ |
-| Register User     | POST   | `/api/auth/users/`       |
-| Login (Get Token) | POST   | `/api/auth/jwt/create/`  |
-| Refresh Token     | POST   | `/api/auth/jwt/refresh/` |
-| Verify Token      | POST   | `/api/auth/jwt/verify/`  |
-| Current User Info | GET    | `/api/auth/users/me/`    |
-
-### Two-Factor Authentication (2FA)
-
-| Action              | Method | URL                           | Description                          |
-| ------------------- | ------ | ----------------------------- | ------------------------------------ |
-| Login (Request OTP) | POST   | `/api/users/auth/2fa/login/`  | Validate credentials, send OTP email |
-| Verify OTP          | POST   | `/api/users/auth/2fa/verify/` | Verify OTP, get JWT tokens           |
-| Resend OTP          | POST   | `/api/users/auth/2fa/resend/` | Send a new OTP to email              |
-
-#### 2FA Login Flow
-
-1. **Login with credentials:**
-
-   ```
-   POST /api/users/auth/2fa/login/
-   Body: {"username": "testuser", "password": "TestPassword123"}
-   Response: {"success": true, "requires_2fa": true, "message": "OTP sent to your email", "email_hint": "tes***@example.com"}
-   ```
-
-2. **Check your email for the 6-digit OTP code**
-
-3. **Verify OTP:**
-
-   ```
-   POST /api/users/auth/2fa/verify/
-   Headers: Cookie: sessionid=<session-id-from-login>
-   Body: {"token": "123456"}
-   Response: {"success": true, "access": "...", "refresh": "..."}
-   ```
-
-4. **Resend OTP (optional):**
-   ```
-   POST /api/users/auth/2fa/resend/
-   Headers: Cookie: sessionid=<session-id-from-login>
-   Response: {"success": true, "message": "OTP sent to your email"}
-   ```
-
-> **Note:** 2FA is enabled by default for all users. OTP codes expire after 5 minutes. Maximum 3 verification attempts per OTP.
-
-### User Profile
-
-| Action                    | Method | URL                              | Auth Required | Description                                    |
-| ------------------------- | ------ | -------------------------------- | ------------- | ---------------------------------------------- |
-| Get Own Profile           | GET    | `/api/users/profile/`            | Yes           | Retrieve authenticated user's profile          |
-| Update Own Profile        | PUT    | `/api/users/profile/`            | Yes           | Full update of authenticated user's profile    |
-| Partial Update Own Profile| PATCH  | `/api/users/profile/`            | Yes           | Partial update of authenticated user's profile |
-| Get User Profile by ID    | GET    | `/api/users/profile/<user_id>/`  | Yes           | Retrieve another user's profile by user ID      |
-
-#### Profile Fields
-
-- `id` - Profile ID (read-only)
-- `user` - User ID (read-only)
-- `avatar` - Profile avatar image path (writable)
-- `followers_count` - Number of followers (read-only, auto-calculated)
-- `following_count` - Number of users following (read-only, auto-calculated)
-- `created_at` - Profile creation timestamp (read-only)
-
-> **Note:** Profiles are automatically created when a user is registered via signal. If a profile doesn't exist, the API returns a 404 error with `{"error": "Profile does not exist"}`.
-
-#### Example Requests
-
-**Get Own Profile:**
-```
-GET /api/users/profile/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Response: {
-  "id": 1,
-  "user": 1,
-  "avatar": null,
-  "followers_count": 0,
-  "following_count": 0,
-  "created_at": "2025-01-23T10:30:00Z"
-}
-```
-
-**Update Own Profile (PATCH):**
-```
-PATCH /api/users/profile/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Body: {"avatar": "avatars/profile_picture.jpg"}
-Response: {
-  "id": 1,
-  "user": 1,
-  "avatar": "avatars/profile_picture.jpg",
-  "followers_count": 0,
-  "following_count": 0,
-  "created_at": "2025-01-23T10:30:00Z"
-}
-```
-
-**Get Other User's Profile:**
-```
-GET /api/users/profile/2/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Response: {
-  "id": 2,
-  "user": 2,
-  "avatar": "avatars/user2.jpg",
-  "followers_count": 5,
-  "following_count": 3,
-  "created_at": "2025-01-20T08:15:00Z"
-}
-```
-
-### Mood Tracking
-
-| Action          | Method | URL              | Auth Required |
-| --------------- | ------ | ---------------- | ------------- |
-| Create Mood Log | POST   | `/api/moods/`    | Yes           |
-| Get All Moods   | GET    | `/api/moods/`    | Yes           |
-| Get Single Mood | GET    | `/api/moods/<id>/` | Yes         |
-| Update Mood     | PUT    | `/api/moods/<id>/` | Yes         |
-| Partial Update  | PATCH  | `/api/moods/<id>/` | Yes         |
-| Delete Mood     | DELETE | `/api/moods/<id>/` | Yes         |
-
-### Social (Follow/Unfollow)
-
-| Action                    | Method | URL                              | Auth Required |
-| ------------------------- | ------ | -------------------------------- | ------------- |
-| Follow a User             | POST   | `/api/social/follow/<user_id>/`  | Yes           |
-| Unfollow a User           | DELETE | `/api/social/unfollow/<user_id>/`| Yes           |
-| Get My Followers          | GET    | `/api/social/followers/`         | Yes           |
-| Get My Following          | GET    | `/api/social/following/`         | Yes           |
-| Get User's Followers      | GET    | `/api/social/followers/<user_id>/` | Yes         |
-| Get User's Following      | GET    | `/api/social/following/<user_id>/` | Yes         |
-
-## Testing with Postman
-
-### 1. Register & Login
-
-**Register:**
-
-```
-POST /api/auth/users/
-Body: {"email": "user@example.com", "username": "testuser", "password": "TestPassword123"}
-```
-
-**Login:**
-
-```
-POST /api/auth/jwt/create/
-Body: {"username": "testuser", "password": "TestPassword123"}
-Response: {"refresh": "...", "access": "..."}
-```
-
-### 2. Create Mood (Requires Token)
-
-```
-POST /api/moods/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Body: {"emoji": "😊", "reason": "Had a great day!"}
-```
-
-**Emoji choices:** 😊 😔 😡 😰 😴 😌
-
-### 3. Get Moods (Requires Token)
-
-```
-GET /api/moods/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Response: {"count": 2, "data": [...]}
-```
-
-### 4. Get Single Mood (Requires Token)
-
-```
-GET /api/moods/1/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Response: {"id": 1, "user": "testuser", "emoji": "😊", "reason": "...", "created_at": "...", "updated_at": "..."}
-```
-
-### 5. Update Mood (Requires Token)
-
-```
-PUT /api/moods/1/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Body: {"emoji": "😔", "reason": "Feeling sad today"}
-Response: {"message": "Mood log updated successfully", "data": {...}}
-```
-
-### 6. Partial Update Mood (Requires Token)
-
-```
-PATCH /api/moods/1/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Body: {"reason": "Updated reason only"}
-Response: {"message": "Mood log updated successfully", "data": {...}}
-```
-
-### 7. Delete Mood (Requires Token)
-
-```
-DELETE /api/moods/1/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Response: {"message": "Mood log deleted successfully"}
-```
-
-### 8. Follow a User (Requires Token)
-
-```
-POST /api/social/follow/2/
-Headers: Authorization: JWT YOUR_ACCESS_TOKEN
-Response: {"id": 1, "follower": {...}, "following": {...}, "created_at": "..."}
-```
-
-### 9. Unfollow a User (Requires Token)
-
-```
-DELETE /api/social/unfollow/2/
-Headers: Authorization: JWT YOUR_ACCESS_TOKEN
-Response: {"message": "Successfully unfollowed username"}
-```
-
-### 6. Get Followers (Requires Token)
-
-```
-GET /api/social/followers/
-Headers: Authorization: JWT YOUR_ACCESS_TOKEN
-Response: {"count": 2, "results": [...]}
-```
-
-### 11. Get Following (Requires Token)
-
-```
-GET /api/social/following/
-Headers: Authorization: JWT YOUR_ACCESS_TOKEN
-Response: {"count": 1, "results": [...]}
-```
-
-### 12. Get Own Profile (Requires Token)
-
-```
-GET /api/users/profile/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Response: {
-  "id": 1,
-  "user": 1,
-  "avatar": null,
-  "followers_count": 0,
-  "following_count": 0,
-  "created_at": "2025-01-23T10:30:00Z"
-}
-```
-
-### 13. Update Own Profile (Requires Token)
-
-```
-PATCH /api/users/profile/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Body: {"avatar": "avatars/my_profile.jpg"}
-Response: {
-  "id": 1,
-  "user": 1,
-  "avatar": "avatars/my_profile.jpg",
-  "followers_count": 0,
-  "following_count": 0,
-  "created_at": "2025-01-23T10:30:00Z"
-}
-```
-
-### 14. Get Other User's Profile (Requires Token)
-
-```
-GET /api/users/profile/2/
-Headers: Authorization: Bearer YOUR_ACCESS_TOKEN
-Response: {
-  "id": 2,
-  "user": 2,
-  "avatar": "avatars/user2.jpg",
-  "followers_count": 5,
-  "following_count": 3,
-  "created_at": "2025-01-20T08:15:00Z"
-}
-```
-
-## JWT Configuration
-
-- **Access Token**: 60 minutes
-- **Refresh Token**: 7 days
-- **Login Field**: Username
-
-## Frontend
-
-### Dependencies
-
-- **Next.js**: 16.1.1
-- **React**: 19.2.3
-- **React DOM**: 19.2.3
-
-### Steps to Run the Frontend
-
-1. Navigate to the frontend directory:
-
-   ```bash
-   cd frontend
-   ```
-
-2. Install the dependencies:
-
-   ```bash
-   npm install
-   ```
-
-3. Install class-variance-authority for cva, slot, VarianceProps
-
-```bash
-npm install class-variance-authority
-```
-
-4. Install clsx
-
-```bash
-npm install clsx
-```
-
-5. Run the development server:
-
-   ```bash
-   npm run dev
-   ```
-
-6. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-## Contributing
-
-Please read [contribution.md](contribution.md) for contribution guidelines.
+*Vibera — track moods, journal, and connect.*
