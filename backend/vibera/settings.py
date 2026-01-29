@@ -103,6 +103,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "vibera.middleware.JWTAuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "vibera.middleware.RequestResponseLoggingMiddleware",
@@ -199,6 +200,13 @@ SIMPLE_JWT = {
     "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
     "TOKEN_TYPE_CLAIM": "token_type",
 }
+
+# API Authentication Middleware Configuration
+API_AUTH_MIDDLEWARE_PUBLIC_PATHS = [
+    "/api/auth/",  # Djoser JWT authentication endpoints
+    "/admin/",  # Django admin interface
+    "/api/users/auth/2fa/",  # 2FA authentication endpoints
+]
 
 # Djoser Configuration
 DJOSER = {
