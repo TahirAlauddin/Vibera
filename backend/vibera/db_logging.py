@@ -152,5 +152,3 @@ def log_connection_created(sender, connection, **kwargs):
         
         connection.cursor = wrapped_cursor
 
-
-        connection.close = wrapped_close

@@ -15,7 +15,7 @@ from typing import Callable
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError, AuthenticationFailed
 
 from vibera.logging_config import RequestResponseLogger, get_logger
 
@@ -162,7 +162,7 @@ class JWTAuthenticationMiddleware:
         
         return parts[1]
 
-    def _authenticate_token(self, request: HttpRequest, token: str) -> tuple | None:
+    def _authenticate_token(self, request: HttpRequest, token: str) -> tuple | str | None:
         """
         Authenticate the JWT token and return user and token tuple.
 
@@ -171,7 +171,9 @@ class JWTAuthenticationMiddleware:
             token: The JWT token string
 
         Returns:
-            Tuple of (user, validated_token) if successful, None otherwise
+            Tuple of (user, validated_token) if successful,
+            'INACTIVE_USER' if user is inactive,
+            None otherwise
         """
         try:
             # Use DRF's JWT authentication to validate the token
@@ -180,6 +182,24 @@ class JWTAuthenticationMiddleware:
             return (user, validated_token)
         except (InvalidToken, TokenError) as e:
             # Log authentication failure without exposing token
+            logger.warning(
+                f"JWT authentication failed: {type(e).__name__} | "
+                f"Request: {request.method} {request.path} | "
+                f"IP: {request.META.get('REMOTE_ADDR', 'unknown')}"
+            )
+            return None
+        except AuthenticationFailed as e:
+            # Check if it's due to inactive user
+            error_detail = str(e)
+            if 'user_inactive' in error_detail or 'inactive' in error_detail.lower():
+                # Return special marker for inactive user
+                logger.warning(
+                    f"Inactive user attempted access | "
+                    f"Request: {request.method} {request.path} | "
+                    f"IP: {request.META.get('REMOTE_ADDR', 'unknown')}"
+                )
+                return 'INACTIVE_USER'
+            # Other authentication failures
             logger.warning(
                 f"JWT authentication failed: {type(e).__name__} | "
                 f"Request: {request.method} {request.path} | "
@@ -242,9 +262,19 @@ class JWTAuthenticationMiddleware:
                 status=401
             )
 
+        # Check if user is inactive (handled during authentication)
+        if auth_result == 'INACTIVE_USER':
+            return JsonResponse(
+                {
+                    "error": "Authentication required",
+                    "detail": "Invalid or expired token"
+                },
+                status=403
+            )
+
         user, validated_token = auth_result
 
-        # Check if user is active
+        # Additional check if user is active (defensive programming)
         if not user.is_active:
             logger.warning(
                 f"Inactive user attempted access | User: {user.username} | "
