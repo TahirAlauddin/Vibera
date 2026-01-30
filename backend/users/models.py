@@ -132,6 +132,12 @@ class UserProfile(models.Model):
     avatar = models.ImageField(upload_to="avatars/", blank=True, null=True)
     followers_count = models.PositiveIntegerField(default=0)
     following_count = models.PositiveIntegerField(default=0)
+    preferred_moods = models.JSONField(
+        default=None,
+        blank=True,
+        null=True,
+        help_text="Array of preferred mood emojis. If empty or null, all moods are preferred.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -141,3 +147,15 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Profile"
+
+    def get_preferred_moods(self):
+        """
+        Get the user's preferred moods, or return all available moods if not set.
+        Returns a list of emoji strings.
+        """
+        if self.preferred_moods and len(self.preferred_moods) > 0:
+            return self.preferred_moods
+        # Return all available mood emojis as default
+        # Import here to avoid circular imports
+        from moods.models import Mood
+        return [emoji for emoji, _ in Mood.MOOD_CHOICES]
