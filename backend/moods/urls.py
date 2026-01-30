@@ -11,7 +11,10 @@ urlpatterns = [
     # This covers: /api/moods/ and /api/moods/<pk>/
     path('', include(router.urls)),
 
-    # 2. Mood-specific Comments (List/Create comments for a specific mood)
+    # 2. Personalized Mood Feed
+    path("feed/", views.PersonalizedMoodFeedView.as_view(), name="mood-feed"),
+
+    # 3. Mood-specific Comments (List/Create comments for a specific mood)
     path(
         "<int:mood_id>/comments/",
         views.MoodCommentViewSet.as_view({'get': 'list', 'post': 'create'}),
