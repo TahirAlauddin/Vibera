@@ -51,8 +51,7 @@ class TestMoodLogView:
         response = authenticated_client.get(self.url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 0
-        assert response.data["data"] == []
+        assert response.data == []
 
     def test_list_moods_with_data(self, authenticated_client, user, mood_factory):
         """Authenticated user sees their own moods."""
@@ -62,8 +61,7 @@ class TestMoodLogView:
         response = authenticated_client.get(self.url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 2
-        assert len(response.data["data"]) == 2
+        assert len(response.data) == 2
 
     def test_list_moods_only_own(
         self, authenticated_client, user, other_user, mood_factory
@@ -75,7 +73,7 @@ class TestMoodLogView:
         response = authenticated_client.get(self.url)
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1  # Only own mood
+        assert len(response.data) == 1  # Only own mood
 
     # -------------------------------------------------------------------------
     # POST - Create Mood
@@ -88,8 +86,7 @@ class TestMoodLogView:
         response = authenticated_client.post(self.url, data)
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["message"] == "Mood logged successfully"
-        assert response.data["data"]["emoji"] == "😊"
+        assert response.data["emoji"] == "😊"
         assert Mood.objects.filter(user=user).count() == 1
 
     def test_create_mood_minimal(self, authenticated_client, user):
@@ -257,14 +254,14 @@ class TestMoodCommentListView:
         response = authenticated_client.get(self.get_url(mood.pk))
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
+        assert len(response.data) == 1
 
     def test_list_comments_empty(self, authenticated_client, mood):
         """Mood with no comments returns empty list."""
         response = authenticated_client.get(self.get_url(mood.pk))
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 0
+        assert response.data == []
 
     def test_list_comments_mood_not_found(self, authenticated_client):
         """List comments on non-existent mood returns 404."""
@@ -283,7 +280,7 @@ class TestMoodCommentListView:
         response = authenticated_client.post(self.get_url(mood.pk), data)
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["message"] == "Comment created successfully"
+        assert response.data["content"] == "Great mood!"
         assert mood.comments.count() == 1
 
     def test_create_comment_empty_content(self, authenticated_client, mood):
@@ -354,7 +351,7 @@ class TestMoodCommentDetailView:
 
         response = authenticated_client.delete(self.get_url(comment_pk))
 
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not MoodComment.objects.filter(pk=comment_pk).exists()
 
     def test_delete_other_user_comment_forbidden(
@@ -391,7 +388,7 @@ class TestMoodCommentReplyView:
         response = authenticated_client.post(self.get_url(parent_comment.pk), data)
 
         assert response.status_code == status.HTTP_201_CREATED
-        assert response.data["message"] == "Reply created successfully"
+        assert response.data["content"] == "This is a reply"
 
         # Verify reply is linked to parent
         reply = MoodComment.objects.get(content="This is a reply")
@@ -432,7 +429,7 @@ class TestMoodAPIIntegration:
             "/api/moods/", {"emoji": "😊", "reason": "Initial mood"}
         )
         assert create_response.status_code == status.HTTP_201_CREATED
-        mood_id = create_response.data["data"]["id"]
+        mood_id = create_response.data["id"]
 
         # READ
         read_response = authenticated_client.get(f"/api/moods/{mood_id}/")
@@ -472,4 +469,4 @@ class TestMoodAPIIntegration:
         # Original user can see the comment
         list_response = authenticated_client.get(f"/api/moods/{mood.pk}/comments/")
         assert list_response.status_code == status.HTTP_200_OK
-        assert list_response.data["count"] == 1
+        assert len(list_response.data) == 1

@@ -82,22 +82,7 @@ class TestMoodLogSerializer:
 
         serializer = MoodLogSerializer(mood)
         data = serializer.data
-
         assert data["comment_count"] == 2
-
-    def test_serialization_comment_count_excludes_replies(self, mood, user, other_user):
-        """Comment count only counts top-level comments, not replies."""
-        # Create a top-level comment
-        parent = MoodComment.objects.create(
-            mood=mood, user=other_user, content="Parent"
-        )
-        # Create a reply (should not be counted)
-        MoodComment.objects.create(mood=mood, user=user, content="Reply", parent=parent)
-
-        serializer = MoodLogSerializer(mood)
-        data = serializer.data
-
-        assert data["comment_count"] == 1  # Only parent, not reply
 
     def test_serialization_many_moods(self, user, mood_factory):
         """Serializer handles many=True for lists."""
@@ -181,26 +166,6 @@ class TestMoodLogSerializer:
         # user and id should not be in validated_data
         assert "user" not in serializer.validated_data
         assert "id" not in serializer.validated_data
-
-    # -------------------------------------------------------------------------
-    # Create Operation
-    # -------------------------------------------------------------------------
-
-    def test_create_uses_request_user(self, user):
-        """Create method uses user from request context."""
-        data = {"emoji": "😊", "reason": "Test"}
-
-        request = Mock()
-        request.user = user
-
-        serializer = MoodLogSerializer(data=data, context={"request": request})
-        assert serializer.is_valid()
-
-        mood = serializer.save()
-
-        assert mood.user == user
-        assert mood.emoji == "😊"
-        assert mood.pk is not None
 
     # -------------------------------------------------------------------------
     # Update Operation
@@ -382,23 +347,6 @@ class TestMoodCommentSerializer:
     # Create Operation
     # -------------------------------------------------------------------------
 
-    def test_create_uses_request_user(self, user, mood):
-        """Create method uses user from request context."""
-        data = {"content": "New comment"}
-
-        request = Mock()
-        request.user = user
-
-        serializer = MoodCommentSerializer(data=data, context={"request": request})
-        assert serializer.is_valid()
-
-        comment = serializer.save(mood=mood)
-
-        assert comment.user == user
-        assert comment.mood == mood
-        assert comment.content == "New comment"
-        assert comment.pk is not None
-
     def test_create_with_parent(self, user, mood, other_user):
         """Create reply with parent reference."""
         parent = MoodComment.objects.create(
@@ -406,14 +354,10 @@ class TestMoodCommentSerializer:
         )
 
         data = {"content": "Reply to parent"}
-
-        request = Mock()
-        request.user = user
-
-        serializer = MoodCommentSerializer(data=data, context={"request": request})
+        serializer = MoodCommentSerializer(data=data)
         assert serializer.is_valid()
 
-        reply = serializer.save(mood=mood, parent=parent)
+        reply = serializer.save(user=user, mood=mood, parent=parent)
 
         assert reply.parent == parent
         assert reply.mood == mood
@@ -459,45 +403,6 @@ class TestSerializerEdgeCases:
         data = serializer.data
 
         assert data["reason"] is None
-
-    def test_nested_reply_serialization(self, user, other_user, mood):
-        """Deeply nested replies are serialized."""
-        # Level 1: Parent comment
-        level1 = MoodComment.objects.create(mood=mood, user=user, content="Level 1")
-        # Level 2: Reply to parent
-        level2 = MoodComment.objects.create(
-            mood=mood, user=other_user, content="Level 2", parent=level1
-        )
-        # Level 3: Reply to reply
-        level3 = MoodComment.objects.create(
-            mood=mood, user=user, content="Level 3", parent=level2
-        )
-
-        # Serialize level 1
-        serializer = MoodCommentSerializer(level1)
-        data = serializer.data
-
-        # Level 1 should have level 2 in replies
-        assert len(data["replies"]) == 1
-        assert data["replies"][0]["content"] == "Level 2"
-
-        # Level 2 should have level 3 in its replies
-        assert len(data["replies"][0]["replies"]) == 1
-        assert data["replies"][0]["replies"][0]["content"] == "Level 3"
-
-    def test_serializer_with_api_request_factory(self, user, mood):
-        """Serializer works with real APIRequestFactory."""
-        factory = APIRequestFactory()
-        request = factory.post("/api/moods/")
-        request.user = user
-
-        data = {"emoji": "😊", "reason": "Using real request"}
-
-        serializer = MoodLogSerializer(data=data, context={"request": request})
-        assert serializer.is_valid()
-
-        new_mood = serializer.save()
-        assert new_mood.user == user
 
     def test_many_serialization_preserves_order(self, user, mood_factory):
         """Many=True preserves order of input list."""

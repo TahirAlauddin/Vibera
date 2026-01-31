@@ -200,7 +200,7 @@ class TestObjectLevelPermissions:
 
         response = authenticated_client.delete(f"/api/moods/comments/{comment.pk}/")
 
-        assert response.status_code == status.HTTP_200_OK
+        assert response.status_code == status.HTTP_204_NO_CONTENT
         assert not MoodComment.objects.filter(pk=comment.pk).exists()
 
     def test_user_cannot_delete_other_users_comment(
@@ -274,7 +274,7 @@ class TestCrossUserPermissions:
         response = authenticated_client.get(f"/api/moods/{mood.pk}/comments/")
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
+        assert len(response.data) == 1
 
 
 # =============================================================================
@@ -382,9 +382,10 @@ class TestPermissionEdgeCases:
         response = authenticated_client.get("/api/moods/")
 
         assert response.status_code == status.HTTP_200_OK
-        assert response.data["count"] == 1
+        assert len(response.data) == 1
 
         # Verify only own mood is returned
-        mood_ids = [m["id"] for m in response.data["data"]]
+        print(response.data)
+        mood_ids = [m["id"] for m in response.data]
         assert my_mood.pk in mood_ids
         assert other_mood.pk not in mood_ids

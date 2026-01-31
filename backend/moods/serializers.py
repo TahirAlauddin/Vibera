@@ -1,19 +1,30 @@
 from rest_framework import serializers
 from .models import Mood, MoodComment
 
+
 class MoodCommentSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source="user.username")
     # Using 'replies' as a nested field rather than a MethodField for better structure
     replies = serializers.SerializerMethodField()
-    reply_count = serializers.IntegerField(read_only=True, default=0)
+    reply_count = serializers.SerializerMethodField()
 
     class Meta:
         model = MoodComment
         fields = [
-            "id", "user", "content", "parent", 
-            "replies", "reply_count", "created_at", "updated_at",
+            "id",
+            "user",
+            "content",
+            "parent",
+            "replies",
+            "reply_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
+
+    def get_reply_count(self, obj):
+        """Return the count of replies to this comment."""
+        return obj.replies.count()
 
     def get_replies(self, obj):
         """
@@ -25,7 +36,9 @@ class MoodCommentSerializer(serializers.ModelSerializer):
             # first reply is the oldest, as expected by the tests.
             replies = obj.replies.all().order_by("created_at")
             # Use a separate serializer for replies to exclude parent field
-            return MoodCommentReplySerializer(replies, many=True, context=self.context).data
+            return MoodCommentReplySerializer(
+                replies, many=True, context=self.context
+            ).data
         return None
 
     def validate_content(self, value):
@@ -42,26 +55,38 @@ class MoodCommentSerializer(serializers.ModelSerializer):
 
 class MoodCommentReplySerializer(serializers.ModelSerializer):
     """Serializer for replies that excludes parent field to avoid redundancy."""
+
     user = serializers.ReadOnlyField(source="user.username")
 
     class Meta:
         model = MoodComment
         fields = [
-            "id", "user", "content", 
-            "created_at", "updated_at",
+            "id",
+            "user",
+            "content",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
 
 
 class MoodLogSerializer(serializers.ModelSerializer):
     user = serializers.ReadOnlyField(source="user.username")
-    # Using an IntegerField so we can populate this via annotation in the view
-    comment_count = serializers.IntegerField(read_only=True, default=0)
+    # Using a SerializerMethodField so we can populate this via annotation in the view
+    comment_count = serializers.SerializerMethodField(read_only=True)
+
+    def get_comment_count(self, obj):
+        return obj.comments.count()
 
     class Meta:
         model = Mood
         fields = [
-            "id", "user", "emoji", "reason", 
-            "comment_count", "created_at", "updated_at",
+            "id",
+            "user",
+            "emoji",
+            "reason",
+            "comment_count",
+            "created_at",
+            "updated_at",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
