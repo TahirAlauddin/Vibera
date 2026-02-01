@@ -112,14 +112,16 @@ class Notification(models.Model):
         if self.custom_message:
             return self.custom_message
 
-        messages = {
-            self.WELCOME: "Welcome to Vibera! Start sharing your moods and connect with others.",
-            self.NEW_FOLLOWER: f"{self.sender.username} started following you.",
-            self.FOLLOWED_BACK: f"{self.sender.username} followed you back!",
-            self.DAILY_MOOD: "How are you feeling today? Share your mood with your friends!",
-        }
+        if self.notification_type == self.WELCOME:
+            return "Welcome to Vibera! Start sharing your moods and connect with others."
+        if self.notification_type == self.NEW_FOLLOWER and self.sender:
+            return f"{self.sender.username} started following you."
+        if self.notification_type == self.FOLLOWED_BACK and self.sender:
+            return f"{self.sender.username} followed you back!"
+        if self.notification_type == self.DAILY_MOOD:
+            return "How are you feeling today? Share your mood with your friends!"
 
-        return messages.get(self.notification_type, "You have a new notification")
+        return "You have a new notification"
 
     @classmethod
     def create_welcome_notification(cls, user):
