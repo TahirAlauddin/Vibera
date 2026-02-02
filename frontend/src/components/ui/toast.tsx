@@ -16,7 +16,7 @@ const TOAST_POSITION_RIGHT = process.env.NEXT_PUBLIC_TOAST_POSITION_RIGHT || 'ri
 const TOAST_MAX_WIDTH = process.env.NEXT_PUBLIC_TOAST_MAX_WIDTH || '420'
 
 const ToastViewport = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Viewport>,
+  React.ComponentRef<typeof ToastPrimitives.Viewport>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.Viewport>
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.Viewport
@@ -70,7 +70,7 @@ export interface ToastProps
 }
 
 const Toast = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.Root>,
+  React.ComponentRef<typeof ToastPrimitives.Root>,
   ToastProps
 >(({ className, variant, message, ...props }, ref) => {
   const getIcon = () => {
