@@ -22,16 +22,21 @@ const ToastViewport = React.forwardRef<
   <ToastPrimitives.Viewport
     ref={ref}
     className={cn(
-      `fixed ${TOAST_POSITION_TOP} ${TOAST_POSITION_RIGHT} z-50 flex max-h-screen w-full flex-col gap-2 md:max-w-[${TOAST_MAX_WIDTH}px]`,
+      `fixed ${TOAST_POSITION_TOP} z-50 flex max-h-screen flex-col gap-2`,
+      'right-4 left-4 sm:left-auto',
+      'w-[calc(100%-2rem)] sm:w-auto sm:max-w-sm md:max-w-md',
       className
     )}
+    style={{ 
+      maxWidth: `${TOAST_MAX_WIDTH}px`
+    }}
     {...props}
   />
 ))
 ToastViewport.displayName = ToastPrimitives.Viewport.displayName
 
 const toastVariants = cva(
-  'group pointer-events-auto relative flex w-full items-center gap-3 overflow-hidden rounded-lg border px-4 py-3 pr-8 text-sm transition-all',
+  'group pointer-events-auto relative flex w-full items-center gap-3 overflow-hidden rounded-lg border px-4 py-3 pr-8 text-sm',
   {
     variants: {
       variant: {

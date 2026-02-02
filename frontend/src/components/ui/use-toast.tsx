@@ -31,7 +31,12 @@ export function ToastContextProvider({ children }: { children: React.ReactNode }
       clearTimeout(timeout)
       timeoutsRef.current.delete(id)
     }
-    setToasts((prev) => prev.filter((t) => t.id !== id))
+    // Set toast to closed state first to trigger animation
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, open: false } : t)))
+    // Remove from array after animation completes (500ms for slide-out)
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id))
+    }, 500)
   }, [])
 
   const toast = React.useCallback(

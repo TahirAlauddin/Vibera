@@ -43,8 +43,8 @@ export default function Home() {
       opacity: 'opacity-80',
     },
   ]
-  return (
-    <div>
+  return ( 
+    <div> 
       <div className="h-auto min-h-[80vh] flex flex-col  md:flex-row">
         {/* Decorative emoji elements */}
         {decorativeEmojis.map((item, index) => (

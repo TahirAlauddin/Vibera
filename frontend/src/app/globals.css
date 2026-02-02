@@ -48,3 +48,35 @@ h2,
 h3 {
   font-family: 'DIN Pro Cond', sans-serif;
 }
+
+/* Toast animations */
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-out {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Apply animations based on data-state attribute */
+[data-state="open"] {
+  animation: slide-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+[data-state="closed"] {
+  animation: slide-out 0.6s cubic-bezier(0.4, 0, 1, 1) forwards;
+}
