@@ -1,4 +1,9 @@
 {
+  "tailwindCSS.experimental.configFile": "frontend/src/app/globals.css",
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
   "python.defaultInterpreterPath": "${workspaceFolder}/backend/venv/Scripts/python.exe",
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
