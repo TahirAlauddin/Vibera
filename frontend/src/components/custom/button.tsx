@@ -14,18 +14,18 @@ const variantClassMap = {
     'active:bg-[var(--color-accent-primary-active)]',
 
   secondary:
-    'rounded-md bg-white border border-[#91B6A2] text-black ' +
-    'hover:bg-[#91B6A2] hover:border-[#91B6A2] hover:text-black ' +
-    'active:bg-[#D7E9B6] active:border-[#91B6A2] active:text-black',
+    'border border-[var(--color-accent-secondary-border)] text-black ' +
+    'hover:bg-[var(--color-accent-secondary-hover)] ' +
+    'active:bg-[var(--color-accent-secondary-active)] active:border-[var(--color-accent-secondary-border)] active:text-black',
 
   disabled:
-    'rounded-md bg-[#E0E6D9] border border-[#E0E6D9] text-black cursor-not-allowed pointer-events-none opacity-100 ' +
-    'hover:bg-[#E0E6D9] hover:border-[#E0E6D9] active:bg-[#E0E6D9] active:border-[#E0E6D9] disabled:opacity-100',
+    'rounded-md bg-[var(--color-accent-disabled-hover)] border border-[var(--color-accent-disabled-hover)] text-black cursor-not-allowed pointer-events-none opacity-100 ' +
+    'hover:bg-[var(--color-accent-disabled-hover)] hover:border-[var(--color-accent-disabled-hover)] active:bg-[var(--color-accent-disabled-active)] active:border-[var(--color-accent-disabled-active)] disabled:opacity-100',
 
   ghost:
-    'rounded-md bg-transparent text-[#000000] ' +
-    'hover:bg-transparent hover:text-[#F6C531] ' +
-    'active:bg-transparent active:text-[#000000]',
+    'rounded-md bg-transparent text-[var(--color-accent-ghost-default)] ' +
+    'hover:bg-transparent hover:text-[var(--color-accent-ghost-hover)] ' +
+    'active:bg-transparent active:text-[var(--color-accent-ghost-active)]',
 } as const
 
 const sizeClassMap = {
