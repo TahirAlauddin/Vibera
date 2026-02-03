@@ -4,7 +4,7 @@ import { toast as sonnerToast } from 'sonner'
 import type { ReactNode } from 'react'
 import { Check, X, Info, AlertTriangle } from 'lucide-react'
 
-export type ToastVariant = 'correct' | 'error' | 'info' | 'warning' | 'message'
+export type ToastVariant = 'success' | 'error' | 'info' | 'warning' | 'message'
 
 /**
  * Input type for creating a toast notification.
@@ -36,7 +36,7 @@ const DEFAULT_DURATION = parseInt(process.env.NEXT_PUBLIC_TOAST_DURATION || '500
  * const { toast, dismiss } = useToast()
  * 
  * // Show a success toast
- * const id = toast({ variant: 'correct', message: 'Success!' })
+ * const id = toast({ variant: 'success', message: 'Success!' })
  * 
  * // Dismiss a specific toast
  * dismiss(id)
@@ -60,7 +60,7 @@ export function useToast() {
 
     // Use Sonner's type-specific methods with custom icons wrapped in circular containers
     switch (variant) {
-      case 'correct':
+      case 'success':
         return sonnerToast.success(message, {
           ...options,
           icon: (

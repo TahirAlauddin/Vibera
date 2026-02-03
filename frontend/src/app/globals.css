@@ -51,13 +51,13 @@ h3 {
 
 /* Toast Variant Styles - Matching Design System */
 /* Correct/Success Toast */
-[data-sonner-toast].toast-variant-correct {
+[data-sonner-toast].toast-variant-success {
   background-color: rgb(240 253 244) !important; /* green-50 */
   border-color: rgb(134 239 172) !important; /* green-300 */
   border-width: 1px !important;
 }
 
-[data-sonner-toast].toast-variant-correct:hover {
+[data-sonner-toast].toast-variant-success:hover {
   background-color: rgb(220 252 231) !important; /* green-100 */
 }
 
@@ -131,6 +131,7 @@ h3 {
   transition: opacity 0.2s ease-in-out !important;
   color: black !important;
   position: absolute !important;
+  left: auto !important;
   right: 0.75rem !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
@@ -143,6 +144,9 @@ h3 {
   border: none !important;
   cursor: pointer !important;
   z-index: 10 !important;
+  min-width: 1.75rem !important;
+  min-height: 1.75rem !important;
+  font-size: 1.25rem !important;
 }
 
 [data-sonner-toast]:hover .sonner-close-button,
@@ -152,11 +156,13 @@ h3 {
   opacity: 1 !important;
 }
 
-/* Increase the size of the close button icon (X) */
+/* Size of the close button icon (X) */
 [data-sonner-toast] .sonner-close-button svg,
 [data-sonner-toast] button[aria-label*="close"] svg,
 [data-sonner-toast] button[aria-label*="Close"] svg,
 [data-sonner-toast] [data-close-button] svg {
-  width: 1.25rem !important; /* 20px - larger than default */
-  height: 1.25rem !important; /* 20px - larger than default */
+  width: 1.25rem !important; /* 20px */
+  height: 1.25rem !important; /* 20px */
+  min-width: 1.25rem !important;
+  min-height: 1.25rem !important;
 }
