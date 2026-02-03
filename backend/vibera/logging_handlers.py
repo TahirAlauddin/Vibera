@@ -1,6 +1,5 @@
 """Custom logging handlers for file rotation."""
 
-
 from datetime import datetime, timedelta
 from logging.handlers import RotatingFileHandler, TimedRotatingFileHandler
 from pathlib import Path
