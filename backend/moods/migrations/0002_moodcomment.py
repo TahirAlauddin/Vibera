@@ -8,27 +8,62 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('moods', '0001_initial'),
+        ("moods", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='MoodComment',
+            name="MoodComment",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('content', models.TextField(help_text='Comment text content')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('mood', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='moods.mood')),
-                ('parent', models.ForeignKey(blank=True, help_text='Parent comment for nested replies. Null for top-level comments.', null=True, on_delete=django.db.models.deletion.CASCADE, related_name='replies', to='moods.moodcomment')),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='mood_comments', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("content", models.TextField(help_text="Comment text content")),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                (
+                    "mood",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to="moods.mood",
+                    ),
+                ),
+                (
+                    "parent",
+                    models.ForeignKey(
+                        blank=True,
+                        help_text="Parent comment for nested replies. Null for top-level comments.",
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="replies",
+                        to="moods.moodcomment",
+                    ),
+                ),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="mood_comments",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Mood Comment',
-                'verbose_name_plural': 'Mood Comments',
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['mood'], name='mood_comment_mood_idx'), models.Index(fields=['parent'], name='mood_comment_parent_idx')],
+                "verbose_name": "Mood Comment",
+                "verbose_name_plural": "Mood Comments",
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(fields=["mood"], name="mood_comment_mood_idx"),
+                    models.Index(fields=["parent"], name="mood_comment_parent_idx"),
+                ],
             },
         ),
     ]
