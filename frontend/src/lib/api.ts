@@ -8,9 +8,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL
 
 // Validate API_BASE_URL is set
 if (!API_BASE_URL) {
-  console.error(
-    'NEXT_PUBLIC_API_URL environment variable is not set. API calls may fail.'
-  )
+  console.error('NEXT_PUBLIC_API_URL environment variable is not set. API calls may fail.')
 }
 
 /**
@@ -35,7 +33,10 @@ interface ApiFetchOptions extends RequestInit {
  * Custom error class for authentication failures
  */
 export class AuthenticationError extends Error {
-  constructor(message: string, public statusCode: number = 401) {
+  constructor(
+    message: string,
+    public statusCode: number = 401
+  ) {
     super(message)
     this.name = 'AuthenticationError'
   }
