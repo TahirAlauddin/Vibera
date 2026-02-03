@@ -1,4 +1,9 @@
 {
+  "tailwindCSS.experimental.configFile": "frontend/src/app/globals.css",
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
   "[python]": {
     "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true,

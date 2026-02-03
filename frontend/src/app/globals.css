@@ -2,6 +2,18 @@
 
 :root {
   /* Colors */
+  --color-accent-primary: #f6c531;
+  --color-accent-primary-hover: #e0a800;
+  --color-accent-primary-active: #f1dc9a;
+  --color-accent-secondary-default: #ffffff;
+  --color-accent-secondary-border: #91b6a2;
+  --color-accent-secondary-hover: #91b6a2;
+  --color-accent-secondary-active: #d7e9b6;
+  --color-accent-disabled-hover: #e0e6d9;
+  --color-accent-disabled-active: #e0e6d9;
+  --color-accent-ghost-default: #000000;
+  --color-accent-ghost-hover: #f6c531;
+  --color-accent-ghost-active: #000000;
   --color-primary: #7dbf7a;
   --color-background: #e9f1f2;
   --color-secondary: #a7d9d4;
