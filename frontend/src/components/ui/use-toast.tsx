@@ -1,84 +1,122 @@
 'use client'
 
-import * as React from 'react'
-import type { ToastProps, ToastVariant } from './toast'
+import { toast as sonnerToast } from 'sonner'
+import type { ReactNode } from 'react'
+import { Check, X, Info, AlertTriangle } from 'lucide-react'
 
-export type Toast = {
-  id: string
+export type ToastVariant = 'correct' | 'error' | 'info' | 'warning' | 'message'
+
+/**
+ * Input type for creating a toast notification.
+ * @property variant - The visual style of the toast
+ * @property message - The message to display (supports string or JSX)
+ * @property duration - Duration in milliseconds (0 or undefined for infinite)
+ */
+export type ToastInput = {
   variant: ToastVariant
-  message: string
-  open: boolean
+  message: string | ReactNode
   duration?: number
 }
 
-const TOAST_LIMIT = parseInt(process.env.NEXT_PUBLIC_TOAST_LIMIT || '5', 10)
+/**
+ * Toast ID returned from Sonner for programmatic dismissal.
+ * Can be a string or number.
+ */
+export type ToastId = string | number
+
 const DEFAULT_DURATION = parseInt(process.env.NEXT_PUBLIC_TOAST_DURATION || '5000', 10) // milliseconds
 
-const ToastContext = React.createContext<{
-  toasts: Toast[]
-  toast: (props: Omit<Toast, 'id' | 'open'>) => void
-  dismiss: (id: string) => void
-} | null>(null)
-
-export function ToastContextProvider({ children }: { children: React.ReactNode }): React.ReactElement {
-  const [toasts, setToasts] = React.useState<Toast[]>([])
-  const timeoutsRef = React.useRef<Map<string, NodeJS.Timeout>>(new Map())
-
-  const dismiss = React.useCallback((id: string) => {
-    // Clear timeout if exists
-    const timeout = timeoutsRef.current.get(id)
-    if (timeout) {
-      clearTimeout(timeout)
-      timeoutsRef.current.delete(id)
-    }
-    // Set toast to closed state first to trigger animation
-    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, open: false } : t)))
-    // Remove from array after animation completes (500ms for slide-out)
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id))
-    }, 500)
-  }, [])
-
-  const toast = React.useCallback(
-    ({ variant, message, duration = DEFAULT_DURATION }: Omit<Toast, 'id' | 'open'>) => {
-      const id = Math.random().toString(36).substring(2, 9)
-      
-      setToasts((prev) => {
-        const newToasts = [{ id, variant, message, open: true, duration }, ...prev]
-        // Limit number of toasts
-        return newToasts.slice(0, TOAST_LIMIT)
-      })
-
-      // Auto-dismiss after duration
-      if (duration > 0) {
-        const timeout = setTimeout(() => {
-          dismiss(id)
-        }, duration)
-        timeoutsRef.current.set(id, timeout)
-      }
-    },
-    [dismiss]
-  )
-
-  // Cleanup timeouts on unmount
-  React.useEffect(() => {
-    return () => {
-      timeoutsRef.current.forEach((timeout) => clearTimeout(timeout))
-      timeoutsRef.current.clear()
-    }
-  }, [])
-
-  return (
-    <ToastContext.Provider value={{ toasts, toast, dismiss }}>
-      {children}
-    </ToastContext.Provider>
-  )
-}
-
+/**
+ * Hook for displaying toast notifications using Sonner.
+ * 
+ * @returns An object with `toast` and `dismiss` functions
+ * 
+ * @example
+ * ```tsx
+ * const { toast, dismiss } = useToast()
+ * 
+ * // Show a success toast
+ * const id = toast({ variant: 'correct', message: 'Success!' })
+ * 
+ * // Dismiss a specific toast
+ * dismiss(id)
+ * 
+ * // Dismiss all toasts
+ * dismiss()
+ * ```
+ */
 export function useToast() {
-  const context = React.useContext(ToastContext)
-  if (!context) {
-    throw new Error('useToast must be used within ToastProvider')
+  /**
+   * Displays a toast notification.
+   * 
+   * @param input - Toast configuration
+   * @returns The toast ID for programmatic dismissal
+   */
+  const toast = ({ variant, message, duration = DEFAULT_DURATION }: ToastInput): ToastId => {
+    const options = {
+      duration: duration > 0 ? duration : undefined, // Sonner uses undefined for infinite duration
+      className: `toast-variant-${variant}`, // Add variant class for styling
+    }
+
+    // Use Sonner's type-specific methods with custom icons wrapped in circular containers
+    switch (variant) {
+      case 'correct':
+        return sonnerToast.success(message, {
+          ...options,
+          icon: (
+            <div className="flex items-center justify-center rounded-full bg-green-600 text-white size-6 shrink-0">
+              <Check className="size-4" />
+            </div>
+          ),
+        })
+      case 'error':
+        return sonnerToast.error(message, {
+          ...options,
+          icon: (
+            <div className="flex items-center justify-center rounded-full bg-red-600 text-white size-6 shrink-0">
+              <X className="size-4" />
+            </div>
+          ),
+        })
+      case 'info':
+        return sonnerToast.info(message, {
+          ...options,
+          icon: (
+            <div className="flex items-center justify-center rounded-full bg-blue-500 text-white size-6 shrink-0">
+              <Info className="size-4" />
+            </div>
+          ),
+        })
+      case 'warning':
+        return sonnerToast.warning(message, {
+          ...options,
+          icon: (
+            <div className="flex items-center justify-center rounded-full bg-orange-600 text-white size-6 shrink-0">
+              <AlertTriangle className="size-4" />
+            </div>
+          ),
+        })
+      case 'message':
+      default:
+        return sonnerToast(message, options) // No icon for message variant
+    }
   }
-  return context
+
+  /**
+   * Dismisses a toast notification.
+   * 
+   * @param id - The toast ID returned from `toast()`. If omitted, dismisses all toasts.
+   */
+  const dismiss = (id?: ToastId): void => {
+    if (id !== undefined) {
+      sonnerToast.dismiss(id)
+    } else {
+      sonnerToast.dismiss() // Dismiss all toasts
+    }
+  }
+
+  return {
+    toast,
+    dismiss,
+  }
 }
