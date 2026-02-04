@@ -9,23 +9,24 @@ type CustomButtonProps = Omit<React.ComponentProps<typeof ShadcnButton>, 'varian
 
 const variantClassMap = {
   primary:
-    'rounded-md bg-[var(--color-accent-primary)] text-black ' +
-    'hover:bg-[var(--color-accent-primary-hover)] ' +
-    'active:bg-[var(--color-accent-primary-active)]',
+    'rounded-md bg-accent-primary text-black ' +
+    'hover:bg-accent-primary-hover ' +
+    'active:bg-accent-primary-active',
 
   secondary:
-    'border border-[var(--color-accent-secondary-border)] text-black ' +
-    'hover:bg-[var(--color-accent-secondary-hover)] ' +
-    'active:bg-[var(--color-accent-secondary-active)] active:border-[var(--color-accent-secondary-border)] active:text-black',
+    'rounded-md bg-accent-secondary-default border border-accent-secondary-border text-black ' +
+    'hover:bg-accent-secondary-hover ' +
+    'active:bg-accent-secondary-active',
 
   disabled:
-    'rounded-md bg-[var(--color-accent-disabled-hover)] border border-[var(--color-accent-disabled-hover)] text-black cursor-not-allowed pointer-events-none opacity-100 ' +
-    'hover:bg-[var(--color-accent-disabled-hover)] hover:border-[var(--color-accent-disabled-hover)] active:bg-[var(--color-accent-disabled-active)] active:border-[var(--color-accent-disabled-active)] disabled:opacity-100',
+    'rounded-md bg-accent-disabled-hover border border-accent-disabled-hover text-black ' +
+    'cursor-not-allowed pointer-events-none opacity-100 ' +
+    'active:bg-accent-disabled-active',
 
   ghost:
-    'rounded-md bg-transparent text-[var(--color-accent-ghost-default)] ' +
-    'hover:bg-transparent hover:text-[var(--color-accent-ghost-hover)] ' +
-    'active:bg-transparent active:text-[var(--color-accent-ghost-active)]',
+    'rounded-md bg-transparent text-accent-ghost-default ' +
+    'hover:text-accent-ghost-hover ' +
+    'active:text-accent-ghost-active',
 } as const
 
 const sizeClassMap = {
