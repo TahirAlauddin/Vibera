@@ -3,9 +3,18 @@ import Image from 'next/image'
 import Link from 'next/link'
 import Features from '@/components/features'
 import Testimonials from '@/components/testimonials'
+import { useToast } from '@/components/ui/use-toast'
+import { useEffect } from 'react'
 
 
 export default function Home() {
+  const { toast } = useToast()
+  // #region agent log
+  useEffect(() => {
+    const logDataHome = {location:'page.tsx:10',message:'Home component rendering',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'};
+    fetch('http://127.0.0.1:7242/ingest/6e222ad1-38db-49c9-b946-37f1317673cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logDataHome)}).catch(()=>{});
+  }, []);
+  // #endregion agent log
 
 
 const decorativeEmojis = [
@@ -75,6 +84,51 @@ const decorativeEmojis = [
             <button className="bg-white text-accent border cursor-pointer border-primary font-bold px-6 py-2 rounded-full hover:bg-white/80">
               Learn More
             </button>
+          </div>
+          {/* Toast Test Section - Remove in production */}
+          <div className="mt-8 p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+            <h3 className="text-lg font-semibold mb-3 text-center">🧪 Toast Variant Tests</h3>
+            <div className="flex flex-wrap justify-center gap-2">
+              <button
+                onClick={() => {
+                  // #region agent log
+                  const logDataBtn = {location:'page.tsx:86',message:'Success button clicked',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'};
+                  fetch('http://127.0.0.1:7242/ingest/6e222ad1-38db-49c9-b946-37f1317673cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logDataBtn)}).catch(()=>{});
+                  // #endregion agent log
+                  toast({ variant: 'success', message: 'Operation completed successfully! 🎉' })
+                }}
+                className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
+              >
+                Success Toast
+              </button>
+              <button
+                onClick={() => toast({ variant: 'error', message: 'Something went wrong! Please try again.' })}
+                className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 transition-colors"
+              >
+                Error Toast
+              </button>
+              <button
+                onClick={() => toast({ variant: 'info', message: 'Here is some useful information for you.' })}
+                className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
+              >
+                Info Toast
+              </button>
+              <button
+                onClick={() => toast({ variant: 'warning', message: 'Warning: Please review this action carefully.' })}
+                className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors"
+              >
+                Warning Toast
+              </button>
+              <button
+                onClick={() => toast({ variant: 'message', message: 'This is a simple message toast without an icon.' })}
+                className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Message Toast
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 text-center mt-2">
+              Click each button to test the toast variants with TSX/CVA styling
+            </p>
           </div>
         </div>
         {/* Product demo */}

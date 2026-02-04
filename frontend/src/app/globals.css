@@ -49,120 +49,31 @@ h3 {
   font-family: 'DIN Pro Cond', sans-serif;
 }
 
-/* Toast Variant Styles - Matching Design System */
-/* Correct/Success Toast */
-[data-sonner-toast].toast-variant-success {
-  background-color: rgb(240 253 244) !important; /* green-50 */
-  border-color: rgb(134 239 172) !important; /* green-300 */
-  border-width: 1px !important;
-}
+/* Toast Styles - Moved to TSX/CVA for type safety and co-location */
+/* Variant styles are now handled in frontend/src/components/ui/toast-variants.ts */
+/* Child element styles are handled in frontend/src/components/ui/sonner.tsx */
 
-[data-sonner-toast].toast-variant-success:hover {
-  background-color: rgb(220 252 231) !important; /* green-100 */
-}
-
-/* Error Toast */
-[data-sonner-toast].toast-variant-error {
-  background-color: rgb(254 242 242) !important; /* red-50 */
-  border-color: rgb(252 165 165) !important; /* red-300 */
-  border-width: 1px !important;
-}
-
-[data-sonner-toast].toast-variant-error:hover {
-  background-color: rgb(254 226 226) !important; /* red-100 */
-}
-
-/* Info Toast */
-[data-sonner-toast].toast-variant-info {
-  background-color: rgb(239 246 255) !important; /* blue-50 */
-  border-color: rgb(147 197 253) !important; /* blue-300 */
-  border-width: 1px !important;
-}
-
-[data-sonner-toast].toast-variant-info:hover {
-  background-color: rgb(219 234 254) !important; /* blue-100 */
-}
-
-/* Warning Toast */
-[data-sonner-toast].toast-variant-warning {
-  background-color: rgb(255 247 237) !important; /* orange-50 */
-  border-color: rgb(253 186 116) !important; /* orange-300 */
-  border-width: 1px !important;
-}
-
-[data-sonner-toast].toast-variant-warning:hover {
-  background-color: rgb(255 237 213) !important; /* orange-100 */
-}
-
-/* Message Toast (no icon) */
-[data-sonner-toast].toast-variant-message {
-  background-color: white !important;
-  border-color: black !important;
-  border-width: 1px !important;
-}
-
-[data-sonner-toast].toast-variant-message:hover {
-  background-color: rgb(249 250 251) !important; /* gray-100 */
-}
-
-/* Ensure toast content is black text */
-[data-sonner-toast] {
-  color: black !important;
+/* Force correct order: Icon → Text → Close Button */
+/* Using CSS to ensure order works even if Tailwind classes don't apply correctly */
+[data-sonner-toast] [data-icon] {
+  order: -1 !important; /* Icon comes first */
 }
 
 [data-sonner-toast] [data-title] {
-  color: black !important;
-  flex: 1 !important;
-  padding-right: 0.5rem !important; /* Add spacing before close button */
-  min-width: 0 !important; /* Allow text to shrink if needed */
+  order: 0 !important; /* Text comes second */
 }
 
-/* Add spacing between icon and message */
-[data-sonner-toast] [data-icon] {
-  margin-right: 0.75rem !important; /* 12px spacing */
-}
-
-/* Close button - target individually and position at right end, vertically aligned */
 [data-sonner-toast] .sonner-close-button,
 [data-sonner-toast] button[aria-label*="close"],
 [data-sonner-toast] button[aria-label*="Close"],
 [data-sonner-toast] [data-close-button] {
-  opacity: 0 !important;
-  transition: opacity 0.2s ease-in-out !important;
-  color: black !important;
-  position: absolute !important;
-  left: auto !important;
-  right: 0.75rem !important;
-  top: 50% !important;
-  transform: translateY(-50%) !important;
-  margin: 0 !important;
-  padding: 0.25rem !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  background: transparent !important;
-  border: none !important;
-  cursor: pointer !important;
-  z-index: 10 !important;
-  min-width: 1.75rem !important;
-  min-height: 1.75rem !important;
-  font-size: 1.25rem !important;
+  order: 1 !important; /* Close button comes last */
 }
 
-[data-sonner-toast]:hover .sonner-close-button,
-[data-sonner-toast]:hover button[aria-label*="close"],
-[data-sonner-toast]:hover button[aria-label*="Close"],
-[data-sonner-toast]:hover [data-close-button] {
-  opacity: 1 !important;
-}
-
-/* Size of the close button icon (X) */
-[data-sonner-toast] .sonner-close-button svg,
-[data-sonner-toast] button[aria-label*="close"] svg,
-[data-sonner-toast] button[aria-label*="Close"] svg,
-[data-sonner-toast] [data-close-button] svg {
-  width: 1.25rem !important; /* 20px */
-  height: 1.25rem !important; /* 20px */
-  min-width: 1.25rem !important;
-  min-height: 1.25rem !important;
+/* Minimal CSS only for close button positioning that can't be easily handled via Tailwind */
+/* Removed display: contents as it breaks Sonner's stacking container */
+[data-sonner-toast] > div:has(.sonner-close-button),
+[data-sonner-toast] > div:has(button[aria-label*="close"]) {
+  position: static !important;
+  /* Removed display: contents - it breaks Sonner's stacking system */
 }
