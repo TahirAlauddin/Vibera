@@ -13,7 +13,6 @@ export async function middleware(request: NextRequest) {
 
   // Define public routes that don't require authentication
   // Use exact matching for root and prefix matching for others
-  const publicRoutes = ['/', '/login', '/signup', '/ui/button']
   const isPublicRoute =
     pathname === '/' ||
     pathname === '/login' ||
