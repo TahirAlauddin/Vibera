@@ -21,6 +21,18 @@
   --color-background: #e9f1f2;
   --color-secondary: #a7d9d4;
   --color-accent: oklch(0.22 0.04 235);
+
+  /* Input background */
+  --input-bg-default: #F4F6F1;
+  --input-bg-active: #E0E6D9;
+
+  /* Borders */
+  --input-border-default: #000000;
+  --input-border-error: #E10E11;
+
+  /* Disabled */
+  --input-disabled-text: #BABABA;
+
   /* font */
   --font-primary: 'DIN Pro Cond';
   --radius: 0.625rem;
@@ -155,6 +167,12 @@ h3 {
   --color-accent-ghost-default: var(--color-accent-ghost-default);
   --color-accent-ghost-hover: var(--color-accent-ghost-hover);
   --color-accent-ghost-active: var(--color-accent-ghost-active);
+  /* Input colors - values must match :root definitions above for Tailwind v4 */
+  --color-input: var(--input-bg-default);
+  --color-input-active: var(--input-bg-active);
+  --color-input-border: var(--input-border-default);
+  --color-input-error: var(--input-border-error);
+  --color-input-disabledText: var(--input-disabled-text);
 }
 
 .dark {

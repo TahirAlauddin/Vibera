@@ -20,6 +20,13 @@ export default {
           'ghost-hover': 'var(--color-accent-ghost-hover)',
           'ghost-active': 'var(--color-accent-ghost-active)',
         },
+        input: {
+          DEFAULT: 'var(--input-bg-default)',
+          active: 'var(--input-bg-active)',
+          border: 'var(--input-border-default)',
+          error: 'var(--input-border-error)',
+          disabledText: 'var(--input-disabled-text)',
+        },
       },
     },
   },
