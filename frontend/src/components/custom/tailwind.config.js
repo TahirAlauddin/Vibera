@@ -26,6 +26,8 @@ export default {
           border: 'var(--input-border-default)',
           error: 'var(--input-border-error)',
           disabledText: 'var(--input-disabled-text)',
+          boxShadow: 'var(--input-shadow)',
+          accent: 'var(--input-bg-accent)',
         },
       },
     },
