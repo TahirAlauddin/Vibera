@@ -71,9 +71,8 @@ h3 {
 }
 
 /* Minimal CSS only for close button positioning that can't be easily handled via Tailwind */
-/* Removed display: contents as it breaks Sonner's stacking container */
 [data-sonner-toast] > div:has(.sonner-close-button),
 [data-sonner-toast] > div:has(button[aria-label*="close"]) {
   position: static !important;
-  /* Removed display: contents - it breaks Sonner's stacking system */
+
 }

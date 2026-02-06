@@ -4,20 +4,13 @@ import Link from 'next/link'
 import Features from '@/components/features'
 import Testimonials from '@/components/testimonials'
 import { useToast } from '@/components/ui/use-toast'
-import { useEffect } from 'react'
 
 
 export default function Home() {
   const { toast } = useToast()
-  // #region agent log
-  useEffect(() => {
-    const logDataHome = {location:'page.tsx:10',message:'Home component rendering',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'};
-    fetch('http://127.0.0.1:7242/ingest/6e222ad1-38db-49c9-b946-37f1317673cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logDataHome)}).catch(()=>{});
-  }, []);
-  // #endregion agent log
 
 
-const decorativeEmojis = [
+  const decorativeEmojis = [
     {
       emoji: '😊',
       position: 'top-20 left-24',
@@ -55,8 +48,8 @@ const decorativeEmojis = [
       opacity: 'opacity-80',
     },
   ]
-  return ( 
-    <div> 
+  return (
+    <div>
       <div className="h-auto min-h-[80vh] flex flex-col  md:flex-row">
         {/* Decorative emoji elements */}
         {decorativeEmojis.map((item, index) => (
@@ -92,8 +85,8 @@ const decorativeEmojis = [
               <button
                 onClick={() => {
                   // #region agent log
-                  const logDataBtn = {location:'page.tsx:86',message:'Success button clicked',data:{timestamp:Date.now()},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'};
-                  fetch('http://127.0.0.1:7242/ingest/6e222ad1-38db-49c9-b946-37f1317673cc',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(logDataBtn)}).catch(()=>{});
+                  const logDataBtn = { location: 'page.tsx:86', message: 'Success button clicked', data: { timestamp: Date.now() }, timestamp: Date.now(), sessionId: 'debug-session', runId: 'run1', hypothesisId: 'C' };
+                  fetch('http://127.0.0.1:7242/ingest/6e222ad1-38db-49c9-b946-37f1317673cc', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(logDataBtn) }).catch(() => { });
                   // #endregion agent log
                   toast({ variant: 'success', message: 'Operation completed successfully! 🎉' })
                 }}
