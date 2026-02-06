@@ -53,26 +53,32 @@ h3 {
 /* Variant styles are now handled in frontend/src/components/ui/toast-variants.ts */
 /* Child element styles are handled in frontend/src/components/ui/sonner.tsx */
 
+/* Toast container alignment - magic bullet for cross-alignment */
+[data-sonner-toast] {
+  align-items: center !important;
+}
+
 /* Force correct order: Icon → Text → Close Button */
-/* Using CSS to ensure order works even if Tailwind classes don't apply correctly */
 [data-sonner-toast] [data-icon] {
   order: -1 !important; /* Icon comes first */
+  margin-right: 0.75rem !important; /* 12px professional gap */
 }
 
 [data-sonner-toast] [data-title] {
   order: 0 !important; /* Text comes second */
+  padding-left: 0 !important; /* Ensure no left padding conflicts */
 }
 
 [data-sonner-toast] .sonner-close-button,
 [data-sonner-toast] button[aria-label*="close"],
 [data-sonner-toast] button[aria-label*="Close"],
 [data-sonner-toast] [data-close-button] {
-  order: 1 !important; /* Close button comes last */
+  order: 99 !important; /* Close button comes last */
+  position: static !important; /* Behave like normal flex child */
 }
 
 /* Minimal CSS only for close button positioning that can't be easily handled via Tailwind */
 [data-sonner-toast] > div:has(.sonner-close-button),
 [data-sonner-toast] > div:has(button[aria-label*="close"]) {
   position: static !important;
-
 }

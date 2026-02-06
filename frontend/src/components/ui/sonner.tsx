@@ -28,9 +28,9 @@ const Toaster = memo(({ ...props }: ToasterProps) => {
           toast: cn(
             // Minimal styling - let Sonner handle positioning and stacking
             // Only style content
-            '[&_[data-title]]:text-black [&_[data-title]]:flex-1 [&_[data-title]]:pr-2 [&_[data-title]]:min-w-0',
-            // Icon spacing - increased gap between icon and text
-            '[&_[data-icon]]:mr-5 [&_[data-icon]]:shrink-0',
+            '[&_[data-title]]:text-black [&_[data-title]]:flex-1 [&_[data-title]]:pr-2 [&_[data-title]]:min-w-0 [&_[data-title]]:pl-0',
+            // Icon spacing - consistent professional gap (12px)
+            '[&_[data-icon]]:mr-3 [&_[data-icon]]:shrink-0',
             // Make toast a group for hover state
             'group',
             // Close button visibility on hover
@@ -43,25 +43,22 @@ const Toaster = memo(({ ...props }: ToasterProps) => {
           cancelButton: 'hidden',
           closeButton: cn(
             // Simple X icon - no round button, just the X
-            // Position: inline with content, not absolute, last in order
+            // Position: static to behave like normal flex child
             '!opacity-0 !transition-opacity !duration-200 !ease-in-out',
-            // Fix vertical alignment: flex (not inline-flex) + self-center + leading-none prevents baseline alignment
-            '!text-black !relative !flex !items-center !justify-center !self-center !leading-none',
-            '!m-0 !p-0 !ml-2 !shrink-0', // Small left margin to space from text, don't shrink
+            '!text-black !static !flex !items-center !justify-center !leading-none',
+            '!m-0 !p-0 !ml-2 !shrink-0',
             '!bg-transparent !border-none !cursor-pointer',
             '!w-auto !h-auto !min-w-0 !min-h-0',
-            '!rounded-none !shadow-none', // No rounded corners, no shadow
-            '!order-[1]', // Ensure it's last in flex order (Icon: -1, Text: 0, Close: 1)
-            // Remove any default button styling (round background, etc.)
+            '!rounded-none !shadow-none',
+            '!order-[99]', // Ensure it's last in flex order
+            // Remove any default button styling
             'hover:!bg-transparent active:!bg-transparent focus:!bg-transparent',
             'focus:!outline-none focus-visible:!outline-none focus-visible:!ring-0',
-            'before:!content-none after:!content-none', // Remove any pseudo-elements
+            'before:!content-none after:!content-none',
             // X icon styling - 1.25rem size (w-5 h-5 = 1.25rem)
             '[&_svg]:!w-5 [&_svg]:!h-5 [&_svg]:!text-black [&_svg]:!stroke-current [&_svg]:!block [&_svg]:!m-0',
             // Show on hover of parent toast
-            'group-hover:!opacity-100',
-            // Ensure it's not positioned outside
-            '!inset-auto !left-auto !right-auto !top-auto !bottom-auto'
+            'group-hover:!opacity-100'
           ),
         },
       }}
