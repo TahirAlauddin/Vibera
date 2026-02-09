@@ -4,16 +4,30 @@ export default {
     extend: {
       colors: {
         accent: {
-          primary: '#F6C531',
-          'primary-hover': '#E0A800',
-          'primary-active': '#F1DC9A',
-          secondary: '#A7D9D4',
-          'secondary-border': '#91B6A2',
-          'secondary-hover': '#91B6A2',
-          'secondary-active': '#D7E9B6',
-          disabled: '#E0E6D9',
-          'disabled-hover': '#E0E6D9',
-          'disabled-active': '#E0E6D9',
+          primary: 'var(--color-accent-primary)',
+          'primary-hover': 'var(--color-accent-primary-hover)',
+          'primary-active': 'var(--color-accent-primary-active)',
+
+          'secondary-default': 'var(--color-accent-secondary-default)',
+          'secondary-border': 'var(--color-accent-secondary-border)',
+          'secondary-hover': 'var(--color-accent-secondary-hover)',
+          'secondary-active': 'var(--color-accent-secondary-active)',
+
+          'disabled-hover': 'var(--color-accent-disabled-hover)',
+          'disabled-active': 'var(--color-accent-disabled-active)',
+
+          'ghost-default': 'var(--color-accent-ghost-default)',
+          'ghost-hover': 'var(--color-accent-ghost-hover)',
+          'ghost-active': 'var(--color-accent-ghost-active)',
+        },
+        input: {
+          DEFAULT: 'var(--input-bg-default)',
+          active: 'var(--input-bg-active)',
+          border: 'var(--input-border-default)',
+          error: 'var(--input-border-error)',
+          disabledText: 'var(--input-disabled-text)',
+          boxShadow: 'var(--input-shadow)',
+          accent: 'var(--input-bg-accent)',
         },
       },
     },
