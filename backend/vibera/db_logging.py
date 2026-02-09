@@ -150,4 +150,3 @@ def log_connection_created(sender, connection, **kwargs):
             cursor_obj = connection._original_cursor(*args, **kwargs)
             return LoggingCursorWrapper(cursor_obj)
 
-        connection.cursor = wrapped_cursor
