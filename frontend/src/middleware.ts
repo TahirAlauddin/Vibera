@@ -20,10 +20,12 @@ export async function middleware(request: NextRequest) {
     pathname === '/signup' ||
     pathname === '/ui/button' ||
     pathname === '/ui/inputbox' ||
+    pathname === '/ui/typography' ||
     pathname.startsWith('/login/') ||
     pathname.startsWith('/signup/') ||
     pathname.startsWith('/ui/button/') ||
-    pathname.startsWith('/ui/inputbox/')
+    pathname.startsWith('/ui/inputbox/') ||
+    pathname.startsWith('/ui/typography/')
 
   // Allow public routes and static files
   if (

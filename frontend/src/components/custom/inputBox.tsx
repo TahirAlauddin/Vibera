@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { cn } from '@/lib/utils'
 import { InputGroup, InputGroupInput, InputGroupAddon } from '@/components/ui/input-group'
-import { inputGroupVariants } from './input-varient'
+import { inputGroupVariants } from './input-variant'
 import { VariantProps } from 'class-variance-authority'
 import { Search, X } from 'lucide-react'
 
