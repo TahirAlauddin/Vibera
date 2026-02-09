@@ -4,7 +4,7 @@ import { toast as sonnerToast } from 'sonner'
 import type { ReactNode } from 'react'
 import { Check, X, Info, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
-
+import type { ToastVariantProps } from './toast-variants'
 
 export type ToastVariant = NonNullable<ToastVariantProps['variant']>
 
