@@ -8,23 +8,6 @@ import type { ToastVariantProps } from './toast-variants'
 
 export type ToastVariant = NonNullable<ToastVariantProps['variant']>
 
-/**
- * Input type for creating a toast notification.
- * @property variant - The visual style of the toast
- * @property message - The message to display (supports string or JSX)
- * @property duration - Duration in milliseconds (0 or undefined for infinite)
- */
-export type ToastInput = {
-  variant: ToastVariant
-  message: string | ReactNode
-  duration?: number
-}
-
-/**
- * Toast ID returned from Sonner for programmatic dismissal.
- * Can be a string or number.
- */
-export type ToastId = string | number
 
 const DEFAULT_DURATION = parseInt(process.env.NEXT_PUBLIC_TOAST_DURATION || '5000', 10) // milliseconds
 
@@ -125,20 +108,14 @@ function CustomToast({
 /**
  * Hook for displaying toast notifications using Sonner.
  * 
- * @returns An object with `toast` and `dismiss` functions
+ * @returns An object with `toast` function
  * 
  * @example
  * ```tsx
- * const { toast, dismiss } = useToast()
+ * const { toast } = useToast()
  * 
  * // Show a success toast
- * const id = toast({ variant: 'success', message: 'Success!' })
- * 
- * // Dismiss a specific toast
- * dismiss(id)
- * 
- * // Dismiss all toasts
- * dismiss()
+ * toast({ variant: 'success', message: 'Success!' })
  * ```
  */
 export function useToast() {
@@ -148,7 +125,7 @@ export function useToast() {
  * @param input - Toast configuration
  * @returns The toast ID for programmatic dismissal
  */
-  const toast = ({ variant, message, duration = DEFAULT_DURATION }: ToastInput): ToastId => {
+  const toast = ({ variant, message, duration = DEFAULT_DURATION }: { variant: ToastVariant; message: string | ReactNode; duration?: number }): string | number => {
     // Auto-dismiss using DEFAULT_DURATION (or specified duration)
     // If duration is 0, set to undefined for infinite duration (no auto-dismiss)
     const toastDuration = duration > 0 ? duration : undefined
@@ -160,21 +137,8 @@ export function useToast() {
       }
     )
   }
-  /**
-   * Dismisses a toast notification.
-   * 
-   * @param id - The toast ID returned from `toast()`. If omitted, dismisses all toasts.
-   */
-  const dismiss = (id?: ToastId): void => {
-    if (id !== undefined) {
-      sonnerToast.dismiss(id)
-    } else {
-      sonnerToast.dismiss() // Dismiss all toasts
-    }
-  }
 
   return {
     toast,
-    dismiss,
   }
 }
