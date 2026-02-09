@@ -5,7 +5,8 @@ import type { ReactNode } from 'react'
 import { Check, X, Info, AlertTriangle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export type ToastVariant = 'correct' | 'error' | 'info' | 'warning' | 'message'
+
+export type ToastVariant = NonNullable<ToastVariantProps['variant']>
 
 /**
  * Input type for creating a toast notification.
@@ -131,7 +132,7 @@ function CustomToast({
  * const { toast, dismiss } = useToast()
  * 
  * // Show a success toast
- * const id = toast({ variant: 'correct', message: 'Success!' })
+ * const id = toast({ variant: 'success', message: 'Success!' })
  * 
  * // Dismiss a specific toast
  * dismiss(id)
@@ -142,11 +143,11 @@ function CustomToast({
  */
 export function useToast() {
   /**
-   * Displays a toast notification.
-   * 
-   * @param input - Toast configuration
-   * @returns The toast ID for programmatic dismissal
-   */
+ * Displays a toast notification.
+ * 
+ * @param input - Toast configuration
+ * @returns The toast ID for programmatic dismissal
+ */
   const toast = ({ variant, message, duration = DEFAULT_DURATION }: ToastInput): ToastId => {
     // Auto-dismiss using DEFAULT_DURATION (or specified duration)
     // If duration is 0, set to undefined for infinite duration (no auto-dismiss)
@@ -159,7 +160,6 @@ export function useToast() {
       }
     )
   }
-
   /**
    * Dismisses a toast notification.
    * 
