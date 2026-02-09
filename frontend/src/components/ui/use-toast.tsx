@@ -33,7 +33,7 @@ const DEFAULT_DURATION = parseInt(process.env.NEXT_PUBLIC_TOAST_DURATION || '500
  * Defines colors, borders, hover states, and icons for each variant.
  */
 const variantConfig = {
-  correct: {
+  success: {
     bg: 'bg-green-50',
     bgHover: 'hover:bg-green-100',
     border: 'border-green-500',
