@@ -3,6 +3,6 @@
  * Handles all authentication requests
  */
 
-import { handlers } from '@/auth';
+import { handlers } from '@/auth'
 
-export const { GET, POST } = handlers;
+export const { GET, POST } = handlers

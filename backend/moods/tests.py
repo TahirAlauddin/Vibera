@@ -312,6 +312,7 @@ class MoodCommentDetailTests(MoodCommentTestCase):
 
         # Wait a moment to ensure timestamp difference
         import time
+
         time.sleep(0.1)
 
         response = self.client_user1.patch(
@@ -555,6 +556,7 @@ class MoodCommentEdgeCasesTests(MoodCommentTestCase):
             mood=self.mood1, user=self.user1, content="First"
         )
         import time
+
         time.sleep(0.1)
         comment2 = MoodComment.objects.create(
             mood=self.mood1, user=self.user2, content="Second"

@@ -13,18 +13,33 @@ from .serializers import MoodLogSerializer, MoodCommentSerializer, MoodFeedSeria
 
 # --- Custom Permissions ---
 
+
 class IsOwnerOrReadOnly(permissions.BasePermission):
     """
-    Object-level permission: 
+    Object-level permission:
     - SAFE_METHODS (GET, HEAD, OPTIONS) allowed for any authenticated user.
-    - Write methods (PUT, PATCH, DELETE) allowed only for the creator.
+    - Write methods (POST, PATCH, DELETE) allowed only for the creator.
     """
+
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
         return obj.user == request.user
 
+
+class IsOwner(permissions.BasePermission):
+    """
+    Object-level permission:
+    - Write methods (POST, PATCH, DELETE) allowed only for the creator.
+    """
+
+    def has_object_permission(self, request, view, obj):
+
+        return obj.user == request.user
+
+
 # --- ViewSets ---
+
 
 class MoodLogViewSet(viewsets.ModelViewSet):
     """
@@ -32,14 +47,20 @@ class MoodLogViewSet(viewsets.ModelViewSet):
     - Authenticated users can see all logs.
     - Only the creator can update or delete their log.
     """
+
     serializer_class = MoodLogSerializer
     # Apply the custom permission here
-    permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated & IsOwner]
 
     def get_queryset(self):
-        return Mood.objects.all().annotate(
-            comment_count=Count('comments')  # DRF will map this to serializer field
-        ).select_related("user").order_by("-created_at")
+        return (
+            Mood.objects.filter(user=self.request.user)
+            .annotate(
+                comment_count=Count("comments")  # DRF will map this to serializer field
+            )
+            .select_related("user")
+            .order_by("-created_at")
+        )
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -51,6 +72,7 @@ class MoodCommentViewSet(viewsets.ModelViewSet):
     - Authenticated users can see comments.
     - Only the creator can update or delete their comment.
     """
+
     serializer_class = MoodCommentSerializer
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
     lookup_url_kwarg = "comment_id"
@@ -62,13 +84,16 @@ class MoodCommentViewSet(viewsets.ModelViewSet):
         - Otherwise, return all comments (used for detail routes).
         """
         mood_id = self.kwargs.get("mood_id")
-        queryset = MoodComment.objects.select_related("user", "mood").prefetch_related(
-            "replies__user", "replies__mood"
-        ).annotate(
-            reply_count=Count("replies")
+        if mood_id is not None:
+            get_object_or_404(Mood, pk=mood_id)
+
+        queryset = (
+            MoodComment.objects.select_related("user", "mood")
+            .prefetch_related("replies__user", "replies__mood")
+            .annotate(reply_count=Count("replies"))
         )
 
-        if mood_id:
+        if mood_id is not None:
             # Top-level comments for a specific mood
             return queryset.filter(mood_id=mood_id, parent__isnull=True).order_by(
                 "-created_at"
@@ -80,7 +105,7 @@ class MoodCommentViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         mood_id = self.kwargs.get("mood_id")
         parent_id = self.kwargs.get("comment_id")
-        
+
         # If creating a reply, get mood from parent comment
         if parent_id:
             parent = get_object_or_404(MoodComment, id=parent_id)
@@ -102,11 +127,11 @@ class MoodCommentViewSet(viewsets.ModelViewSet):
                 )
             mood = get_object_or_404(Mood, id=mood_id)
             parent = None
-        
+
         serializer.save(user=self.request.user, mood=mood, parent=parent)
 
 
-@api_view(['GET'])
+@api_view(["GET"])
 def test_api(request):
     """
     Test API endpoint to verify DRF installation.

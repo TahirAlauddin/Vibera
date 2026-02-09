@@ -24,7 +24,7 @@ SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"
 
 class LoggingCursorWrapper:
     """Wrapper for database cursor to log queries and errors."""
-    
+
     def __init__(self, cursor):
         """
         Initialize cursor wrapper.
@@ -33,7 +33,7 @@ class LoggingCursorWrapper:
             cursor: The database cursor to wrap
         """
         self.cursor = cursor
-    
+
     def __getattr__(self, attr):
         """Delegate attribute access to the underlying cursor."""
         return getattr(self.cursor, attr)
@@ -51,7 +51,7 @@ class LoggingCursorWrapper:
         Execute SQL query with logging.
         """
         start_time = time.time()
-        
+
         try:
             result = self.cursor.execute(sql, params)
             return result
@@ -89,7 +89,7 @@ class LoggingCursorWrapper:
             param_list: List of parameter tuples
         """
         start_time = time.time()
-        
+
         try:
             result = self.cursor.executemany(sql, param_list)
             return result
@@ -149,7 +149,4 @@ def log_connection_created(sender, connection, **kwargs):
             """Return wrapped cursor for query logging."""
             cursor_obj = connection._original_cursor(*args, **kwargs)
             return LoggingCursorWrapper(cursor_obj)
-        
-        connection.cursor = wrapped_cursor
-
 

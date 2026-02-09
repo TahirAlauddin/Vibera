@@ -60,7 +60,9 @@ export default function Navbar() {
             {/* User info - Desktop */}
             <div className="hidden md:flex items-center gap-2 text-sm text-gray-700">
               <User className="w-4 h-4" />
-              <span className="truncate max-w-[100px]">{user?.username || user?.name || user?.email}</span>
+              <span className="truncate max-w-[100px]">
+                {user?.username || user?.name || user?.email}
+              </span>
             </div>
 
             {/* Mobile / Tablet Search Icon */}
