@@ -125,7 +125,7 @@ export const authConfig = {
     maxAge: 60 * 60 * 24 * 7, // 7 days
   },
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user }) {
       // Initial sign in
       if (user) {
         token.accessToken = user.accessToken
@@ -212,7 +212,7 @@ function isTokenExpired(token: string): boolean {
     const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
 
     // Use Buffer in Node.js, atob in browser
-    let decoded: any
+    let decoded: { exp?: number }
     if (typeof window === 'undefined') {
       // Server-side: use Buffer
       decoded = JSON.parse(Buffer.from(padded, 'base64').toString('utf-8'))
@@ -230,7 +230,7 @@ function isTokenExpired(token: string): boolean {
     const currentTime = Date.now()
 
     return currentTime >= expirationTime
-  } catch (error) {
+  } catch {
     return true
   }
 }
@@ -249,7 +249,7 @@ function isTokenExpiringSoon(token: string, minutesBuffer: number): boolean {
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
     const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
 
-    let decoded: any
+    let decoded: { exp?: number }
     if (typeof window === 'undefined') {
       decoded = JSON.parse(Buffer.from(padded, 'base64').toString('utf-8'))
     } else {
@@ -266,7 +266,7 @@ function isTokenExpiringSoon(token: string, minutesBuffer: number): boolean {
 
     // Return true if token expires within the buffer time
     return expirationTime - currentTime <= bufferTime
-  } catch (error) {
+  } catch {
     return true
   }
 }
