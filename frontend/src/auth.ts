@@ -59,7 +59,10 @@ export const authConfig = {
               const errorData = await response.json()
               if (typeof errorData.detail === 'string') {
                 errorMessage = errorData.detail
-              } else if (typeof errorData.non_field_errors === 'object' && Array.isArray(errorData.non_field_errors)) {
+              } else if (
+                typeof errorData.non_field_errors === 'object' &&
+                Array.isArray(errorData.non_field_errors)
+              ) {
                 errorMessage = errorData.non_field_errors[0] || errorMessage
               }
             } catch {
@@ -290,7 +293,7 @@ async function refreshAccessToken(refreshToken: string): Promise<string | null> 
     }
 
     const data: { access: string } = await response.json()
-    
+
     if (!data.access) {
       return null
     }

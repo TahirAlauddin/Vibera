@@ -4,8 +4,8 @@ import { auth } from '@/auth'
 
 /**
  * Middleware to protect routes and handle authentication redirects
- * 
- * Public routes: /, /login, /signup
+ *
+ * Public routes: /, /login, /signup, /ui/button, /ui/inputbox
  * Protected routes: All other routes (except public assets)
  */
 export async function middleware(request: NextRequest) {
@@ -13,16 +13,25 @@ export async function middleware(request: NextRequest) {
 
   // Define public routes that don't require authentication
   // Use exact matching for root and prefix matching for others
-  const publicRoutes = ['/', '/login', '/signup']
+  const publicRoutes = ['/', '/login', '/signup', '/ui/button', '/ui/inputbox']
   const isPublicRoute =
     pathname === '/' ||
     pathname === '/login' ||
     pathname === '/signup' ||
+    pathname === '/ui/button' ||
+    pathname === '/ui/inputbox' ||
     pathname.startsWith('/login/') ||
-    pathname.startsWith('/signup/')
+    pathname.startsWith('/signup/') ||
+    pathname.startsWith('/ui/button/') ||
+    pathname.startsWith('/ui/inputbox/')
 
   // Allow public routes and static files
-  if (isPublicRoute || pathname.startsWith('/_next') || pathname.startsWith('/api/auth') || pathname.startsWith('/assets')) {
+  if (
+    isPublicRoute ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/api/auth') ||
+    pathname.startsWith('/assets')
+  ) {
     return NextResponse.next()
   }
 
@@ -37,7 +46,11 @@ export async function middleware(request: NextRequest) {
   }
 
   // If authenticated and trying to access login/signup, redirect to home
-  if (session && isPublicRoute && (pathname.startsWith('/login') || pathname.startsWith('/signup'))) {
+  if (
+    session &&
+    isPublicRoute &&
+    (pathname.startsWith('/login') || pathname.startsWith('/signup'))
+  ) {
     return NextResponse.redirect(new URL('/home', request.url))
   }
 

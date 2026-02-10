@@ -44,3 +44,6 @@ linting.md
 
 .cursor/debug.log
 
+
+.env
+linter.md

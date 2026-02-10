@@ -67,9 +67,7 @@ class MoodComment(models.Model):
     the parent field. Comments are public and can be made by any authenticated user.
     """
 
-    mood = models.ForeignKey(
-        Mood, on_delete=models.CASCADE, related_name="comments"
-    )
+    mood = models.ForeignKey(Mood, on_delete=models.CASCADE, related_name="comments")
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
