@@ -5,7 +5,7 @@ import { auth } from '@/auth'
 /**
  * Middleware to protect routes and handle authentication redirects
  *
- * Public routes: /, /login, /signup, /ui/button, /ui/inputbox
+ * Public routes: /, /login, /signup, /ui/button, /ui/inputbox, /ui-guide
  * Protected routes: All other routes (except public assets)
  */
 export async function middleware(request: NextRequest) {
@@ -13,17 +13,19 @@ export async function middleware(request: NextRequest) {
 
   // Define public routes that don't require authentication
   // Use exact matching for root and prefix matching for others
-  const publicRoutes = ['/', '/login', '/signup', '/ui/button', '/ui/inputbox']
+  const publicRoutes = ['/', '/login', '/signup', '/ui/button', '/ui/inputbox', '/ui-guide']
   const isPublicRoute =
     pathname === '/' ||
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/ui/button' ||
     pathname === '/ui/inputbox' ||
+    pathname === '/ui-guide' ||
     pathname.startsWith('/login/') ||
     pathname.startsWith('/signup/') ||
     pathname.startsWith('/ui/button/') ||
-    pathname.startsWith('/ui/inputbox/')
+    pathname.startsWith('/ui/inputbox/') ||
+    pathname.startsWith('/ui-guide/')
 
   // Allow public routes and static files
   if (
