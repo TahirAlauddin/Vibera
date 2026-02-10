@@ -5,7 +5,7 @@ import { auth } from '@/auth'
 /**
  * Middleware to protect routes and handle authentication redirects
  *
- * Public routes: /, /login, /signup, /ui
+ * Public routes: /, /login, /signup, /ui/button, /ui/inputbox
  * Protected routes: All other routes (except public assets)
  */
 export async function middleware(request: NextRequest) {
@@ -18,9 +18,11 @@ export async function middleware(request: NextRequest) {
     pathname === '/login' ||
     pathname === '/signup' ||
     pathname === '/ui/button' ||
+    pathname === '/ui/inputbox' ||
     pathname.startsWith('/login/') ||
     pathname.startsWith('/signup/') ||
-    pathname.startsWith('/ui/button/')
+    pathname.startsWith('/ui/button/') ||
+    pathname.startsWith('/ui/inputbox/')
 
   // Allow public routes and static files
   if (

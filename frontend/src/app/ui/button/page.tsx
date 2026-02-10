@@ -1,12 +1,13 @@
 import { CircleArrowLeft, ExternalLink } from 'lucide-react'
 import { Button } from '@/components/custom/button'
 
-// Override hover/active so the "Default" column always looks like default state
-const primaryDefaultOnly = 'hover:bg-(--color-accent-primary)! active:bg-(--color-accent-primary)!'
+const primaryDefaultOnly = 'hover:bg-accent-primary! active:bg-accent-primary!'
+
 const secondaryDefaultOnly =
-  'hover:bg-(--color-accent-secondary-default)! hover:border-(--color-accent-secondary-border)! active:bg-(--color-accent-secondary-default)! active:border-(--color-accent-secondary-border)!'
-const ghostDefaultOnly =
-  'hover:text-(--color-accent-ghost-default)! active:text-(--color-accent-ghost-default)!'
+  'hover:bg-accent-secondary-default! hover:border-accent-secondary-border! ' +
+  'active:bg-accent-secondary-default! active:border-accent-secondary-border!'
+
+const ghostDefaultOnly = 'hover:text-accent-ghost-default! active:text-accent-ghost-default!'
 
 export default function ButtonPage() {
   return (
@@ -43,11 +44,11 @@ export default function ButtonPage() {
             <CircleArrowLeft />
             Button
           </Button>
-          <Button size="sm" variant="primary" className="bg-(--color-accent-primary-hover)!">
+          <Button size="sm" variant="primary" className="bg-accent-primary-hover!">
             <CircleArrowLeft />
             Button
           </Button>
-          <Button size="sm" variant="primary" className="bg-(--color-accent-primary-active)!">
+          <Button size="sm" variant="primary" className="bg-accent-primary-active!">
             <CircleArrowLeft />
             Button
           </Button>
@@ -57,11 +58,11 @@ export default function ButtonPage() {
             <CircleArrowLeft />
             Button
           </Button>
-          <Button size="default" variant="primary" className="bg-(--color-accent-primary-hover)!">
+          <Button size="default" variant="primary" className="bg-accent-primary-hover!">
             <CircleArrowLeft />
             Button
           </Button>
-          <Button size="default" variant="primary" className="bg-(--color-accent-primary-active)!">
+          <Button size="default" variant="primary" className="bg-accent-primary-active!">
             <CircleArrowLeft />
             Button
           </Button>
@@ -71,11 +72,11 @@ export default function ButtonPage() {
             <CircleArrowLeft />
             Button
           </Button>
-          <Button size="lg" variant="primary" className="bg-(--color-accent-primary-hover)!">
+          <Button size="lg" variant="primary" className="bg-accent-primary-hover!">
             <CircleArrowLeft />
             Button
           </Button>
-          <Button size="lg" variant="primary" className="bg-(--color-accent-primary-active)!">
+          <Button size="lg" variant="primary" className="bg-accent-primary-active!">
             <CircleArrowLeft />
             Button
           </Button>
@@ -99,7 +100,7 @@ export default function ButtonPage() {
           <Button
             size="sm"
             variant="secondary"
-            className="bg-(--color-accent-secondary-hover)! border-(--color-accent-secondary-hover)! text-black"
+            className="bg-accent-secondary-hover! border-accent-secondary-hover! text-black"
           >
             <ExternalLink />
             Button
@@ -107,7 +108,7 @@ export default function ButtonPage() {
           <Button
             size="sm"
             variant="secondary"
-            className="bg-(--color-accent-secondary-active)! border-(--color-accent-secondary-border)!"
+            className="bg-accent-secondary-active! border-accent-secondary-border!"
           >
             <ExternalLink />
             Button
@@ -121,7 +122,7 @@ export default function ButtonPage() {
           <Button
             size="default"
             variant="secondary"
-            className="bg-(--color-accent-secondary-hover)! border-(--color-accent-secondary-hover)! text-black"
+            className="bg-accent-secondary-hover! border-accent-secondary-hover! text-black"
           >
             <ExternalLink />
             Button
@@ -129,7 +130,7 @@ export default function ButtonPage() {
           <Button
             size="default"
             variant="secondary"
-            className="bg-(--color-accent-secondary-active)! border-(--color-accent-secondary-border)!"
+            className="bg-accent-secondary-active! border-accent-secondary-border!"
           >
             <ExternalLink />
             Button
@@ -143,7 +144,7 @@ export default function ButtonPage() {
           <Button
             size="lg"
             variant="secondary"
-            className="bg-(--color-accent-secondary-hover)! border-(--color-accent-secondary-hover)! text-black"
+            className="bg-accent-secondary-hover! border-accent-secondary-hover! text-black"
           >
             <ExternalLink />
             Button
@@ -151,7 +152,7 @@ export default function ButtonPage() {
           <Button
             size="lg"
             variant="secondary"
-            className="bg-(--color-accent-secondary-active)! border-(--color-accent-secondary-border)!"
+            className="bg-accent-secondary-active! border-accent-secondary-border!"
           >
             <ExternalLink />
             Button
@@ -172,10 +173,10 @@ export default function ButtonPage() {
           <Button size="sm" variant="ghost" className={ghostDefaultOnly}>
             Button
           </Button>
-          <Button size="sm" variant="ghost" className="text-(--color-accent-ghost-hover)!">
+          <Button size="sm" variant="ghost" className="text-accent-ghost-hover!">
             Button
           </Button>
-          <Button size="sm" variant="ghost" className="text-(--color-accent-ghost-active)!">
+          <Button size="sm" variant="ghost" className="text-accent-ghost-active!">
             Button
           </Button>
 
@@ -183,10 +184,10 @@ export default function ButtonPage() {
           <Button size="default" variant="ghost" className={ghostDefaultOnly}>
             Button
           </Button>
-          <Button size="default" variant="ghost" className="text-(--color-accent-ghost-hover)!">
+          <Button size="default" variant="ghost" className="text-accent-ghost-hover!">
             Button
           </Button>
-          <Button size="default" variant="ghost" className="text-(--color-accent-ghost-active)!">
+          <Button size="default" variant="ghost" className="text-accent-ghost-active!">
             Button
           </Button>
 
@@ -194,10 +195,10 @@ export default function ButtonPage() {
           <Button size="lg" variant="ghost" className={ghostDefaultOnly}>
             Button
           </Button>
-          <Button size="lg" variant="ghost" className="text-(--color-accent-ghost-hover)!">
+          <Button size="lg" variant="ghost" className="text-accent-ghost-hover!">
             Button
           </Button>
-          <Button size="lg" variant="ghost" className="text-(--color-accent-ghost-active)!">
+          <Button size="lg" variant="ghost" className="text-accent-ghost-active!">
             Button
           </Button>
         </div>

@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Mood, MoodComment
+from social.models import Follow
 
 
 class MoodCommentSerializer(serializers.ModelSerializer):
@@ -90,3 +91,60 @@ class MoodLogSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
+
+    def get_comment_count(self, obj):
+        """Return the number of top-level comments on this mood"""
+        return obj.comments.filter(parent__isnull=True).count()
+
+    def create(self, validated_data):
+        request = self.context["request"]
+        return Mood.objects.create(user=request.user, **validated_data)
+
+
+class UserProfileSerializer(serializers.Serializer):
+    """Nested serializer for user profile information in feed"""
+    username = serializers.CharField(source="user.username", read_only=True)
+    avatar = serializers.ImageField(read_only=True, allow_null=True)
+
+    def to_representation(self, instance):
+        """Return user profile data or None if profile doesn't exist"""
+        if not instance:
+            return None
+        return {
+            "username": instance.user.username,
+            "avatar": instance.avatar.url if instance.avatar else None,
+        }
+
+
+class MoodFeedSerializer(MoodLogSerializer):
+    """Serializer for mood feed with personalization fields"""
+    is_following = serializers.SerializerMethodField()
+    user_profile = serializers.SerializerMethodField()
+
+    class Meta(MoodLogSerializer.Meta):
+        fields = MoodLogSerializer.Meta.fields + ["is_following", "user_profile"]
+
+    def get_is_following(self, obj):
+        """Check if the authenticated user follows the mood author"""
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        
+        # Check if current user follows the mood author
+        return Follow.objects.filter(
+            follower=request.user, following=obj.user
+        ).exists()
+
+    def get_user_profile(self, obj):
+        """Get basic user profile information"""
+        from users.models import UserProfile
+        
+        try:
+            profile = obj.user.profile
+            return UserProfileSerializer(profile).to_representation(profile)
+        except UserProfile.DoesNotExist:
+            # If profile doesn't exist, return basic info
+            return {
+                "username": obj.user.username,
+                "avatar": None,
+            }

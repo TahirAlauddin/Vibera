@@ -1,11 +1,15 @@
-from rest_framework import viewsets, permissions, serializers as drf_serializers
+from rest_framework import viewsets, permissions, serializers as drf_serializers, status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from datetime import datetime
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
 from django.db.models import Count
 
 from .models import Mood, MoodComment
-from .serializers import MoodLogSerializer, MoodCommentSerializer
+from .serializers import MoodLogSerializer, MoodCommentSerializer, MoodFeedSerializer
 
 # --- Custom Permissions ---
 
@@ -129,5 +133,72 @@ class MoodCommentViewSet(viewsets.ModelViewSet):
 
 @api_view(["GET"])
 def test_api(request):
-    """Test endpoint to verify API is working."""
-    return Response({"message": "Mood API is working!", "status": "ok"})
+    """
+    Test API endpoint to verify DRF installation.
+    Returns JSON with status, message, and timestamp.
+    """
+    data = {
+        "status": "success",
+        "message": "Django REST Framework is configured correctly!",
+        "timestamp": datetime.now().isoformat(),
+        "framework": "Django REST Framework",
+    }
+    return Response(data, status=status.HTTP_200_OK)
+
+
+class PersonalizedMoodFeedView(APIView, PageNumberPagination):
+    """
+    Personalized mood feed that displays all public moods from all users,
+    prioritized by user's preferred mood types.
+    """
+    permission_classes = [IsAuthenticated]
+    page_size = 20
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+    def get(self, request):
+        """
+        Retrieve personalized mood feed with pagination.
+        Personalization: Prioritizes moods matching user's preferred mood types.
+        """
+        # Get user's preferred moods from profile
+        try:
+            user_profile = request.user.profile
+            preferred_moods = user_profile.get_preferred_moods()
+        except Exception:
+            # If profile doesn't exist, treat as no preferences (show all moods)
+            preferred_moods = None
+
+        # Fetch all public moods (all moods are public by default)
+        # Use select_related and prefetch_related for optimization
+        all_moods = Mood.objects.all().select_related('user').prefetch_related('comments')
+
+        # Apply personalization logic
+        if preferred_moods and len(preferred_moods) > 0:
+            # Split moods into preferred and non-preferred groups using querysets
+            preferred_moods_qs = all_moods.filter(emoji__in=preferred_moods).order_by('-created_at')
+            non_preferred_moods_qs = all_moods.exclude(emoji__in=preferred_moods).order_by('-created_at')
+
+            # Convert to lists to combine (preferred first, then non-preferred)
+            # This is necessary because we need to interleave the results
+            preferred_moods_list = list(preferred_moods_qs)
+            non_preferred_moods_list = list(non_preferred_moods_qs)
+
+            # Combine: preferred moods first, then non-preferred moods
+            personalized_moods = preferred_moods_list + non_preferred_moods_list
+        else:
+            # No preferences: show all moods in chronological order (newest first)
+            personalized_moods = list(all_moods.order_by('-created_at'))
+
+        # Paginate the results
+        paginated_moods = self.paginate_queryset(personalized_moods, request, view=self)
+        
+        # Serialize the paginated results
+        serializer = MoodFeedSerializer(
+            paginated_moods, 
+            many=True, 
+            context={"request": request}
+        )
+
+        # Return paginated response
+        return self.get_paginated_response(serializer.data)
