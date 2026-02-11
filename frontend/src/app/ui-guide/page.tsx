@@ -12,8 +12,8 @@ export const metadata: Metadata = {
 
 export default function UIGuidePage() {
     return (
-        <div className="min-h-screen" style={{ backgroundColor: '#F5F3ED' }}>
-            <section className="text-center bg-accent-disabled-hover">Navbar Placeholder</section>
+        <div className="min-h-screen bg-[#F5F3ED]" >
+            <section className="text-center bg-[#E8E4DC]">Navbar Placeholder</section>
             <div className="max-w-7xl mx-auto py-8 px-6 md:px-12 lg:px-16">
                 {/* Title Section */}
                 <div className="mb-12">
@@ -26,43 +26,43 @@ export default function UIGuidePage() {
                 </div>
 
                 {/* Color Palette Section */}
-                <section className="mb-16">
-                    <h2 className="text-3xl font-bold mb-6" style={{ color: '#2C2C2C' }}>
+                <section className="mb-16 ">
+                    <h2 className="text-3xl font-bold mb-6 " style={{ color: '#2C2C2C' }}>
                         Color Palette
                     </h2>
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                             <div className="flex flex-col items-center">
                                 <div
-                                    className="rounded-md mb-2"
-                                    style={{ backgroundColor: '#F5F3ED', width: '260px', height: '120px' }}
+                                    className="rounded-md mb-2 w-full lg:w-[265px] max-w-[275px] h-[96px] md:w-[200px]"
+                                    style={{ backgroundColor: '#F5F3ED' }}
                                 />
                                 <p className="font-semibold">Cream</p>
                                 <p className="text-sm text-gray-600">#F5F3ED</p>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div
-                                    className="rounded-md mb-2"
-                                    style={{ backgroundColor: '#E8E4DC', width: '260px', height: '120px' }}
+                                    className="rounded-md mb-2 w-full lg:w-[265px] max-w-[275px] h-[96px] md:w-[200px]"
+                                    style={{ backgroundColor: '#E8E4DC' }}
                                 />
                                 <p className="font-semibold">Cream Dark</p>
                                 <p className="text-sm text-gray-600">#E8E4DC</p>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div
-                                    className="rounded-md mb-2"
-                                    style={{ backgroundColor: '#F4C400', width: '260px', height: '120px' }}
+                                    className="rounded-md mb-2 w-full lg:w-[265px] max-w-[275px] h-[96px] md:w-[200px]"
+                                    style={{ backgroundColor: '#F4C430' }}
                                 />
                                 <p className="font-semibold">Primary Yellow</p>
-                                <p className="text-sm text-gray-600">#F4C400</p>
+                                <p className="text-sm text-gray-600">#F4C430</p>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div
-                                    className="rounded-md mb-2"
-                                    style={{ backgroundColor: '#B8BCB0', width: '260px', height: '120px' }}
+                                    className="rounded-md mb-2 w-full lg:w-[265px] max-w-[275px] h-[96px] md:w-[200px]"
+                                    style={{ backgroundColor: '#B8C4B0' }}
                                 />
                                 <p className="font-semibold">Sage</p>
-                                <p className="text-sm text-gray-600">#B8BCB0</p>
+                                <p className="text-sm text-gray-600">#B8C4B0</p>
                             </div>
                         </div>
                     </div>
@@ -114,16 +114,16 @@ export default function UIGuidePage() {
                         <section className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-xl font-semibold mb-4">Primary Buttons</h3>
                             <div className="flex flex-wrap gap-4 items-center">
-                                <Button variant="default" size="sm" className="bg-[#F4C400] hover:bg-[#F4C400]/90 text-black" style={{ width: '128.68px', height: '59.98px' }}>
+                                <Button variant="default" size="sm" className="bg-[#F4C430] hover:bg-[#F4C400]/90 text-black" >
                                     Small Button
                                 </Button>
-                                <Button variant="default" size="default" className="bg-[#F4C400] hover:bg-[#F4C400]/90 text-black" style={{ width: '170.35px', height: '59.98px' }}>
+                                <Button variant="default" size="default" className="bg-[#F4C430] hover:bg-[#F4C400]/90 text-black">
                                     Medium Button
                                 </Button>
-                                <Button variant="default" size="lg" className="bg-[#F4C400] hover:bg-[#F4C400]/90 text-black" style={{ width: '177.5px', height: '59.98px' }}>
+                                <Button variant="default" size="lg" className="bg-[#F4C430] hover:bg-[#F4C400]/90 text-black" >
                                     Large Button
                                 </Button>
-                                <Button variant="default" disabled className="bg-gray-300 text-gray-500 cursor-not-allowed" style={{ width: '118.85px', height: '59.98px' }}>
+                                <Button variant="default" disabled className="bg-gray-300 text-gray-500 cursor-not-allowed">
                                     Disabled
                                 </Button>
                             </div>
@@ -133,16 +133,16 @@ export default function UIGuidePage() {
                         <section className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-xl font-semibold mb-4">Secondary Buttons</h3>
                             <div className="flex flex-wrap gap-4 items-center">
-                                <Button variant="secondary" size="sm" style={{ width: '128.68px', height: '59.98px' }}>
+                                <Button variant="secondary" size="sm" >
                                     Small Button
                                 </Button>
-                                <Button variant="secondary" size="default" style={{ width: '170.35px', height: '59.98px' }}>
+                                <Button variant="secondary" size="default">
                                     Medium Button
                                 </Button>
-                                <Button variant="secondary" size="lg" style={{ width: '177.5px', height: '59.98px' }}>
+                                <Button variant="secondary" size="lg" >
                                     Large Button
                                 </Button>
-                                <Button variant="secondary" style={{ width: '118.85px', height: '59.98px' }} disabled>
+                                <Button variant="secondary" disabled>
                                     Disabled
                                 </Button>
                             </div>
@@ -152,16 +152,16 @@ export default function UIGuidePage() {
                         <section className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-xl font-semibold mb-4">Ghost & Outline Buttons</h3>
                             <div className="flex flex-wrap gap-4 items-center">
-                                <Button variant="ghost" size="default" style={{ width: '152.45px', height: '54.22px' }}>
+                                <Button variant="ghost" size="default" >
                                     Ghost Button
                                 </Button>
-                                <Button variant="outline" size="default" style={{ width: '165.36px', height: '54.22px' }}>
+                                <Button variant="outline" size="default" >
                                     Outline Button
                                 </Button>
-                                <Button variant="ghost" disabled style={{ width: '165.95px', height: '54.22px' }}>
+                                <Button variant="ghost" disabled>
                                     Ghost Disabled
                                 </Button>
-                                <Button variant="outline" disabled style={{ width: '178.87px', height: '54.22px' }}>
+                                <Button variant="outline" disabled>
                                     Outline Disabled
                                 </Button>
                             </div>
@@ -170,7 +170,7 @@ export default function UIGuidePage() {
                         {/* Full Width Button */}
                         <section className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-xl font-semibold mb-4">Full Width Button</h3>
-                            <Button variant="default" className="w-full bg-[#F4C400] hover:bg-[#F4C400]/90 text-black" style={{ height: '58px' }}>
+                            <Button variant="default" className="w-full bg-[#F4C430] hover:bg-[#F4C430]/90 text-black" >
                                 Full Width Button
                             </Button>
                         </section>
@@ -190,19 +190,20 @@ export default function UIGuidePage() {
                                 {/* Default State */}
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium">Label</label> <br />
-                                    <Input placeholder="Placeholder" className="w-1/2" />
+                                    <Input placeholder="Placeholder" className="w-full lg:w-1/2"
+                                    />
                                     <p className="text-xs text-gray-500">this is information text</p>
                                 </div>
                                 {/* Filled State */}
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium">Label</label> <br />
-                                    <Input defaultValue="Filled value" className="w-1/2" />
+                                    <Input defaultValue="Filled value" className="w-full lg:w-1/2" />
                                     <p className="text-xs text-gray-500">this is information text</p>
                                 </div>
                                 {/* Error State */}
                                 <div className="space-y-1">
                                     <label className="text-sm font-medium">Label</label> <br />
-                                    <Input placeholder="Placeholder" aria-invalid="true" className="border-red-500 w-1/2" />
+                                    <Input placeholder="Placeholder" aria-invalid="true" className="border-red-500 w-full lg:w-1/2" />
                                     <p className="text-xs text-red-500">This is an error message</p>
                                 </div>
                             </div>
@@ -217,7 +218,7 @@ export default function UIGuidePage() {
                                     <label className="text-sm font-medium">Label</label> < br />
                                     <Input
                                         placeholder="Placeholder"
-                                        className="bg-green-50 border-green-200 focus:border-green-400 w-1/2"
+                                        className="bg-green-50 border-green-200 focus:border-green-400 w-full lg:w-1/2 "
                                     />
                                     <p className="text-xs text-gray-500">This is information text</p>
                                 </div>
@@ -226,7 +227,7 @@ export default function UIGuidePage() {
                                     <label className="text-sm font-medium">Label</label> < br />
                                     <Input
                                         defaultValue="Filled value"
-                                        className="bg-green-50 border-green-200 focus:border-green-400 w-1/2"
+                                        className="bg-green-50 border-green-200 focus:border-green-400 w-full lg:w-1/2"
                                     />
                                 </div>
                             </div>
@@ -237,7 +238,7 @@ export default function UIGuidePage() {
                             <h3 className="text-xl font-semibold mb-4">Search Input</h3>< br />
                             <InputGroup className="max-w-md">
                                 <InputGroupAddon>
-                                    <Search className="w-1/2 h-4" />
+                                    <Search className="w-full lg:w-1/2 h-4" />
                                 </InputGroupAddon>
                                 <InputGroupInput placeholder="Search..." />
                             </InputGroup>
@@ -256,7 +257,7 @@ export default function UIGuidePage() {
                             <h3 className="text-xl font-semibold mb-4">Primary TextArea</h3>
                             <div className="space-y-1">
                                 <label className="text-sm font-medium">Share your thoughts</label>
-                                <Textarea placeholder="What's on your mind..." className="min-h-24 w-1/2" />
+                                <Textarea placeholder="What's on your mind..." className="min-h-24 w-full lg:w-1/2" />
                                 <p className="text-xs text-gray-500">
                                     Optional: Share more details about your mood
                                 </p>
@@ -271,7 +272,7 @@ export default function UIGuidePage() {
                                 <Textarea
                                     placeholder="Enter description..."
                                     aria-invalid="true"
-                                    className="min-h-24 border-red-500 w-1/2"
+                                    className="min-h-24 border-red-500 w-full lg:w-1/2"
                                 />
                                 <p className="text-xs text-red-500">This field is required</p>
                             </div>
@@ -349,23 +350,23 @@ export default function UIGuidePage() {
                     <div className="bg-white rounded-lg shadow-sm p-6">
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
-                                <div className="bg-[#F4C400]" style={{ width: '8px', height: '32px' }} />
+                                <div className="bg-[#F4C430]" style={{ width: '8px', height: '32px' }} />
                                 <span className="text-sm">XS: 0.5rem (8px)</span>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="bg-[#F4C400]" style={{ width: '16px', height: '32px' }} />
+                                <div className="bg-[#F4C430]" style={{ width: '16px', height: '32px' }} />
                                 <span className="text-sm">SM: 1rem (16px)</span>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="bg-[#F4C400]" style={{ width: '24px', height: '32px' }} />
+                                <div className="bg-[#F4C430]" style={{ width: '24px', height: '32px' }} />
                                 <span className="text-sm">MD: 1.5rem (24px)</span>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="bg-[#F4C400]" style={{ width: '32px', height: '32px' }} />
+                                <div className="bg-[#F4C430]" style={{ width: '32px', height: '32px' }} />
                                 <span className="text-sm">LG: 2rem (32px)</span>
                             </div>
                             <div className="flex items-center gap-4">
-                                <div className="bg-[#F4C400]" style={{ width: '48px', height: '32px' }} />
+                                <div className="bg-[#F4C430]" style={{ width: '48px', height: '32px' }} />
                                 <span className="text-sm">XL: 3rem (48px)</span>
                             </div>
                         </div>
@@ -381,33 +382,34 @@ export default function UIGuidePage() {
                         <div className="flex flex-wrap gap-8 items-end">
                             <div className="flex flex-col items-center">
                                 <div
-                                    className="bg-[#F4C400] mb-2 w-[286px] h-[95.99]"
+                                    className="bg-[#F4C430] mb-2 w-full max-w-[286px] h-[96px] sm:w-[286px]"
                                     style={{ borderRadius: '0.5rem' }}
                                 />
                                 <span className="text-sm">SM: 0.5rem</span>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div
-                                    className="bg-[#F4C400] w-[286px] h-[95.99] mb-2"
+                                    className="bg-[#F4C430] w-full max-w-[286px] h-[96px] sm:w-[286px] mb-2"
                                     style={{ borderRadius: '0.75rem' }}
                                 />
                                 <span className="text-sm">MD: 0.75rem</span>
                             </div>
                             <div className="flex flex-col items-center">
                                 <div
-                                    className="bg-[#F4C400] w-[286px] h-[95.99] mb-2"
+                                    className="bg-[#F4C430] w-full max-w-[286px] h-[96px] sm:w-[286px] mb-2"
                                     style={{ borderRadius: '1rem' }}
                                 />
                                 <span className="text-sm">LG: 1rem</span>
                             </div>
                             <div className="flex flex-col items-center">
-                                <div className="bg-[#F4C400] w-[96px] h-[96] mb-2 rounded-full" />
+                                <div className="bg-[#F4C430] w-[96px] h-[96] mb-2 rounded-full" />
                                 <span className="text-sm">Full</span>
                             </div>
                         </div>
                     </div>
                 </section>
             </div>
+            <section className="bg-[#E8E4DC] text-center">Footer placeholder</section>
         </div>
     )
 }
