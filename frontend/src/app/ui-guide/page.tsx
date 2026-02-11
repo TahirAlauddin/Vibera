@@ -236,9 +236,9 @@ export default function UIGuidePage() {
                         {/* Search Input */}
                         <section className="bg-white rounded-lg shadow-sm p-6">
                             <h3 className="text-xl font-semibold mb-4">Search Input</h3>< br />
-                            <InputGroup className="max-w-md">
+                            <InputGroup className="w-full lg:w-1/2">
                                 <InputGroupAddon>
-                                    <Search className="w-full lg:w-1/2 h-4" />
+                                    <Search className=" h-4" />
                                 </InputGroupAddon>
                                 <InputGroupInput placeholder="Search..." />
                             </InputGroup>
