@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
@@ -65,6 +66,10 @@ export default function UIGuidePage() {
                 <p className="text-sm text-gray-600">#B8C4B0</p>
               </div>
             </div>
+
+            <Link href="/ui-guide/color-palette" className="block text-center p-2 mt-4">
+              Click to View full color palette
+            </Link>
           </div>
         </section>
 
