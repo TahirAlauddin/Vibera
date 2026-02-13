@@ -106,6 +106,9 @@ export default function UIGuidePage() {
                 <p className="text-sm text-gray-600">1rem - 400 weight - 1.6 line height</p>
               </div>
             </div>
+            <Link href="/ui-guide/typography" className="block text-center p-2 mt-4">
+              Click to View full typography
+            </Link>
           </div>
         </section>
 
