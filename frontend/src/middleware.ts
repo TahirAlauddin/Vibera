@@ -13,15 +13,7 @@ export async function middleware(request: NextRequest) {
 
   // Define public routes that don't require authentication
   // Use exact matching for root and prefix matching for others
-  const publicRoutes = [
-    '/',
-    '/login',
-    '/signup',
-    '/ui/button',
-    '/ui/inputbox',
-    '/ui-guide',
-    '/color-palette',
-  ]
+
   const isPublicRoute =
     pathname === '/' ||
     pathname === '/login' ||
@@ -30,12 +22,14 @@ export async function middleware(request: NextRequest) {
     pathname === '/ui/inputbox' ||
     pathname === '/ui-guide' ||
     pathname === '/color-palette' ||
+    pathname === '/typography' ||
     pathname.startsWith('/login/') ||
     pathname.startsWith('/signup/') ||
     pathname.startsWith('/ui/button/') ||
     pathname.startsWith('/ui/inputbox/') ||
     pathname.startsWith('/ui-guide/') ||
-    pathname.startsWith('/color-palette/')
+    pathname.startsWith('/color-palette/') ||
+    pathname.startsWith('/typography/') 
 
   // Allow public routes and static files
   if (
