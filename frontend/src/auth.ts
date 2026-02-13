@@ -4,6 +4,7 @@
  */
 
 import NextAuth from 'next-auth'
+import Google from 'next-auth/providers/google'
 import Credentials from 'next-auth/providers/credentials'
 import type { NextAuthConfig } from 'next-auth'
 import type { BackendUser, TokenResponse } from '@/types/next-auth'
@@ -28,6 +29,10 @@ let refreshTokenPromise: Promise<string | null> | null = null
  */
 export const authConfig = {
   providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+    }),
     Credentials({
       name: 'Credentials',
       credentials: {
@@ -125,15 +130,41 @@ export const authConfig = {
     maxAge: 60 * 60 * 24 * 7, // 7 days
   },
   callbacks: {
-    async jwt({ token, user, trigger }) {
+    async jwt({ token, user, account }) {
       // Initial sign in
       if (user) {
-        token.accessToken = user.accessToken
-        token.refreshToken = user.refreshToken
-        token.id = user.id
-        token.email = user.email
-        token.username = user.username
-        token.name = user.name
+        if (account?.provider === 'google' && account.id_token) {
+          // Google OAuth: exchange id_token with Django backend for JWT
+          try {
+            const res = await fetch(`${API_BASE_URL}/api/auth/social/google/`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id_token: account.id_token }),
+            })
+            if (res.ok) {
+              const data: TokenResponse = await res.json()
+              token.accessToken = data.access
+              token.refreshToken = data.refresh
+            } else {
+              console.error('Django social auth failed:', res.status)
+            }
+          } catch (error) {
+            console.error('Django social auth error:', error)
+          }
+          // Populate profile fields from the Google profile
+          token.id = user.id
+          token.email = user.email ?? undefined
+          token.username = user.email?.split('@')[0] ?? undefined
+          token.name = user.name ?? undefined
+        } else {
+          // Credentials sign-in (existing logic)
+          token.accessToken = user.accessToken
+          token.refreshToken = user.refreshToken
+          token.id = user.id
+          token.email = user.email
+          token.username = user.username
+          token.name = user.name
+        }
       }
 
       // Check if access token is expired or close to expiring (within 5 minutes)
@@ -212,7 +243,7 @@ function isTokenExpired(token: string): boolean {
     const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
 
     // Use Buffer in Node.js, atob in browser
-    let decoded: any
+    let decoded: { exp?: number }
     if (typeof window === 'undefined') {
       // Server-side: use Buffer
       decoded = JSON.parse(Buffer.from(padded, 'base64').toString('utf-8'))
@@ -230,7 +261,7 @@ function isTokenExpired(token: string): boolean {
     const currentTime = Date.now()
 
     return currentTime >= expirationTime
-  } catch (error) {
+  } catch {
     return true
   }
 }
@@ -249,7 +280,7 @@ function isTokenExpiringSoon(token: string, minutesBuffer: number): boolean {
     const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
     const padded = base64 + '='.repeat((4 - (base64.length % 4)) % 4)
 
-    let decoded: any
+    let decoded: { exp?: number }
     if (typeof window === 'undefined') {
       decoded = JSON.parse(Buffer.from(padded, 'base64').toString('utf-8'))
     } else {
@@ -266,7 +297,7 @@ function isTokenExpiringSoon(token: string, minutesBuffer: number): boolean {
 
     // Return true if token expires within the buffer time
     return expirationTime - currentTime <= bufferTime
-  } catch (error) {
+  } catch {
     return true
   }
 }
