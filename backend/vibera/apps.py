@@ -14,4 +14,3 @@ class ViberaConfig(AppConfig):
     def ready(self):
         """Initialize app when Django starts."""
         # Import database logging to register signal handlers
-        import vibera.db_logging  # noqa: F401
