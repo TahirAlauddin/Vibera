@@ -1,3 +1,4 @@
+import { Fragment } from 'react'
 import { Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -95,16 +96,14 @@ export function ButtonStateGrid({
         ))}
 
         {sizes.map((size) => (
-          <>
-            <div key={`label-${size}`} className="text-sm text-[#4B5A41]">
-              {sizeLabels[size]}
-            </div>
+          <Fragment key={size}>
+            <div className="text-sm text-[#4B5A41]">{sizeLabels[size]}</div>
             {states.map((state) => (
               <div key={`${size}-${state}`}>
                 <GuideButton variant={variant} state={state} size={size} />
               </div>
             ))}
-          </>
+          </Fragment>
         ))}
       </div>
     </div>

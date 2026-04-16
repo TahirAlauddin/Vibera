@@ -12,20 +12,32 @@ export default function TextAreasPage() {
     <UIGuideShell
       showBack
       title="Text Areas"
-      description="Multi-line text inputs for journal entries and mood notes"
+      description="Message and note text areas for journal entries"
     >
-      <GuideSection title="Primary TextArea">
+      <GuideSection title="Message">
         <div className="max-w-lg space-y-1">
-          <label className="text-sm font-medium text-[#1F2E13]">Share your thoughts</label>
+          <label className="text-sm font-medium text-[#1F2E13]">Message</label>
           <Textarea
-            placeholder="What's on your mind..."
-            className="min-h-24 border-[#E0E6D9] bg-[#F4F6F1] focus-visible:border-[#F6C531] focus-visible:ring-[#F6C531]/30"
+            placeholder="Type your message..."
+            className="min-h-28 border-[#E0E6D9] bg-[#F9F6F0] focus-visible:border-[#B2C9AB] focus-visible:ring-[#B2C9AB]/30"
           />
-          <p className="text-xs text-[#7A6B3F]">Optional: Share more details about your mood</p>
         </div>
       </GuideSection>
 
-      <GuideSection title="TextArea with Error">
+      <GuideSection title="Note (with character count)">
+        <div className="max-w-lg space-y-1">
+          <label className="text-sm font-medium text-[#1F2E13]">Note</label>
+          <div className="relative">
+            <Textarea
+              placeholder="Write a note..."
+              className="min-h-32 border-2 border-[#1F2E13] bg-white focus-visible:border-[#1F2E13] focus-visible:ring-0"
+            />
+            <span className="absolute bottom-3 right-3 text-xs text-[#7A6B3F]">0/200</span>
+          </div>
+        </div>
+      </GuideSection>
+
+      <GuideSection title="With Error">
         <div className="max-w-lg space-y-1">
           <label className="text-sm font-medium text-[#1F2E13]">Description</label>
           <Textarea
