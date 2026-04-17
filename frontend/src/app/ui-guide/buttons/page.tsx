@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { UIGuideShell, GuideSection } from '../_components/ui-guide-shell'
+import { UIGuideShell, GuideSection, TryItYourself } from '../_components/ui-guide-shell'
 import { ButtonStateGrid } from '../_components/button-preview'
+import { ButtonPlayground } from '../_components/button-playground'
 
 export const metadata: Metadata = {
   title: 'Buttons | Vibera UI Guide',
@@ -29,6 +30,10 @@ export default function ButtonsPage() {
       <GuideSection>
         <ButtonStateGrid variant="icon" title="Icon Only" />
       </GuideSection>
+
+      <TryItYourself hint="Click, hover, and press the buttons to feel their real interaction states.">
+        <ButtonPlayground />
+      </TryItYourself>
     </UIGuideShell>
   )
 }

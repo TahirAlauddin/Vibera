@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { UIGuideShell, GuideSection } from '../_components/ui-guide-shell'
-import { DropdownPreview, MultiSelectPreview } from '../_components/dropdown-preview'
+import { UIGuideShell, GuideSection, TryItYourself } from '../_components/ui-guide-shell'
+import { DropdownPreview } from '../_components/dropdown-preview'
+import { DropdownPlayground } from '../_components/dropdown-playground'
 
 export const metadata: Metadata = {
   title: 'Dropdown | Vibera UI Guide',
@@ -14,7 +15,7 @@ export default function DropdownPage() {
       title="Dropdown"
       description="Select menus with single and multi-select support"
     >
-      <GuideSection title="Default Dropdown">
+      <GuideSection title="States (reference)">
         <div className="grid gap-8 md:grid-cols-2">
           <div>
             <p className="mb-3 text-sm font-medium text-[#7A6B3F]">Closed</p>
@@ -27,17 +28,9 @@ export default function DropdownPage() {
         </div>
       </GuideSection>
 
-      <GuideSection title="Multi-select">
-        <MultiSelectPreview />
-      </GuideSection>
-
-      <GuideSection title="With Label">
-        <div className="max-w-xs space-y-1">
-          <label className="text-sm font-medium text-[#1F2E13]">Category</label>
-          <DropdownPreview placeholder="Choose an option" />
-          <p className="text-xs text-[#7A6B3F]">Select a category from the list</p>
-        </div>
-      </GuideSection>
+      <TryItYourself hint="Open the menus, pick options, and remove multi-select tags.">
+        <DropdownPlayground />
+      </TryItYourself>
     </UIGuideShell>
   )
 }

@@ -74,3 +74,20 @@ export function GuideSection({
     </section>
   )
 }
+
+export function TryItYourself({
+  children,
+  hint = 'Interact with the components below to see them in action.',
+}: {
+  children: React.ReactNode
+  hint?: string
+}) {
+  return (
+    <GuideSection title="Try it yourself">
+      <p className="mb-4 text-sm text-[#7A6B3F]">{hint}</p>
+      <div className="rounded-lg border-2 border-dashed border-[#F6C531]/40 bg-[#FAF7E6]/60 p-6">
+        {children}
+      </div>
+    </GuideSection>
+  )
+}

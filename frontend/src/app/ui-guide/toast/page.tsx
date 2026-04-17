@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { UIGuideShell, GuideSection } from '../_components/ui-guide-shell'
+import { UIGuideShell, GuideSection, TryItYourself } from '../_components/ui-guide-shell'
 import { ToastPreview } from '../_components/toast-preview'
 import { ToastDemo } from '../_components/toast-demo'
 
@@ -15,7 +15,7 @@ export default function ToastPage() {
       title="Toast Component"
       description="Info, error, success, and warning notification toasts"
     >
-      <GuideSection title="With Title">
+      <GuideSection title="With Title (reference)">
         <div className="space-y-4">
           <ToastPreview variant="info" title="Info notification" />
           <ToastPreview variant="error" title="Error notification" />
@@ -24,7 +24,7 @@ export default function ToastPage() {
         </div>
       </GuideSection>
 
-      <GuideSection title="Simple (message only)">
+      <GuideSection title="Simple (reference)">
         <div className="space-y-4">
           <ToastPreview variant="info" />
           <ToastPreview variant="error" />
@@ -33,12 +33,9 @@ export default function ToastPage() {
         </div>
       </GuideSection>
 
-      <GuideSection title="Live Demo">
-        <p className="mb-4 text-sm text-[#7A6B3F]">
-          Click a button to trigger a live toast using the app&apos;s toast system.
-        </p>
+      <TryItYourself hint="Click a button to trigger a live toast notification.">
         <ToastDemo />
-      </GuideSection>
+      </TryItYourself>
     </UIGuideShell>
   )
 }

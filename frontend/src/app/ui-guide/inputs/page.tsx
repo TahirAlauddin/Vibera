@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { InputBox } from '@/components/custom/inputBox'
-import { UIGuideShell, GuideSection } from '../_components/ui-guide-shell'
+import { UIGuideShell, GuideSection, TryItYourself } from '../_components/ui-guide-shell'
+import { InputPlayground } from '../_components/form-playground'
 
 export const metadata: Metadata = {
   title: 'Input Fields | Vibera UI Guide',
@@ -23,7 +24,7 @@ export default function InputsPage() {
       title="Input Fields"
       description="Primary and accent input variants across interaction states"
     >
-      <GuideSection title="Primary">
+      <GuideSection title="States (reference)">
         <div className="mb-4 hidden gap-16 md:grid md:grid-cols-[120px_1fr_1fr]">
           <div />
           <p className="text-sm font-medium text-[#1F2E13]">Label</p>
@@ -87,27 +88,9 @@ export default function InputsPage() {
         </div>
       </GuideSection>
 
-      <GuideSection title="Secondary (Green Accent)">
-        <div className="space-y-8">
-          <InputRow label="default">
-            <InputBox
-              variant="secondary-accent"
-              placeholder="PlaceHolder"
-              containerClassName="w-full max-w-[394px]"
-            />
-            <div />
-          </InputRow>
-          <InputRow label="filled">
-            <InputBox
-              variant="secondary-accent"
-              state="filled"
-              defaultValue="Filled value"
-              containerClassName="w-full max-w-[394px]"
-            />
-            <div />
-          </InputRow>
-        </div>
-      </GuideSection>
+      <TryItYourself hint="Type in the fields, focus them, and use the search clear button.">
+        <InputPlayground />
+      </TryItYourself>
     </UIGuideShell>
   )
 }

@@ -1,11 +1,12 @@
 import type { Metadata } from 'next'
-import { UIGuideShell, GuideSection } from '../_components/ui-guide-shell'
+import { UIGuideShell, GuideSection, TryItYourself } from '../_components/ui-guide-shell'
 import {
   PaginationCompact,
   PaginationDots,
   PaginationPages,
   PaginationWithJump,
 } from '../_components/pagination-preview'
+import { PaginationPlayground } from '../_components/pagination-playground'
 
 export const metadata: Metadata = {
   title: 'Pagination | Vibera UI Guide',
@@ -19,32 +20,30 @@ export default function PaginationPage() {
       title="Pagination"
       description="Page navigation with dots, numbers, and compact variants"
     >
-      <GuideSection title="Dot Pagination">
-        <PaginationDots active={1} />
-      </GuideSection>
-
-      <GuideSection title="Page Numbers">
-        <PaginationPages current={1} />
-      </GuideSection>
-
-      <GuideSection title="Compact">
-        <PaginationCompact />
-      </GuideSection>
-
-      <GuideSection title="With Jump">
-        <PaginationWithJump />
-      </GuideSection>
-
-      <GuideSection title="Rows per page">
-        <div className="flex items-center gap-3 text-sm text-[#4B5A41]">
-          <span>Rows per page</span>
-          <select className="h-9 rounded-lg border border-[#E0E6D9] bg-[#F9F6F0] px-3 text-sm">
-            <option>10</option>
-            <option>20</option>
-            <option>50</option>
-          </select>
+      <GuideSection title="Variants (reference)">
+        <div className="space-y-8">
+          <div>
+            <p className="mb-3 text-sm font-medium text-[#7A6B3F]">Dot pagination</p>
+            <PaginationDots active={1} />
+          </div>
+          <div>
+            <p className="mb-3 text-sm font-medium text-[#7A6B3F]">Page numbers</p>
+            <PaginationPages current={1} />
+          </div>
+          <div>
+            <p className="mb-3 text-sm font-medium text-[#7A6B3F]">Compact</p>
+            <PaginationCompact />
+          </div>
+          <div>
+            <p className="mb-3 text-sm font-medium text-[#7A6B3F]">With jump</p>
+            <PaginationWithJump />
+          </div>
         </div>
       </GuideSection>
+
+      <TryItYourself hint="Navigate pages, click dots, jump to a page, or change rows per page.">
+        <PaginationPlayground />
+      </TryItYourself>
     </UIGuideShell>
   )
 }

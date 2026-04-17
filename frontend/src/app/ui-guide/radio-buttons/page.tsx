@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
-import { UIGuideShell, GuideSection } from '../_components/ui-guide-shell'
-import { RadioList, RadioMatrix } from '../_components/radio-preview'
+import { UIGuideShell, GuideSection, TryItYourself } from '../_components/ui-guide-shell'
+import { RadioMatrix } from '../_components/radio-preview'
+import { RadioPlayground } from '../_components/radio-playground'
 
 export const metadata: Metadata = {
   title: 'Radio Buttons | Vibera UI Guide',
@@ -14,13 +15,13 @@ export default function RadioButtonsPage() {
       title="Radio Buttons"
       description="Single-select radio controls with full state matrix"
     >
-      <GuideSection title="Option List">
-        <RadioList />
-      </GuideSection>
-
-      <GuideSection title="State Matrix">
+      <GuideSection title="State Matrix (reference)">
         <RadioMatrix />
       </GuideSection>
+
+      <TryItYourself hint="Select one option — only a single choice can be active at a time.">
+        <RadioPlayground />
+      </TryItYourself>
     </UIGuideShell>
   )
 }
