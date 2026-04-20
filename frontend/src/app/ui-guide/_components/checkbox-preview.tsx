@@ -1,26 +1,28 @@
 import { Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-type CheckboxState = 'default' | 'hover' | 'focused' | 'disabled' | 'error'
+export type CheckboxState = 'default' | 'hover' | 'focused' | 'disabled' | 'error'
 
-export function CheckboxPreview({
-  checked = false,
-  state = 'default',
+export function getCheckboxBoxClass({
+  checked,
+  state,
   size = 'sm',
 }: {
-  checked?: boolean
-  state?: CheckboxState
+  checked: boolean
+  state: CheckboxState
   size?: 'sm' | 'lg'
 }) {
   const sizeClass = size === 'lg' ? 'size-6' : 'size-5'
 
-  const boxClass = cn(
+  return cn(
     'flex items-center justify-center rounded border-2 transition-colors',
     sizeClass,
     checked
       ? state === 'disabled'
         ? 'border-[#C4B5D4] bg-[#C4B5D4]'
-        : 'border-[#F6C531] bg-[#F6C531]'
+        : state === 'focused'
+          ? 'border-[#F6C531] bg-[#F6C531] ring-2 ring-[#E879A6]/30'
+          : 'border-[#F6C531] bg-[#F6C531]'
       : state === 'error'
         ? 'border-[#E10E11] bg-white'
         : state === 'focused'
@@ -31,10 +33,40 @@ export function CheckboxPreview({
               ? 'border-[#E0E6D9] bg-[#F4F6F1]'
               : 'border-[#C4C4C4] bg-white'
   )
+}
 
+export function resolveCheckboxState({
+  disabled,
+  error,
+  focused,
+  hovered,
+}: {
+  disabled?: boolean
+  error?: boolean
+  focused?: boolean
+  hovered?: boolean
+}): CheckboxState {
+  if (disabled) return 'disabled'
+  if (error) return 'error'
+  if (focused) return 'focused'
+  if (hovered) return 'hover'
+  return 'default'
+}
+
+export function CheckboxPreview({
+  checked = false,
+  state = 'default',
+  size = 'sm',
+}: {
+  checked?: boolean
+  state?: CheckboxState
+  size?: 'sm' | 'lg'
+}) {
   return (
-    <div className={boxClass}>
-      {checked && <Check className={cn('text-white', size === 'lg' ? 'size-4' : 'size-3')} strokeWidth={3} />}
+    <div className={getCheckboxBoxClass({ checked, state, size })}>
+      {checked && (
+        <Check className={cn('text-white', size === 'lg' ? 'size-4' : 'size-3')} strokeWidth={3} />
+      )}
     </div>
   )
 }

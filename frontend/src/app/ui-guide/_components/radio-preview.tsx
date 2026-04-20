@@ -1,6 +1,66 @@
 import { cn } from '@/lib/utils'
 
-type RadioState = 'default' | 'hover' | 'focused' | 'disabled' | 'error'
+export type RadioState = 'default' | 'hover' | 'focused' | 'disabled' | 'error'
+
+export function getRadioBoxClass({
+  checked,
+  state,
+  size = 'sm',
+}: {
+  checked: boolean
+  state: RadioState
+  size?: 'sm' | 'lg'
+}) {
+  const outerSize = size === 'lg' ? 'size-6' : 'size-5'
+  const innerSize = size === 'lg' ? 'size-3' : 'size-2.5'
+
+  return {
+    outer: cn(
+      'flex items-center justify-center rounded-full border-2 transition-colors',
+      outerSize,
+      checked
+        ? state === 'disabled'
+          ? 'border-[#C4B5D4]'
+          : state === 'focused'
+            ? 'border-[#E879A6] ring-2 ring-[#E879A6]/30'
+            : 'border-[#E879A6]'
+        : state === 'error'
+          ? 'border-[#E10E11]'
+          : state === 'focused'
+            ? 'border-[#E879A6] ring-2 ring-[#E879A6]/30'
+            : state === 'hover'
+              ? 'border-[#93C5FD]'
+              : state === 'disabled'
+                ? 'border-[#E0E6D9]'
+                : 'border-[#C4C4C4]'
+    ),
+    inner: checked
+      ? cn(
+          'rounded-full',
+          innerSize,
+          state === 'disabled' ? 'bg-[#C4B5D4]' : 'bg-[#E879A6]'
+        )
+      : null,
+  }
+}
+
+export function resolveRadioState({
+  disabled,
+  error,
+  focused,
+  hovered,
+}: {
+  disabled?: boolean
+  error?: boolean
+  focused?: boolean
+  hovered?: boolean
+}): RadioState {
+  if (disabled) return 'disabled'
+  if (error) return 'error'
+  if (focused) return 'focused'
+  if (hovered) return 'hover'
+  return 'default'
+}
 
 export function RadioPreview({
   checked = false,
@@ -11,38 +71,11 @@ export function RadioPreview({
   state?: RadioState
   size?: 'sm' | 'lg'
 }) {
-  const outerSize = size === 'lg' ? 'size-6' : 'size-5'
-  const innerSize = size === 'lg' ? 'size-3' : 'size-2.5'
+  const { outer, inner } = getRadioBoxClass({ checked, state, size })
 
   return (
-    <div
-      className={cn(
-        'flex items-center justify-center rounded-full border-2',
-        outerSize,
-        checked
-          ? state === 'disabled'
-            ? 'border-[#C4B5D4]'
-            : state === 'focused'
-              ? 'border-[#E879A6] ring-2 ring-[#E879A6]/30'
-              : 'border-[#E879A6]'
-          : state === 'error'
-            ? 'border-[#E10E11]'
-            : state === 'hover'
-              ? 'border-[#93C5FD]'
-              : state === 'disabled'
-                ? 'border-[#E0E6D9]'
-                : 'border-[#C4C4C4]'
-      )}
-    >
-      {checked && (
-        <div
-          className={cn(
-            'rounded-full',
-            innerSize,
-            state === 'disabled' ? 'bg-[#C4B5D4]' : 'bg-[#E879A6]'
-          )}
-        />
-      )}
+    <div className={outer}>
+      {inner && <div className={inner} />}
     </div>
   )
 }
@@ -76,21 +109,6 @@ export function RadioMatrix() {
           ))}
         </tbody>
       </table>
-    </div>
-  )
-}
-
-export function RadioList() {
-  const options = ['Option 1', 'Option 2', 'Option 3', 'Option 4']
-
-  return (
-    <div className="space-y-3">
-      {options.map((option, i) => (
-        <label key={option} className="flex cursor-pointer items-center gap-3">
-          <RadioPreview checked={i === 0} />
-          <span className="text-sm text-[#4B5A41]">{option}</span>
-        </label>
-      ))}
     </div>
   )
 }

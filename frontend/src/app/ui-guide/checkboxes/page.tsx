@@ -19,7 +19,7 @@ export default function CheckboxesPage() {
         <CheckboxMatrix />
       </GuideSection>
 
-      <TryItYourself hint="Click each checkbox to toggle its checked state.">
+      <TryItYourself hint="Hover, focus (Tab), and interact — terms unchecked shows error; colors match the reference matrix.">
         <CheckboxPlayground />
       </TryItYourself>
     </UIGuideShell>

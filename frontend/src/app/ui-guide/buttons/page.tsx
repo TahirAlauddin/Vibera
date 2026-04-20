@@ -31,7 +31,7 @@ export default function ButtonsPage() {
         <ButtonStateGrid variant="icon" title="Icon Only" />
       </GuideSection>
 
-      <TryItYourself hint="Click, hover, and press the buttons to feel their real interaction states.">
+      <TryItYourself hint="Hover and click buttons — layout and colors match the reference grids above.">
         <ButtonPlayground />
       </TryItYourself>
     </UIGuideShell>

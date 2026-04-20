@@ -19,7 +19,7 @@ export default function RadioButtonsPage() {
         <RadioMatrix />
       </GuideSection>
 
-      <TryItYourself hint="Select one option — only a single choice can be active at a time.">
+      <TryItYourself hint="Select an option — hover shows blue border, Tab shows pink focus ring, unselected shows error.">
         <RadioPlayground />
       </TryItYourself>
     </UIGuideShell>
