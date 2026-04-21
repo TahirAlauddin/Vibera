@@ -18,7 +18,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
   // Redirect if already authenticated (using useEffect to avoid hydration issues)
   useEffect(() => {
     if (status === 'authenticated' && session) {
-      router.push('/home')
+      router.push('/dashboard')
     }
   }, [status, session, router])
 
@@ -53,7 +53,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
         // Update session to ensure it's refreshed
         await update()
         // Use window.location for a hard redirect to ensure session is properly recognized
-        window.location.href = '/home'
+        window.location.href = '/dashboard'
       }
     } catch (err) {
       // Handle error from signIn function
@@ -155,7 +155,7 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
           <button
             type="button"
             disabled={isLoading}
-            onClick={() => signIn('google', { callbackUrl: '/home' })}
+            onClick={() => signIn('google', { callbackUrl: '/dashboard' })}
             className="flex items-center justify-center gap-3 w-full py-2 border border-gray-300 rounded-full font-medium text-gray-700 bg-white hover:bg-gray-50 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg width="20" height="20" viewBox="0 0 48 48">
