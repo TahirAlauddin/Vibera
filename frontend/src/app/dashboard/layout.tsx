@@ -1,7 +1,7 @@
 import { Plus_Jakarta_Sans } from 'next/font/google'
 import { cn } from '@/lib/utils'
-import { DashboardNavbar } from './_components/dashboard-navbar'
-import { DashboardFooter } from './_components/dashboard-footer'
+import { DashboardNavbar } from '@/app/dashboard/_components/dashboard-navbar'
+import { DashboardFooter } from '@/app/dashboard/_components/dashboard-footer'
 
 const plusJakarta = Plus_Jakarta_Sans({
   subsets: ['latin'],
