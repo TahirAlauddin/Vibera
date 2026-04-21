@@ -4,7 +4,7 @@ export function LandingCtaButtons({ className = '' }: { className?: string }) {
   return (
     <div className={`flex flex-col gap-3 sm:flex-row sm:gap-4 ${className}`}>
       <Link
-        href="/login"
+        href="/signup"
         className="inline-flex items-center justify-center rounded-full bg-[#F6C531] px-6 py-3 text-sm font-semibold text-[#423E28] transition-colors hover:bg-[#E0B42D]"
       >
         Get Started – It&apos;s Free
