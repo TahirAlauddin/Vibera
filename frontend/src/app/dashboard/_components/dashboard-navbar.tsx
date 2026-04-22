@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: '/ui-guide/mood', label: 'Mood Tracker' },
   { href: '#', label: 'Feed' },
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/dashboard/profile', label: 'Profile' },
 ] as const
 
 export function DashboardNavbar() {
@@ -20,6 +21,7 @@ export function DashboardNavbar() {
 
   const isActive = (href: string) => {
     if (href === '#') return false
+    if (href === '/dashboard') return pathname === '/dashboard'
     return pathname === href || pathname.startsWith(`${href}/`)
   }
 
@@ -46,13 +48,6 @@ export function DashboardNavbar() {
         </nav>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="#"
-            className="hidden text-sm font-medium text-[#4B5A41] transition-colors hover:text-[#1F2E13] sm:inline"
-          >
-            Profile
-          </Link>
-
           <button
             type="button"
             className="rounded-lg p-2 text-[#4B5A41] transition-colors hover:bg-[#F4F6F1] md:hidden"
@@ -86,13 +81,6 @@ export function DashboardNavbar() {
                 {link.label}
               </Link>
             ))}
-            <Link
-              href="#"
-              onClick={() => setMobileOpen(false)}
-              className="rounded-lg px-3 py-2.5 text-sm font-medium text-[#4B5A41] hover:bg-[#F4F6F1]"
-            >
-              Profile
-            </Link>
           </div>
         </nav>
       )}
