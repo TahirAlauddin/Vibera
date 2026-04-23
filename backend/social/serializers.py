@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.core.exceptions import ValidationError
 from .models import Follow
 from users.models import User
 
@@ -28,11 +27,9 @@ class FollowSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         following_user = self.context.get("following_user")
 
-        # Prevent self-follow
         if request.user == following_user:
             raise serializers.ValidationError("You cannot follow yourself.")
 
-        # Prevent duplicate follow
         if Follow.objects.filter(
             follower=request.user, following=following_user
         ).exists():
@@ -48,22 +45,91 @@ class FollowSerializer(serializers.ModelSerializer):
 
 
 class FollowerListSerializer(serializers.ModelSerializer):
-    """Serializer for listing followers (people who follow a user)"""
+    """People who follow the target user."""
 
     follower = UserMinimalSerializer(read_only=True)
+    is_following = serializers.SerializerMethodField()
+    is_follower = serializers.SerializerMethodField()
+    is_mutual = serializers.SerializerMethodField()
 
     class Meta:
         model = Follow
-        fields = ["id", "follower", "created_at"]
+        fields = [
+            "id",
+            "follower",
+            "created_at",
+            "is_following",
+            "is_follower",
+            "is_mutual",
+        ]
         read_only_fields = fields
+
+    def get_is_following(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        if obj.follower_id == request.user.id:
+            return False
+        return Follow.objects.filter(
+            follower=request.user, following_id=obj.follower_id
+        ).exists()
+
+    def get_is_follower(self, obj):
+        return True
+
+    def get_is_mutual(self, obj):
+        return self.get_is_following(obj)
 
 
 class FollowingListSerializer(serializers.ModelSerializer):
-    """Serializer for listing following (people a user follows)"""
+    """People the target user follows."""
 
     following = UserMinimalSerializer(read_only=True)
+    is_following = serializers.SerializerMethodField()
+    is_follower = serializers.SerializerMethodField()
+    is_mutual = serializers.SerializerMethodField()
 
     class Meta:
         model = Follow
-        fields = ["id", "following", "created_at"]
+        fields = [
+            "id",
+            "following",
+            "created_at",
+            "is_following",
+            "is_follower",
+            "is_mutual",
+        ]
         read_only_fields = fields
+
+    def get_is_following(self, obj):
+        return True
+
+    def get_is_follower(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        if obj.following_id == request.user.id:
+            return False
+        return Follow.objects.filter(
+            follower_id=obj.following_id, following=request.user
+        ).exists()
+
+    def get_is_mutual(self, obj):
+        return self.get_is_follower(obj)
+
+
+class SocialUserSuggestionSerializer(serializers.ModelSerializer):
+    """User card for discovery / suggestions."""
+
+    is_following = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "is_following"]
+        read_only_fields = fields
+
+    def get_is_following(self, user):
+        request = self.context.get("request")
+        if not request or not request.user.is_authenticated:
+            return False
+        return Follow.objects.filter(follower=request.user, following=user).exists()

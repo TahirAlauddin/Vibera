@@ -33,6 +33,10 @@ class Follow(models.Model):
             )
         ]
 
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        return super().save(*args, **kwargs)
+
     def is_mutual(self):
         """Check if the follow relationship is mutual"""
         return Follow.objects.filter(

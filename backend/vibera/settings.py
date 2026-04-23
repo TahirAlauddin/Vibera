@@ -92,7 +92,7 @@ INSTALLED_APPS = [
     "vibera",  # Using full AppConfig path
     "users",
     "moods",
-    "social",
+    "social.apps.SocialConfig",
     "notifications",
     "django_extensions",
 ]
