@@ -14,8 +14,9 @@ import {
   User,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { FollowButton } from '@/components/dashboard/follow-button'
 import { getAvatarUrl } from '@/lib/mood-api'
-import type { UserMinimal } from '@/lib/social-api'
+import type { SuggestionUser } from '@/lib/social-api'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -32,16 +33,16 @@ const TRENDING_MOODS = [
 ]
 
 type FeedSidebarProps = {
-  suggestions: UserMinimal[]
+  suggestions: SuggestionUser[]
   followingIds: Set<number>
-  onFollow: (userId: number) => Promise<void>
+  onToggleFollow: (userId: number, isFollowing: boolean) => Promise<void>
   followLoadingId: number | null
 }
 
 export function FeedSidebar({
   suggestions,
   followingIds,
-  onFollow,
+  onToggleFollow,
   followLoadingId,
 }: FeedSidebarProps) {
   const pathname = usePathname()
@@ -139,14 +140,11 @@ export function FeedSidebar({
                       <p className="truncate text-xs text-[#7A6B3F]">@{person.username}</p>
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    disabled={isFollowing || followLoadingId === person.id}
-                    onClick={() => onFollow(person.id)}
-                    className="shrink-0 rounded-lg bg-[#F6C531] px-3 py-1 text-xs font-semibold text-[#1F2E13] transition-colors hover:bg-[#E0B42D] disabled:opacity-50"
-                  >
-                    {followLoadingId === person.id ? '...' : isFollowing ? 'Following' : 'Follow'}
-                  </button>
+                  <FollowButton
+                    isFollowing={isFollowing}
+                    loading={followLoadingId === person.id}
+                    onClick={() => onToggleFollow(person.id, isFollowing)}
+                  />
                 </li>
               )
             })}

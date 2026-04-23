@@ -5,9 +5,9 @@ import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
 import {
   fetchCurrentUser,
-  fetchMyProfile,
   updateCurrentUser,
 } from '@/lib/profile-api'
+import { fetchSocialStats } from '@/lib/social-api'
 import { ProfileHeader } from './profile-header'
 import { ProfileStatCards } from './profile-stat-cards'
 import { ProfilePersonalInfo } from './profile-personal-info'
@@ -46,9 +46,9 @@ export function ProfilePageContent() {
 
     async function loadProfile() {
       try {
-        const [user, profile] = await Promise.all([
+        const [user, stats] = await Promise.all([
           fetchCurrentUser(accessToken!),
-          fetchMyProfile(accessToken!),
+          fetchSocialStats(accessToken!),
         ])
 
         if (cancelled) return
@@ -58,8 +58,8 @@ export function ProfilePageContent() {
         setFirstName(user.first_name ?? '')
         setLastName(user.last_name ?? '')
         setFullName(getDisplayName(user.first_name, user.last_name, user.username))
-        setFollowers(profile.followers_count)
-        setFollowing(profile.following_count)
+        setFollowers(stats.followers_count)
+        setFollowing(stats.following_count)
       } catch {
         if (!cancelled) {
           setUsername(session?.user?.username ?? '')
@@ -170,7 +170,13 @@ export function ProfilePageContent() {
           </div>
         </div>
 
-        <ProfileSidebar />
+        <ProfileSidebar
+          accessToken={accessToken!}
+          onStatsChange={({ followers: f, following: g }) => {
+            setFollowers(f)
+            setFollowing(g)
+          }}
+        />
       </div>
     </div>
   )

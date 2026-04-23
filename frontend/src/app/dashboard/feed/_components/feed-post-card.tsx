@@ -19,6 +19,7 @@ import {
   type FeedMood,
 } from '@/lib/mood-api'
 import { followUser, unfollowUser } from '@/lib/social-api'
+import { toast } from 'sonner'
 import { FeedComments } from './feed-comments'
 
 const LIKES_KEY = 'vibera-feed-likes'
@@ -106,11 +107,15 @@ export function FeedPostCard({
         await unfollowUser(accessToken, post.author_id)
         setIsFollowing(false)
         onFollowChange(post.author_id, false)
+        toast.success('Unfollowed')
       } else {
         await followUser(accessToken, post.author_id)
         setIsFollowing(true)
         onFollowChange(post.author_id, true)
+        toast.success('Followed!')
       }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not update follow status')
     } finally {
       setFollowLoading(false)
     }

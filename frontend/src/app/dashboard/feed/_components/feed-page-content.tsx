@@ -14,7 +14,9 @@ import {
 import {
   fetchFollowers,
   fetchFollowing,
-  followUser,
+  fetchFollowSuggestions,
+  toggleFollow,
+  type SuggestionUser,
   type UserMinimal,
 } from '@/lib/social-api'
 import { FeedFilters, type FeedFilter } from './feed-filters'
@@ -37,7 +39,7 @@ export function FeedPageContent() {
   const [followingUsers, setFollowingUsers] = useState<UserMinimal[]>([])
   const [followerUsernames, setFollowerUsernames] = useState<Set<string>>(new Set())
   const [followingIds, setFollowingIds] = useState<Set<number>>(new Set())
-  const [suggestions, setSuggestions] = useState<UserMinimal[]>([])
+  const [suggestions, setSuggestions] = useState<SuggestionUser[]>([])
   const [followLoadingId, setFollowLoadingId] = useState<number | null>(null)
 
   const currentUsername = session?.user?.username
@@ -45,9 +47,10 @@ export function FeedPageContent() {
   const avatarUrl = getAvatarUrl(currentUsername ?? 'you')
 
   const loadSocial = useCallback(async (token: string) => {
-    const [followingRes, followersRes] = await Promise.all([
+    const [followingRes, followersRes, suggestionsRes] = await Promise.all([
       fetchFollowing(token),
       fetchFollowers(token),
+      fetchFollowSuggestions(token),
     ])
 
     const following = followingRes.results
@@ -60,16 +63,8 @@ export function FeedPageContent() {
     setFollowingUsers(following)
     setFollowingIds(new Set(following.map((u) => u.id)))
     setFollowerUsernames(new Set(followers.map((u) => u.username)))
-
-    const known = new Set([...following, ...followers].map((u) => u.id))
-    setSuggestions(
-      followers
-        .filter((f) => !following.some((fo) => fo.id === f.id))
-        .filter((f) => f.username !== currentUsername)
-        .slice(0, 8)
-    )
-    void known
-  }, [currentUsername])
+    setSuggestions(suggestionsRes.results)
+  }, [])
 
   const loadFeed = useCallback(
     async (pageNum: number, append = false) => {
@@ -136,16 +131,29 @@ export function FeedPageContent() {
     })
   }
 
-  const handleSidebarFollow = async (userId: number) => {
+  const handleSidebarToggle = async (userId: number, isFollowing: boolean) => {
     if (!accessToken) return
     setFollowLoadingId(userId)
     try {
-      await followUser(accessToken, userId)
-      setFollowingIds((prev) => new Set(prev).add(userId))
-      setSuggestions((prev) => prev.filter((u) => u.id !== userId))
-      toast.success('Followed!')
+      const nowFollowing = await toggleFollow(accessToken, userId, isFollowing)
+      setFollowingIds((prev) => {
+        const next = new Set(prev)
+        if (nowFollowing) next.add(userId)
+        else next.delete(userId)
+        return next
+      })
+      setSuggestions((prev) =>
+        nowFollowing ? prev.filter((u) => u.id !== userId) : prev
+      )
+      setPosts((prev) =>
+        prev.map((p) =>
+          p.author_id === userId ? { ...p, is_following: nowFollowing } : p
+        )
+      )
+      toast.success(nowFollowing ? 'Followed!' : 'Unfollowed')
+      await loadSocial(accessToken)
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Could not follow user')
+      toast.error(err instanceof Error ? err.message : 'Could not update follow status')
     } finally {
       setFollowLoadingId(null)
     }
@@ -191,7 +199,7 @@ export function FeedPageContent() {
           <FeedSidebar
             suggestions={suggestions}
             followingIds={followingIds}
-            onFollow={handleSidebarFollow}
+            onToggleFollow={handleSidebarToggle}
             followLoadingId={followLoadingId}
           />
         </div>
@@ -248,7 +256,7 @@ export function FeedPageContent() {
           <FeedSidebar
             suggestions={suggestions}
             followingIds={followingIds}
-            onFollow={handleSidebarFollow}
+            onToggleFollow={handleSidebarToggle}
             followLoadingId={followLoadingId}
           />
         </div>

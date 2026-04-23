@@ -1,18 +1,23 @@
 'use client'
 
-import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { BarChart3, BookOpen, Search } from 'lucide-react'
+import { BarChart3, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PROFILE_MENU, RECENT_MESSAGES, SUGGESTED_FOLLOWERS } from './profile-data'
+import { PROFILE_MENU, RECENT_MESSAGES } from './profile-data'
+import { ProfileFollowPanel } from './profile-follow-panel'
 
 const ICONS = {
   book: BookOpen,
   chart: BarChart3,
 } as const
 
-export function ProfileSidebar() {
+type ProfileSidebarProps = {
+  accessToken: string
+  onStatsChange?: (stats: { followers: number; following: number }) => void
+}
+
+export function ProfileSidebar({ accessToken, onStatsChange }: ProfileSidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -44,22 +49,11 @@ export function ProfileSidebar() {
       </nav>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <div className="relative mb-4">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#9CA3AF]" />
-          <input
-            type="search"
-            placeholder="Search..."
-            className="w-full rounded-xl border border-[#E0E6D9] bg-[#FAF7E6] py-2 pl-9 pr-3 text-sm outline-none focus:border-[#F6C531] focus:ring-2 focus:ring-[#F6C531]/30"
-          />
-        </div>
-
         <h3 className="mb-3 text-sm font-bold text-[#1F2E13]">Recent Messages</h3>
         <ul className="max-h-48 space-y-3 overflow-y-auto">
           {RECENT_MESSAGES.map((msg) => (
             <li key={msg.id} className="flex gap-3">
-              <div className="relative size-9 shrink-0 overflow-hidden rounded-full">
-                <Image src={msg.avatar} alt={msg.name} fill className="object-cover" sizes="36px" />
-              </div>
+              <div className="relative size-9 shrink-0 overflow-hidden rounded-full bg-[#E8EDE3]" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-[#1F2E13]">{msg.name}</p>
                 <p className="truncate text-xs text-[#7A6B3F]">{msg.message}</p>
@@ -70,36 +64,7 @@ export function ProfileSidebar() {
         </ul>
       </section>
 
-      <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h3 className="mb-3 text-sm font-bold text-[#1F2E13]">Followers</h3>
-        <ul className="max-h-56 space-y-3 overflow-y-auto">
-          {SUGGESTED_FOLLOWERS.map((person) => (
-            <li key={person.id} className="flex items-center justify-between gap-2">
-              <div className="flex min-w-0 items-center gap-2">
-                <div className="relative size-9 shrink-0 overflow-hidden rounded-full">
-                  <Image
-                    src={person.avatar}
-                    alt={person.name}
-                    fill
-                    className="object-cover"
-                    sizes="36px"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-[#1F2E13]">{person.name}</p>
-                  <p className="truncate text-xs text-[#7A6B3F]">{person.handle}</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="shrink-0 rounded-lg bg-[#F6C531] px-3 py-1 text-xs font-semibold text-[#1F2E13] transition-colors hover:bg-[#E0B42D]"
-              >
-                Follow
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
+      <ProfileFollowPanel accessToken={accessToken} onStatsChange={onStatsChange} />
     </aside>
   )
 }
