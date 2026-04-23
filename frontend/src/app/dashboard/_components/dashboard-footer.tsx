@@ -4,7 +4,7 @@ import { Facebook, Instagram, Mail } from 'lucide-react'
 const NAVIGATE_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/dashboard', label: 'Dashboard' },
-  { href: '/ui-guide/mood', label: 'Mood Tracker' },
+  { href: '/dashboard/mood-tracker', label: 'Mood Tracker' },
   { href: '#', label: 'Insights' },
 ] as const
 

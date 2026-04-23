@@ -9,7 +9,7 @@ import { ViberaLogo } from './vibera-logo'
 
 const NAV_LINKS = [
   { href: '/ui-guide', label: 'UI Guide' },
-  { href: '/ui-guide/mood', label: 'Mood Tracker' },
+  { href: '/dashboard/mood-tracker', label: 'Mood Tracker' },
   { href: '/dashboard/feed', label: 'Feed' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/profile', label: 'Profile' },
@@ -23,6 +23,7 @@ export function DashboardNavbar() {
     if (href === '#') return false
     if (href === '/dashboard') return pathname === '/dashboard'
     if (href === '/dashboard/feed') return pathname.startsWith('/dashboard/feed')
+    if (href === '/dashboard/mood-tracker') return pathname.startsWith('/dashboard/mood-tracker')
     return pathname === href || pathname.startsWith(`${href}/`)
   }
 

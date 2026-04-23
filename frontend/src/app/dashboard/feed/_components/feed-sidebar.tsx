@@ -19,7 +19,7 @@ import type { UserMinimal } from '@/lib/social-api'
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/ui-guide/mood', label: 'Mood Log', icon: BookOpen },
+  { href: '/dashboard/mood-tracker', label: 'Mood Log', icon: BookOpen },
   { href: '/dashboard/feed', label: 'Feed', icon: Rss },
   { href: '/dashboard/profile', label: 'Profile', icon: User },
 ] as const
@@ -163,7 +163,7 @@ export function FeedSidebar({
               Logging your mood daily helps you spot patterns and celebrate small wins.
             </p>
             <Link
-              href="/ui-guide/mood"
+              href="/dashboard/mood-tracker"
               className="mt-2 inline-block text-xs font-semibold text-[#6B8F5E] hover:underline"
             >
               Log today&apos;s mood →

@@ -20,17 +20,17 @@ export function QuickActions() {
 
       <div className="flex flex-col gap-3">
         <Link
-          href="/ui-guide/mood"
+          href="/dashboard/mood-tracker"
           className="flex h-11 items-center justify-center rounded-lg bg-[#F6C531] text-sm font-semibold text-[#1F2E13] transition-colors hover:bg-[#E0B42D]"
         >
           Log Today&apos;s Mood
         </Link>
-        <button
-          type="button"
+        <Link
+          href="/dashboard/mood-tracker"
           className="flex h-11 items-center justify-center rounded-lg bg-[#F4F6F1] text-sm font-semibold text-[#1F2E13] transition-colors hover:bg-[#E8EBE3]"
         >
           View History
-        </button>
+        </Link>
         <button
           type="button"
           onClick={handleExport}

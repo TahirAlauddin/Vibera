@@ -14,15 +14,18 @@ export type FeedUserProfile = {
   avatar: string | null
 }
 
-export type FeedMood = {
+export type MoodEntry = {
   id: number
   user: string
-  author_id: number
   emoji: string
   reason: string | null
   comment_count: number
   created_at: string
   updated_at: string
+}
+
+export type FeedMood = MoodEntry & {
+  author_id: number
   is_following: boolean
   user_profile: FeedUserProfile | null
 }
@@ -87,6 +90,40 @@ export function pseudoIntensity(moodId: number) {
   return (moodId % 4) + 6
 }
 
+export async function fetchMyMoods(accessToken: string, page = 1, pageSize = 50) {
+  return apiFetch<PaginatedResponse<MoodEntry>>(
+    `/api/moods/?page=${page}&page_size=${pageSize}`,
+    { accessToken }
+  )
+}
+
+export async function updateMood(
+  accessToken: string,
+  moodId: number,
+  data: { emoji?: string; reason?: string }
+) {
+  return apiFetch<MoodEntry>(`/api/moods/${moodId}/`, {
+    method: 'PATCH',
+    accessToken,
+    body: JSON.stringify(data),
+  })
+}
+
+export async function deleteMood(accessToken: string, moodId: number) {
+  const fullUrl = `${API_BASE_URL}/api/moods/${moodId}/`
+  const res = await fetch(fullUrl, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${accessToken}`,
+    },
+  })
+
+  if (!res.ok) {
+    throw new Error(`Failed to delete mood (${res.status})`)
+  }
+}
+
 export async function fetchMoodFeed(accessToken: string, page = 1, pageSize = 10) {
   return apiFetch<PaginatedResponse<FeedMood>>(
     `/api/moods/feed/?page=${page}&page_size=${pageSize}`,
@@ -98,7 +135,7 @@ export async function createMood(
   accessToken: string,
   data: { emoji: string; reason?: string }
 ) {
-  return apiFetch<FeedMood>('/api/moods/', {
+  return apiFetch<MoodEntry>('/api/moods/', {
     method: 'POST',
     accessToken,
     body: JSON.stringify(data),
