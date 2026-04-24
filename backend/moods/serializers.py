@@ -77,7 +77,8 @@ class MoodLogSerializer(serializers.ModelSerializer):
     comment_count = serializers.SerializerMethodField(read_only=True)
 
     def get_comment_count(self, obj):
-        return obj.comments.count()
+        """Return the number of top-level comments on this mood"""
+        return obj.comments.filter(parent__isnull=True).count()
 
     class Meta:
         model = Mood
@@ -91,14 +92,6 @@ class MoodLogSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
         read_only_fields = ["id", "user", "created_at", "updated_at"]
-
-    def get_comment_count(self, obj):
-        """Return the number of top-level comments on this mood"""
-        return obj.comments.filter(parent__isnull=True).count()
-
-    def create(self, validated_data):
-        request = self.context["request"]
-        return Mood.objects.create(user=request.user, **validated_data)
 
 
 class UserProfileSerializer(serializers.Serializer):

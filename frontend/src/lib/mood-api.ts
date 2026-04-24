@@ -9,6 +9,24 @@ export type PaginatedResponse<T> = {
   results: T[]
 }
 
+function normalizeListResponse<T>(data: PaginatedResponse<T> | T[]): PaginatedResponse<T> {
+  if (Array.isArray(data)) {
+    return {
+      count: data.length,
+      next: null,
+      previous: null,
+      results: data,
+    }
+  }
+
+  return {
+    count: data.count ?? data.results?.length ?? 0,
+    next: data.next ?? null,
+    previous: data.previous ?? null,
+    results: data.results ?? [],
+  }
+}
+
 export type FeedUserProfile = {
   username: string
   avatar: string | null
@@ -91,10 +109,11 @@ export function pseudoIntensity(moodId: number) {
 }
 
 export async function fetchMyMoods(accessToken: string, page = 1, pageSize = 50) {
-  return apiFetch<PaginatedResponse<MoodEntry>>(
+  const data = await apiFetch<PaginatedResponse<MoodEntry> | MoodEntry[]>(
     `/api/moods/?page=${page}&page_size=${pageSize}`,
     { accessToken }
   )
+  return normalizeListResponse(data)
 }
 
 export async function updateMood(

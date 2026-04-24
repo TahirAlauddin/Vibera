@@ -29,7 +29,7 @@ export function MoodTrackerContent() {
     setLoading(true)
     try {
       const data = await fetchMyMoods(accessToken)
-      setEntries(data.results)
+      setEntries(data.results ?? [])
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to load journal entries')
     } finally {
@@ -38,9 +38,12 @@ export function MoodTrackerContent() {
   }, [accessToken])
 
   useEffect(() => {
-    if (status === 'authenticated' && accessToken) {
-      loadEntries()
+    if (status === 'loading') return
+    if (status !== 'authenticated' || !accessToken) {
+      setLoading(false)
+      return
     }
+    loadEntries()
   }, [status, accessToken, loadEntries])
 
   const todayEntry = useMemo(
