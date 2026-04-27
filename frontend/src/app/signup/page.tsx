@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 import { registerUser } from '@/lib/auth-api'
+import { APP_HOME } from '@/app/dashboard/_components/dashboard-nav'
 
 export default function SignupPage() {
   const [username, setUsername] = useState('')
@@ -21,7 +22,7 @@ export default function SignupPage() {
 
   useEffect(() => {
     if (status === 'authenticated' && session) {
-      router.push('/dashboard')
+      router.push(APP_HOME)
     }
   }, [status, session, router])
 
@@ -71,7 +72,7 @@ export default function SignupPage() {
         return
       }
 
-      window.location.href = '/dashboard'
+      window.location.href = APP_HOME
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed. Please try again.')
     } finally {

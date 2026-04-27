@@ -6,26 +6,12 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ViberaLogo } from './vibera-logo'
-
-const NAV_LINKS = [
-  { href: '/ui-guide', label: 'UI Guide' },
-  { href: '/dashboard/mood-tracker', label: 'Mood Tracker' },
-  { href: '/dashboard/feed', label: 'Feed' },
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/dashboard/profile', label: 'Profile' },
-] as const
+import { getPrimaryNavLinks, isNavLinkActive } from './dashboard-nav'
 
 export function DashboardNavbar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
-
-  const isActive = (href: string) => {
-    if (href === '#') return false
-    if (href === '/dashboard') return pathname === '/dashboard'
-    if (href === '/dashboard/feed') return pathname.startsWith('/dashboard/feed')
-    if (href === '/dashboard/mood-tracker') return pathname.startsWith('/dashboard/mood-tracker')
-    return pathname === href || pathname.startsWith(`${href}/`)
-  }
+  const navLinks = getPrimaryNavLinks(pathname)
 
   return (
     <header className="border-b border-[#E0E6D9] bg-white">
@@ -33,13 +19,13 @@ export function DashboardNavbar() {
         <ViberaLogo />
 
         <nav className="hidden items-center gap-8 md:flex" aria-label="Main navigation">
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <Link
-              key={link.label}
+              key={link.href}
               href={link.href}
               className={cn(
                 'relative pb-1 text-sm font-medium transition-colors',
-                isActive(link.href)
+                isNavLinkActive(pathname, link.href)
                   ? 'font-bold text-[#1F2E13] after:absolute after:bottom-0 after:left-0 after:h-[3px] after:w-full after:rounded-full after:bg-[#F6C531]'
                   : 'text-[#4B5A41] hover:text-[#1F2E13]'
               )}
@@ -68,14 +54,14 @@ export function DashboardNavbar() {
           aria-label="Mobile navigation"
         >
           <div className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <Link
-                key={link.label}
+                key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
                   'rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                  isActive(link.href)
+                  isNavLinkActive(pathname, link.href)
                     ? 'bg-[#F6C531]/15 font-bold text-[#1F2E13]'
                     : 'text-[#4B5A41] hover:bg-[#F4F6F1]'
                 )}

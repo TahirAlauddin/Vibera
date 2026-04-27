@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { Facebook, Instagram, Mail } from 'lucide-react'
+import { APP_HOME } from './dashboard-nav'
 
 const NAVIGATE_LINKS = [
-  { href: '/', label: 'Home' },
+  { href: APP_HOME, label: 'Feed' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/mood-tracker', label: 'Mood Tracker' },
-  { href: '#', label: 'Insights' },
+  { href: '/dashboard/profile', label: 'Profile' },
 ] as const
 
 const LEARN_MORE_LINKS = [
@@ -20,7 +21,7 @@ export function DashboardFooter() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link href="/dashboard" className="inline-flex items-center gap-2">
+            <Link href={APP_HOME} className="inline-flex items-center gap-2">
               <span
                 className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#F6C531] text-lg leading-none"
                 aria-hidden

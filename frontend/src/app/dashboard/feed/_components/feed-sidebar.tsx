@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   BarChart3,
-  BookOpen,
   LayoutDashboard,
   Rss,
   Search,
@@ -17,13 +16,18 @@ import { cn } from '@/lib/utils'
 import { FollowButton } from '@/components/dashboard/follow-button'
 import { getAvatarUrl } from '@/lib/mood-api'
 import type { SuggestionUser } from '@/lib/social-api'
+import { APP_HOME, FEED_NAV_LINKS, isNavLinkActive } from '@/app/dashboard/_components/dashboard-nav'
 
-const NAV_ITEMS = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/mood-tracker', label: 'Mood Log', icon: BookOpen },
-  { href: '/dashboard/feed', label: 'Feed', icon: Rss },
-  { href: '/dashboard/profile', label: 'Profile', icon: User },
-] as const
+const NAV_ICONS = {
+  [APP_HOME]: Rss,
+  '/dashboard': LayoutDashboard,
+  '/dashboard/profile': User,
+} as const
+
+const NAV_ITEMS = FEED_NAV_LINKS.map((item) => ({
+  ...item,
+  icon: NAV_ICONS[item.href as keyof typeof NAV_ICONS],
+}))
 
 const TRENDING_MOODS = [
   { emoji: '😊', label: 'Happy', count: 128 },
@@ -52,10 +56,7 @@ export function FeedSidebar({
       <nav className="hidden rounded-2xl bg-white p-4 shadow-sm xl:block">
         <ul className="space-y-1">
           {NAV_ITEMS.map((item) => {
-            const isActive =
-              item.href === '/dashboard'
-                ? pathname === '/dashboard'
-                : pathname.startsWith(item.href)
+            const isActive = isNavLinkActive(pathname, item.href)
             return (
               <li key={item.href}>
                 <Link
