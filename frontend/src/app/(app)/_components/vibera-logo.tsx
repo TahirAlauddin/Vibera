@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
-import { APP_HOME } from './dashboard-nav'
+import { APP_HOME } from './app-nav'
 
 type ViberaLogoProps = {
   className?: string

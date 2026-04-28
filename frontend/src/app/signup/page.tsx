@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 import { registerUser } from '@/lib/auth-api'
-import { APP_HOME } from '@/app/dashboard/_components/dashboard-nav'
+import { APP_HOME } from '@/app/(app)/_components/app-nav'
 
 export default function SignupPage() {
   const [username, setUsername] = useState('')

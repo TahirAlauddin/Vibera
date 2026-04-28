@@ -6,9 +6,9 @@ import { useState } from 'react'
 import { Menu, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ViberaLogo } from './vibera-logo'
-import { getPrimaryNavLinks, isNavLinkActive } from './dashboard-nav'
+import { getPrimaryNavLinks, isNavLinkActive } from './app-nav'
 
-export function DashboardNavbar() {
+export function AppNavbar() {
   const pathname = usePathname()
   const [mobileOpen, setMobileOpen] = useState(false)
   const navLinks = getPrimaryNavLinks(pathname)

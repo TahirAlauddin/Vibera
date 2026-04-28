@@ -1,4 +1,4 @@
-export const APP_HOME = '/dashboard/feed'
+export const APP_HOME = '/feed'
 
 export type NavLink = {
   href: string
@@ -28,7 +28,7 @@ export const PROFILE_NAV_LINKS: NavLink[] = [
 ]
 
 export function getPrimaryNavLinks(pathname: string): NavLink[] {
-  if (pathname.startsWith('/dashboard/feed')) return FEED_NAV_LINKS
+  if (pathname === APP_HOME || pathname.startsWith('/feed/')) return FEED_NAV_LINKS
   if (pathname === '/dashboard' || pathname.startsWith('/dashboard/mood-tracker')) {
     return DASHBOARD_NAV_LINKS
   }
@@ -38,7 +38,7 @@ export function getPrimaryNavLinks(pathname: string): NavLink[] {
 
 export function isNavLinkActive(pathname: string, href: string): boolean {
   if (href === '/dashboard') return pathname === '/dashboard'
-  if (href === APP_HOME) return pathname.startsWith('/dashboard/feed')
+  if (href === APP_HOME) return pathname === APP_HOME || pathname.startsWith('/feed/')
   if (href === '/dashboard/mood-tracker') return pathname.startsWith('/dashboard/mood-tracker')
   if (href === '/dashboard/profile') return pathname.startsWith('/dashboard/profile')
   return pathname === href || pathname.startsWith(`${href}/`)

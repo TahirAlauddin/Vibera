@@ -91,7 +91,7 @@ export function FeedPostCard({
   }
 
   const handleShare = useCallback(async () => {
-    const url = `${window.location.origin}/dashboard/feed#post-${post.id}`
+    const url = `${window.location.origin}/feed#post-${post.id}`
     const text = `${post.user} shared a ${moodLabel} mood on Vibera`
     if (navigator.share) {
       await navigator.share({ title: 'Vibera Mood', text, url })

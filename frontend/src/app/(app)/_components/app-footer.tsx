@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { Facebook, Instagram, Mail } from 'lucide-react'
-import { APP_HOME } from './dashboard-nav'
+import { APP_HOME } from './app-nav'
 
 const NAVIGATE_LINKS = [
   { href: APP_HOME, label: 'Feed' },
@@ -15,7 +15,7 @@ const LEARN_MORE_LINKS = [
   { href: '#', label: 'Terms & Conditions' },
 ] as const
 
-export function DashboardFooter() {
+export function AppFooter() {
   return (
     <footer className="border-t border-[#E0E6D9] bg-[#F4F6F1]">
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">

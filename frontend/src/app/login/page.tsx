@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, FormEvent, useEffect } from 'react'
-import { APP_HOME } from '@/app/dashboard/_components/dashboard-nav'
+import { APP_HOME } from '@/app/(app)/_components/app-nav'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'

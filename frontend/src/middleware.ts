@@ -25,8 +25,14 @@ export async function middleware(request: NextRequest) {
   const session = await auth()
 
   if (session) {
+    if (pathname === '/dashboard/feed' || pathname.startsWith('/dashboard/feed/')) {
+      const feedUrl = new URL(pathname.replace('/dashboard/feed', '/feed'), request.url)
+      feedUrl.search = request.nextUrl.search
+      return NextResponse.redirect(feedUrl)
+    }
+
     if (pathname === '/' || pathname === '/login' || pathname === '/signup' || pathname === '/home') {
-      return NextResponse.redirect(new URL('/dashboard/feed', request.url))
+      return NextResponse.redirect(new URL('/feed', request.url))
     }
     return NextResponse.next()
   }

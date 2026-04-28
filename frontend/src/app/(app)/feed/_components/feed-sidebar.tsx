@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils'
 import { FollowButton } from '@/components/dashboard/follow-button'
 import { getAvatarUrl } from '@/lib/mood-api'
 import type { SuggestionUser } from '@/lib/social-api'
-import { APP_HOME, FEED_NAV_LINKS, isNavLinkActive } from '@/app/dashboard/_components/dashboard-nav'
+import { APP_HOME, FEED_NAV_LINKS, isNavLinkActive } from '@/app/(app)/_components/app-nav'
 
 const NAV_ICONS = {
   [APP_HOME]: Rss,
