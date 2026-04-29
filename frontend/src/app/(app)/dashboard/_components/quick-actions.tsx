@@ -26,6 +26,12 @@ export function QuickActions() {
           Log Today&apos;s Mood
         </Link>
         <Link
+          href="/feed"
+          className="flex h-11 items-center justify-center rounded-lg bg-[#F4F6F1] text-sm font-semibold text-[#1F2E13] transition-colors hover:bg-[#E8EBE3]"
+        >
+          Go to Feed
+        </Link>
+        <Link
           href="/dashboard/mood-tracker"
           className="flex h-11 items-center justify-center rounded-lg bg-[#F4F6F1] text-sm font-semibold text-[#1F2E13] transition-colors hover:bg-[#E8EBE3]"
         >

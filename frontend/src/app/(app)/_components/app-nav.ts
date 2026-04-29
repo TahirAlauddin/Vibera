@@ -14,6 +14,7 @@ export const FEED_NAV_LINKS: NavLink[] = [
 
 /** Dashboard area — insights and mood tracking */
 export const DASHBOARD_NAV_LINKS: NavLink[] = [
+  { href: APP_HOME, label: 'Feed' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/mood-tracker', label: 'Mood Tracker' },
   { href: '/dashboard/profile', label: 'Profile' },
