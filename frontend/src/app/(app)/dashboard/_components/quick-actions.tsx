@@ -1,11 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { EXPORT_DATA } from './dashboard-data'
 
-export function QuickActions() {
+type QuickActionsProps = {
+  exportData: Record<string, unknown>
+}
+
+export function QuickActions({ exportData }: QuickActionsProps) {
   const handleExport = () => {
-    const blob = new Blob([JSON.stringify(EXPORT_DATA, null, 2)], { type: 'application/json' })
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
     anchor.href = url

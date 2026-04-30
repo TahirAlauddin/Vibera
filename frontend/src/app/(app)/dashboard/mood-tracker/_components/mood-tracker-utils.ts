@@ -100,4 +100,88 @@ function calculateStreak(entries: MoodEntry[]) {
   return streak
 }
 
+export function getMoodDistribution(entries: MoodEntry[]) {
+  const MOOD_COLORS: Record<string, string> = {
+    Happy: '#F6C531',
+    Calm: '#5B9BD5',
+    Anxious: '#F59E0B',
+    Sad: '#D1D5DB',
+    Angry: '#EF4444',
+    Tired: '#9CA3AF',
+  }
+
+  const counts: Record<string, number> = {}
+  for (const entry of entries) {
+    const label = getMoodLabel(entry.emoji)
+    counts[label] = (counts[label] ?? 0) + 1
+  }
+
+  const total = entries.length
+  if (total === 0) return []
+
+  return Object.entries(counts)
+    .map(([mood, count]) => ({
+      mood,
+      entries: count,
+      percent: Math.round((count / total) * 100),
+      color: MOOD_COLORS[mood] ?? '#6B7280',
+    }))
+    .sort((a, b) => b.entries - a.entries)
+}
+
+export type Achievement = {
+  title: string
+  icon: string
+  unlocked: boolean
+}
+
+export function getAchievements(entries: MoodEntry[]): Achievement[] {
+  const { streak, total } = getMoodStats(entries)
+
+  const hasEarlyBird = entries.some((e) => new Date(e.created_at).getHours() < 10)
+  const hasReflective = entries.some((e) => {
+    const { journal } = parseJournalReason(e.reason)
+    const hour = new Date(e.created_at).getHours()
+    return journal.length > 0 && hour >= 20
+  })
+
+  return [
+    { title: '7-Day Streak', icon: '🔥', unlocked: streak >= 7 },
+    { title: 'Mood Master', icon: '⭐', unlocked: total >= 20 },
+    { title: 'Early Bird', icon: '🌅', unlocked: hasEarlyBird },
+    { title: 'Reflective', icon: '🌙', unlocked: hasReflective },
+  ]
+}
+
+export function getWeeklyInsight(entries: MoodEntry[]) {
+  const week = getWeeklyMoods(entries)
+  const logged = week.filter((d) => d.mood)
+  if (logged.length === 0) {
+    return 'Start logging your mood to see weekly insights here.'
+  }
+
+  const moodCounts: Record<string, number> = {}
+  for (const day of logged) {
+    if (day.mood) moodCounts[day.mood] = (moodCounts[day.mood] ?? 0) + 1
+  }
+  const dominant = Object.entries(moodCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? 'balanced'
+
+  const thisWeekHappy = logged.filter((d) => d.mood === 'Happy').length
+  const lastWeekHappy = entries.filter((e) => {
+    const date = new Date(e.created_at)
+    const daysAgo = Math.floor((Date.now() - date.getTime()) / 86400000)
+    return daysAgo >= 7 && daysAgo < 14 && getMoodLabel(e.emoji) === 'Happy'
+  }).length
+
+  if (lastWeekHappy === 0) {
+    return `You've been feeling mostly ${dominant.toLowerCase()} this week. Keep checking in to track your trends.`
+  }
+
+  const change = Math.round(((thisWeekHappy - lastWeekHappy) / lastWeekHappy) * 100)
+  const direction = change >= 0 ? 'increased' : 'decreased'
+  const absChange = Math.abs(change)
+
+  return `You've been feeling mostly ${dominant.toLowerCase()} this week! Your positive mood ${direction} by ${absChange}% compared to last week.`
+}
+
 export { MOOD_OPTIONS, formatTimeAgo }

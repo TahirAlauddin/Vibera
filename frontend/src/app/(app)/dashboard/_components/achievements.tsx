@@ -1,8 +1,12 @@
 import { Award, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { ACHIEVEMENTS } from './dashboard-data'
+import type { Achievement } from '../mood-tracker/_components/mood-tracker-utils'
 
-export function Achievements() {
+type AchievementsProps = {
+  achievements: Achievement[]
+}
+
+export function Achievements({ achievements }: AchievementsProps) {
   return (
     <section className="rounded-xl bg-white p-6 shadow-sm">
       <div className="mb-5 flex items-center gap-2">
@@ -11,7 +15,7 @@ export function Achievements() {
       </div>
 
       <ul className="space-y-3">
-        {ACHIEVEMENTS.map((achievement) => (
+        {achievements.map((achievement) => (
           <li
             key={achievement.title}
             className={cn(

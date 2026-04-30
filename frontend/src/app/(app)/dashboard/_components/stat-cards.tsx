@@ -1,17 +1,33 @@
 import { Calendar, Heart, TrendingUp, type LucideIcon } from 'lucide-react'
-import { DASHBOARD_STATS } from './dashboard-data'
 
-const ICON_MAP: Record<(typeof DASHBOARD_STATS)[number]['icon'], LucideIcon> = {
+type DashboardStats = {
+  total: number
+  streak: number
+  avgIntensity: string
+}
+
+type StatCardsProps = {
+  stats: DashboardStats
+}
+
+const STAT_CONFIG = [
+  { label: 'Total Entries', key: 'total' as const, icon: 'calendar' as const },
+  { label: 'Day Streak', key: 'streak' as const, icon: 'trending' as const },
+  { label: 'Avg Intensity', key: 'avgIntensity' as const, icon: 'heart' as const },
+]
+
+const ICON_MAP: Record<(typeof STAT_CONFIG)[number]['icon'], LucideIcon> = {
   calendar: Calendar,
   trending: TrendingUp,
   heart: Heart,
 }
 
-export function StatCards() {
+export function StatCards({ stats }: StatCardsProps) {
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      {DASHBOARD_STATS.map((stat) => {
+      {STAT_CONFIG.map((stat) => {
         const Icon = ICON_MAP[stat.icon]
+        const value = String(stats[stat.key])
         return (
           <div
             key={stat.label}
@@ -21,7 +37,7 @@ export function StatCards() {
               <Icon className="size-5 text-[#C9A020]" strokeWidth={2.25} />
             </div>
             <div>
-              <p className="text-2xl font-bold leading-tight text-[#1F2E13]">{stat.value}</p>
+              <p className="text-2xl font-bold leading-tight text-[#1F2E13]">{value}</p>
               <p className="text-sm text-[#7A6B3F]">{stat.label}</p>
             </div>
           </div>
