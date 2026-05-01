@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BarChart3, BookOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { PROFILE_MENU, RECENT_MESSAGES } from './profile-data'
+import { PROFILE_MENU } from './profile-data'
 import { ProfileFollowPanel } from './profile-follow-panel'
+import type { RecentActivity } from './profile-stats-utils'
 
 const ICONS = {
   book: BookOpen,
@@ -14,10 +15,19 @@ const ICONS = {
 
 type ProfileSidebarProps = {
   accessToken: string
-  onStatsChange?: (stats: { followers: number; following: number }) => void
+  recentActivity: RecentActivity[]
+  onStatsChange?: (stats: {
+    followers: number
+    following: number
+    friends: number
+  }) => void
 }
 
-export function ProfileSidebar({ accessToken, onStatsChange }: ProfileSidebarProps) {
+export function ProfileSidebar({
+  accessToken,
+  recentActivity,
+  onStatsChange,
+}: ProfileSidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -49,19 +59,30 @@ export function ProfileSidebar({ accessToken, onStatsChange }: ProfileSidebarPro
       </nav>
 
       <section className="rounded-2xl bg-white p-4 shadow-sm">
-        <h3 className="mb-3 text-sm font-bold text-[#1F2E13]">Recent Messages</h3>
-        <ul className="max-h-48 space-y-3 overflow-y-auto">
-          {RECENT_MESSAGES.map((msg) => (
-            <li key={msg.id} className="flex gap-3">
-              <div className="relative size-9 shrink-0 overflow-hidden rounded-full bg-[#E8EDE3]" />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-[#1F2E13]">{msg.name}</p>
-                <p className="truncate text-xs text-[#7A6B3F]">{msg.message}</p>
-                <p className="text-[10px] text-[#9CA3AF]">{msg.time}</p>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <h3 className="mb-3 text-sm font-bold text-[#1F2E13]">Recent Activity</h3>
+        {recentActivity.length === 0 ? (
+          <p className="py-4 text-center text-xs text-[#7A6B3F]">
+            No journal entries yet.{' '}
+            <Link href="/dashboard/mood-tracker" className="font-medium text-[#1F2E13] underline-offset-2 hover:underline">
+              Log your first mood
+            </Link>
+          </p>
+        ) : (
+          <ul className="max-h-48 space-y-3 overflow-y-auto">
+            {recentActivity.map((item) => (
+              <li key={item.id} className="flex gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#FEF9E7] text-lg">
+                  {item.emoji}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-medium text-[#1F2E13]">{item.title}</p>
+                  <p className="truncate text-xs text-[#7A6B3F]">{item.message}</p>
+                  <p className="text-[10px] text-[#9CA3AF]">{item.time}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <ProfileFollowPanel accessToken={accessToken} onStatsChange={onStatsChange} />

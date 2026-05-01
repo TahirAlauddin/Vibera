@@ -10,6 +10,7 @@ import {
   fetchFollowers,
   fetchFollowing,
   fetchFollowSuggestions,
+  fetchSocialStats,
   getDisplayName,
   toggleFollow,
   userFromFollowRecord,
@@ -26,7 +27,11 @@ type NetworkUser = UserMinimal & {
 
 type ProfileFollowPanelProps = {
   accessToken: string
-  onStatsChange?: (stats: { followers: number; following: number }) => void
+  onStatsChange?: (stats: {
+    followers: number
+    following: number
+    friends: number
+  }) => void
 }
 
 export function ProfileFollowPanel({ accessToken, onStatsChange }: ProfileFollowPanelProps) {
@@ -40,10 +45,11 @@ export function ProfileFollowPanel({ accessToken, onStatsChange }: ProfileFollow
   const loadNetwork = useCallback(async () => {
     setLoading(true)
     try {
-      const [followersRes, followingRes, suggestionsRes] = await Promise.all([
+      const [followersRes, followingRes, suggestionsRes, socialStats] = await Promise.all([
         fetchFollowers(accessToken),
         fetchFollowing(accessToken),
         fetchFollowSuggestions(accessToken),
+        fetchSocialStats(accessToken),
       ])
 
       const nextFollowers = followersRes.results.map((r) => userFromFollowRecord(r, 'followers'))
@@ -57,8 +63,9 @@ export function ProfileFollowPanel({ accessToken, onStatsChange }: ProfileFollow
       setFollowing(nextFollowing)
       setDiscover(nextDiscover)
       onStatsChange?.({
-        followers: followersRes.count,
-        following: followingRes.count,
+        followers: socialStats.followers_count,
+        following: socialStats.following_count,
+        friends: socialStats.friends_count,
       })
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to load network')

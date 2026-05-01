@@ -1,27 +1,28 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSession } from 'next-auth/react'
 import { toast } from 'sonner'
+import { fetchMyMoods } from '@/lib/mood-api'
 import {
   fetchCurrentUser,
+  fetchMyProfile,
   updateCurrentUser,
 } from '@/lib/profile-api'
 import { fetchSocialStats } from '@/lib/social-api'
+import { getAvatarUrl } from '@/lib/mood-api'
+import type { MoodEntry } from '@/lib/mood-api'
 import { ProfileHeader } from './profile-header'
 import { ProfileStatCards } from './profile-stat-cards'
 import { ProfilePersonalInfo } from './profile-personal-info'
 import { ProfileSecuritySettings } from './profile-security-settings'
 import { ProfileContactInfo } from './profile-contact-info'
 import { ProfileSidebar } from './profile-sidebar'
+import { getProfileStats, getRecentActivity } from './profile-stats-utils'
 
 function getDisplayName(firstName?: string, lastName?: string, username?: string) {
   const name = [firstName, lastName].filter(Boolean).join(' ').trim()
   return name || username || 'Vibera User'
-}
-
-function getAvatarUrl(username: string) {
-  return `https://i.pravatar.cc/150?u=${encodeURIComponent(username)}`
 }
 
 export function ProfilePageContent() {
@@ -34,6 +35,9 @@ export function ProfilePageContent() {
   const [following, setFollowing] = useState(0)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [avatarUrl, setAvatarUrl] = useState('')
+  const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([])
+  const [friendsCount, setFriendsCount] = useState(0)
   const [isSaving, setIsSaving] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
@@ -46,9 +50,11 @@ export function ProfilePageContent() {
 
     async function loadProfile() {
       try {
-        const [user, stats] = await Promise.all([
+        const [user, stats, profile, moods] = await Promise.all([
           fetchCurrentUser(accessToken!),
           fetchSocialStats(accessToken!),
+          fetchMyProfile(accessToken!),
+          fetchMyMoods(accessToken!),
         ])
 
         if (cancelled) return
@@ -60,11 +66,16 @@ export function ProfilePageContent() {
         setFullName(getDisplayName(user.first_name, user.last_name, user.username))
         setFollowers(stats.followers_count)
         setFollowing(stats.following_count)
+        setFriendsCount(stats.friends_count)
+        setAvatarUrl(getAvatarUrl(user.username, profile.avatar))
+        setMoodEntries(moods.results ?? [])
       } catch {
         if (!cancelled) {
-          setUsername(session?.user?.username ?? '')
+          const fallbackUsername = session?.user?.username ?? 'vibera'
+          setUsername(fallbackUsername)
           setEmail(session?.user?.email ?? '')
-          setFullName(session?.user?.name ?? session?.user?.username ?? '')
+          setFullName(session?.user?.name ?? fallbackUsername)
+          setAvatarUrl(getAvatarUrl(fallbackUsername))
         }
       } finally {
         if (!cancelled) setIsLoading(false)
@@ -76,6 +87,18 @@ export function ProfilePageContent() {
       cancelled = true
     }
   }, [status, accessToken, session])
+
+  const profileStats = useMemo(
+    () =>
+      getProfileStats(moodEntries, {
+        followers_count: followers,
+        following_count: following,
+        friends_count: friendsCount,
+      }),
+    [moodEntries, followers, following, friendsCount]
+  )
+
+  const recentActivity = useMemo(() => getRecentActivity(moodEntries), [moodEntries])
 
   const handleSave = async () => {
     if (!accessToken) return
@@ -117,7 +140,6 @@ export function ProfilePageContent() {
   }
 
   const displayName = getDisplayName(firstName, lastName, username)
-  const avatarUrl = getAvatarUrl(username || 'vibera')
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -131,7 +153,7 @@ export function ProfilePageContent() {
             avatarUrl={avatarUrl}
           />
 
-          <ProfileStatCards />
+          <ProfileStatCards stats={profileStats} />
 
           <ProfilePersonalInfo
             username={username}
@@ -172,9 +194,11 @@ export function ProfilePageContent() {
 
         <ProfileSidebar
           accessToken={accessToken!}
-          onStatsChange={({ followers: f, following: g }) => {
+          recentActivity={recentActivity}
+          onStatsChange={({ followers: f, following: g, friends }) => {
             setFollowers(f)
             setFollowing(g)
+            setFriendsCount(friends)
           }}
         />
       </div>
