@@ -9,7 +9,7 @@ import pytest
 from django.utils import timezone
 
 from users.models import EmailOTP
-from users.utils import mask_email, verify_user_otp
+from users.utils import create_and_send_otp, mask_email, send_otp_email, verify_user_otp
 
 
 class TestMaskEmail:
@@ -76,3 +76,46 @@ class TestVerifyUserOtp:
 
         assert success is False
         assert error == "Maximum attempts exceeded. Please request a new code."
+
+
+@pytest.mark.django_db
+class TestOtpEmailHelpers:
+    """Tests for send_otp_email() and create_and_send_otp()."""
+
+    @patch("users.utils.send_mail")
+    def test_send_otp_email_success(self, mock_send_mail, user, settings):
+        settings.DEFAULT_FROM_EMAIL = "no-reply@vibera.local"
+        settings.OTP_EXPIRY_MINUTES = 12
+
+        success = send_otp_email(user=user, otp_code="123456")
+
+        assert success is True
+        mock_send_mail.assert_called_once()
+        kwargs = mock_send_mail.call_args.kwargs
+        assert kwargs["subject"] == "Your Vibera verification code: 123456"
+        assert "123456" in kwargs["message"]
+        assert "12 minutes" in kwargs["message"]
+        assert kwargs["from_email"] == "no-reply@vibera.local"
+        assert kwargs["recipient_list"] == [user.email]
+        assert kwargs["fail_silently"] is False
+
+    @patch("users.utils.send_mail", side_effect=Exception("smtp down"))
+    def test_send_otp_email_failure_returns_false(self, _mock_send_mail, user):
+        success = send_otp_email(user=user, otp_code="123456")
+        assert success is False
+
+    @patch("users.utils.send_otp_email", return_value=True)
+    @patch("users.utils.EmailOTP.create_otp")
+    def test_create_and_send_otp_uses_settings_ttl(
+        self, mock_create_otp, mock_send_otp_email, user, settings
+    ):
+        settings.OTP_EXPIRY_MINUTES = 7
+        fake_otp = object()
+        mock_create_otp.return_value = (fake_otp, "654321")
+
+        otp, success = create_and_send_otp(user)
+
+        assert otp is fake_otp
+        assert success is True
+        mock_create_otp.assert_called_once_with(user=user, ttl_minutes=7)
+        mock_send_otp_email.assert_called_once_with(user=user, otp_code="654321")
