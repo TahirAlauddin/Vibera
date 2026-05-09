@@ -1,4 +1,5 @@
 import Image from 'next/image'
+import Link from 'next/link'
 import { BadgeCheck } from 'lucide-react'
 import { COVER_IMAGE_URL } from './profile-data'
 
@@ -51,10 +52,15 @@ export function ProfileHeader({
             </div>
             <p className="text-sm text-[#7A6B3F]">@{username}</p>
             <p className="mt-2 text-sm text-[#4B5A41]">
-              <span className="font-semibold text-[#1F2E13]">{formatCount(followers)}</span>{' '}
-              followers ·{' '}
-              <span className="font-semibold text-[#1F2E13]">{formatCount(following)}</span>{' '}
-              following
+              <Link href="/friends?tab=followers" className="hover:underline">
+                <span className="font-semibold text-[#1F2E13]">{formatCount(followers)}</span>{' '}
+                followers
+              </Link>
+              {' · '}
+              <Link href="/friends?tab=following" className="hover:underline">
+                <span className="font-semibold text-[#1F2E13]">{formatCount(following)}</span>{' '}
+                following
+              </Link>
             </p>
           </div>
         </div>

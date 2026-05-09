@@ -11,6 +11,7 @@ import {
   Settings,
   TrendingUp,
   User,
+  Users,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { FollowButton } from '@/components/dashboard/follow-button'
@@ -20,6 +21,7 @@ import { APP_HOME, FEED_NAV_LINKS, isNavLinkActive } from '@/app/(app)/_componen
 
 const NAV_ICONS = {
   [APP_HOME]: Rss,
+  '/friends': Users,
   '/dashboard': LayoutDashboard,
   '/dashboard/profile': User,
 } as const

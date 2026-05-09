@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { Loader2, Users } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { getAvatarUrl } from '@/lib/mood-api'
@@ -123,9 +124,17 @@ export function ProfileFollowPanel({ accessToken, onStatsChange }: ProfileFollow
 
   return (
     <section className="rounded-2xl bg-white p-4 shadow-sm">
-      <div className="mb-3 flex items-center gap-2">
-        <Users className="size-4 text-[#F6C531]" />
-        <h3 className="text-sm font-bold text-[#1F2E13]">Your network</h3>
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <Users className="size-4 text-[#F6C531]" />
+          <h3 className="text-sm font-bold text-[#1F2E13]">Your network</h3>
+        </div>
+        <Link
+          href="/friends"
+          className="text-xs font-semibold text-[#6B8F5E] hover:underline"
+        >
+          View all
+        </Link>
       </div>
 
       <div className="mb-4 flex gap-1 rounded-xl bg-[#FAF7E6] p-1">

@@ -8,6 +8,7 @@ export type NavLink = {
 /** Feed is the logged-in home — social hub */
 export const FEED_NAV_LINKS: NavLink[] = [
   { href: APP_HOME, label: 'Feed' },
+  { href: '/friends', label: 'Friends' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/profile', label: 'Profile' },
 ]
@@ -15,6 +16,7 @@ export const FEED_NAV_LINKS: NavLink[] = [
 /** Dashboard area — insights and mood tracking */
 export const DASHBOARD_NAV_LINKS: NavLink[] = [
   { href: APP_HOME, label: 'Feed' },
+  { href: '/friends', label: 'Friends' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/mood-tracker', label: 'Mood Tracker' },
   { href: '/dashboard/profile', label: 'Profile' },
@@ -23,13 +25,16 @@ export const DASHBOARD_NAV_LINKS: NavLink[] = [
 /** Profile page — bridge between feed and dashboard areas */
 export const PROFILE_NAV_LINKS: NavLink[] = [
   { href: APP_HOME, label: 'Feed' },
+  { href: '/friends', label: 'Friends' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/dashboard/mood-tracker', label: 'Mood Tracker' },
   { href: '/dashboard/profile', label: 'Profile' },
 ]
 
 export function getPrimaryNavLinks(pathname: string): NavLink[] {
-  if (pathname === APP_HOME || pathname.startsWith('/feed/')) return FEED_NAV_LINKS
+  if (pathname === APP_HOME || pathname.startsWith('/feed/') || pathname.startsWith('/friends')) {
+    return FEED_NAV_LINKS
+  }
   if (pathname === '/dashboard' || pathname.startsWith('/dashboard/mood-tracker')) {
     return DASHBOARD_NAV_LINKS
   }
@@ -40,6 +45,7 @@ export function getPrimaryNavLinks(pathname: string): NavLink[] {
 export function isNavLinkActive(pathname: string, href: string): boolean {
   if (href === '/dashboard') return pathname === '/dashboard'
   if (href === APP_HOME) return pathname === APP_HOME || pathname.startsWith('/feed/')
+  if (href === '/friends') return pathname === '/friends' || pathname.startsWith('/friends/')
   if (href === '/dashboard/mood-tracker') return pathname.startsWith('/dashboard/mood-tracker')
   if (href === '/dashboard/profile') return pathname.startsWith('/dashboard/profile')
   return pathname === href || pathname.startsWith(`${href}/`)
