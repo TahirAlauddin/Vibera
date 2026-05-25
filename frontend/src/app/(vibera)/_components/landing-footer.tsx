@@ -1,19 +1,12 @@
 import Link from 'next/link'
 import { Facebook, Instagram } from 'lucide-react'
+import { ViberaLogo } from '@/app/(app)/_components/vibera-logo'
 
 export function LandingFooter() {
   return (
     <footer className="border-t border-[#E8E4D8] bg-[#FFFBEB]">
       <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6 lg:px-8">
-        <Link href="/" className="inline-flex items-center gap-2">
-          <span
-            className="flex size-7 items-center justify-center rounded-full bg-[#91B6A2] text-sm leading-none text-white"
-            aria-hidden
-          >
-            🙂
-          </span>
-          <span className="text-sm font-semibold text-[#6B8F5E]">Vibera</span>
-        </Link>
+        <ViberaLogo href="/" imageClassName="h-7" />
 
         <p className="text-xs text-[#9CA3AF]">© 2026 Vibera</p>
 

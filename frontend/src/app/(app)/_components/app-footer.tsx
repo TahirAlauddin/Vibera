@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Facebook, Instagram, Mail } from 'lucide-react'
 import { APP_HOME } from './app-nav'
+import { ViberaLogo } from './vibera-logo'
 
 const NAVIGATE_LINKS = [
   { href: APP_HOME, label: 'Feed' },
@@ -21,17 +22,7 @@ export function AppFooter() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
           <div>
-            <Link href={APP_HOME} className="inline-flex items-center gap-2">
-              <span
-                className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#F6C531] text-lg leading-none"
-                aria-hidden
-              >
-                🙂
-              </span>
-              <span className="text-sm font-bold uppercase tracking-widest text-[#1F2E13]">
-                Logo
-              </span>
-            </Link>
+            <ViberaLogo imageClassName="h-8" />
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-[#7A6B3F]">
               Your companion for mindful mood tracking and emotional wellness.
             </p>

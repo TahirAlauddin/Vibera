@@ -7,6 +7,7 @@ import { Eye, EyeOff } from 'lucide-react'
 import { signIn, useSession } from 'next-auth/react'
 import { registerUser } from '@/lib/auth-api'
 import { APP_HOME } from '@/app/(app)/_components/app-nav'
+import { ViberaLogo } from '@/app/(app)/_components/vibera-logo'
 
 export default function SignupPage() {
   const [username, setUsername] = useState('')
@@ -84,6 +85,9 @@ export default function SignupPage() {
     <div className="flex min-h-screen items-center justify-center color-bg px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="flex flex-col rounded-2xl bg-white p-6 shadow-lg sm:p-8">
+          <div className="mb-6 flex justify-center">
+            <ViberaLogo href="/" imageClassName="h-12" />
+          </div>
           <h2 className="mb-6 text-center text-2xl font-semibold sm:text-3xl">Sign up</h2>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">

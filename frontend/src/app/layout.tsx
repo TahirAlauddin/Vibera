@@ -5,6 +5,10 @@ import { Providers } from '@/components/providers/Providers'
 export const metadata: Metadata = {
   title: 'Vibera',
   description: 'Mood Tracker social app',
+  icons: {
+    icon: '/assets/favicon.png',
+    apple: '/assets/favicon.png',
+  },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

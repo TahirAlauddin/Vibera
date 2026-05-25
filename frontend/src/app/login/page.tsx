@@ -2,6 +2,7 @@
 
 import React, { useState, FormEvent, useEffect } from 'react'
 import { APP_HOME } from '@/app/(app)/_components/app-nav'
+import { ViberaLogo } from '@/app/(app)/_components/vibera-logo'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff } from 'lucide-react'
@@ -73,6 +74,9 @@ export default function LoginPage({ onSwitch }: { onSwitch?: () => void }) {
     <div className="min-h-screen flex items-center justify-center color-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl p-6 sm:p-8 flex flex-col shadow-lg">
+          <div className="mb-6 flex justify-center">
+            <ViberaLogo href="/" imageClassName="h-12" />
+          </div>
           <h2 className="text-center text-2xl sm:text-3xl font-semibold mb-6">Log in</h2>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {error && (

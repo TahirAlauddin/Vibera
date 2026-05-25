@@ -1,33 +1,27 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import { APP_HOME } from './app-nav'
 
+const LOGO_SRC = '/assets/Logo.png'
+
 type ViberaLogoProps = {
   className?: string
-  showText?: boolean
-  textClassName?: string
+  imageClassName?: string
   href?: string
 }
 
-export function ViberaLogo({
-  className,
-  showText = true,
-  textClassName,
-  href = APP_HOME,
-}: ViberaLogoProps) {
+export function ViberaLogo({ className, imageClassName, href = APP_HOME }: ViberaLogoProps) {
   return (
-    <Link href={href} className={cn('inline-flex items-center gap-2', className)}>
-      <span
-        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#F6C531] text-lg leading-none"
-        aria-hidden
-      >
-        🙂
-      </span>
-      {showText && (
-        <span className={cn('text-xl font-bold tracking-tight text-[#1F2E13]', textClassName)}>
-          Vibera
-        </span>
-      )}
+    <Link href={href} className={cn('inline-flex shrink-0 items-center', className)}>
+      <Image
+        src={LOGO_SRC}
+        alt="Vibera"
+        width={120}
+        height={48}
+        className={cn('h-9 w-auto', imageClassName)}
+        priority
+      />
     </Link>
   )
 }

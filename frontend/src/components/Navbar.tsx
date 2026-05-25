@@ -31,7 +31,7 @@ export default function Navbar() {
         {/* Logo at rounded edge */}
         <Image
           src="/assets/Logo.png"
-          alt="Logo"
+          alt="Vibera"
           width={52}
           height={52}
           className="rounded-full shrink-0"
