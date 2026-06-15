@@ -14,10 +14,46 @@ from datetime import timedelta
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+from vibera.logging_handlers import get_log_directory
 
-load_dotenv()
 # Build paths
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from .env file FIRST (before any os.getenv calls)
+env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
+
+# Database logging configuration
+DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
+WSGI_APPLICATION = "vibera.wsgi.application"
+
+
+# Database
+# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
+DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
+# Custom User Model
+AUTH_USER_MODEL = "users.User"
+# Internationalization
+# https://docs.djangoproject.com/en/6.0/topics/i18n/
+
+LANGUAGE_CODE = "en-us"
+TIME_ZONE = "UTC"
+USE_I18N = True
+USE_TZ = True
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/6.0/howto/static-files/
+
+STATIC_URL = "static/"
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+# Environment variables
+LOG_FORMATTER = os.getenv("LOG_FORMATTER", "verbose").lower()
+LOG_RETENTION_DAYS = int(os.getenv("LOG_RETENTION_DAYS", "30"))
+LOG_MAX_BYTES = int(os.getenv("LOG_MAX_BYTES", str(5 * 1024 * 1024)))  # Default: 5MB
+
+# Load environment variables from .env file in the backend directory
+env_path = BASE_DIR / ".env"
+load_dotenv(dotenv_path=env_path)
 
 
 # Quick-start development settings - unsuitable for production
@@ -25,9 +61,19 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
+if not SECRET_KEY:
+    raise ValueError(
+        "SECRET_KEY environment variable is required. Please set it in your .env file."
+    )
+
 DEBUG = True
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in (os.getenv("ALLOWED_HOSTS") or "").split(",")
+    if host.strip()
+]
+
 
 # Application definition
 
@@ -38,18 +84,22 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "corsheaders",
     "rest_framework",
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "djoser",
-    "vibera.apps.ViberaConfig",  # Using full AppConfig path
+    "vibera",  # Using full AppConfig path
     "users",
     "moods",
     "social",
+    "notifications",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -76,13 +126,6 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "vibera.wsgi.application"
-
-# Database
-# https://docs.djangoproject.com/en/6.0/ref/settings/#databases
-
-DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.sqlite3")
-
 # Base database configuration
 DATABASES = {
     "default": {
@@ -101,8 +144,17 @@ if "postgresql" in DB_ENGINE:
         "connect_timeout": 10,
     }
 
-# Database logging configuration
-DB_SLOW_QUERY_THRESHOLD_MS = float(os.getenv("DB_SLOW_QUERY_THRESHOLD_MS", "1000.0"))
+
+# Email Configuration
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
 
 # Password validation
 # https://docs.djangoproject.com/en/6.0/ref/settings/#auth-password-validators
@@ -123,30 +175,14 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/6.0/topics/i18n/
-
-LANGUAGE_CODE = "en-us"
-
-TIME_ZONE = "UTC"
-
-USE_I18N = True
-
-USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/6.0/howto/static-files/
-
-STATIC_URL = "static/"
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
 # Django REST Framework
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
 }
 
 # Simple JWT Configuration
@@ -191,176 +227,195 @@ DJOSER = {
 # Custom User Model
 AUTH_USER_MODEL = "users.User"
 
+# OTP Settings
+OTP_EXPIRY_MINUTES = 5  # otp expires in 5 minutes
+OTP_MAX_ATTEMPTS = 3
+
+# Session Settings (for 2FA pending state)
+# https://docs.djangoproject.com/en/6.0/ref/settings/#sessions
+SESSION_COOKIE_AGE = 300  # 5 minutes session timeout
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True  # Session ends when browser closes
+
+# CORS Configuration
+CORS_ALLOWED_ORIGINS = [
+    origin.strip()
+    for origin in (os.getenv("CORS_ALLOWED_ORIGINS") or "").split(",")
+    if origin.strip()
+]
+
+# Allow credentials (cookies, authorization headers) to be included in CORS requests
+CORS_ALLOW_CREDENTIALS = True
+
+
+# Allow essential headers for JWT authentication and JSON requests
+CORS_ALLOW_HEADERS = [
+    "authorization",
+    "content-type",
+]
+
 # ============================================================================
 # LOGGING CONFIGURATION
 # ============================================================================
-# 
+#
 # Dual output logging:
 # - All loggers write to both stdout (for Docker) and files (for persistence)
-# - Date-based rotation is the default file handler
-# - Size-based rotation is available as an optional handler
+# - Size-based rotation is the default file handler
+# - Date-based rotation is available as an optional handler
 
 # Import custom logging handlers
-from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler, get_log_directory
+from vibera.logging_handlers import DateRotatingFileHandler, SizeRotatingFileHandler
 
-# Environment variables
-LOG_FORMATTER = os.getenv('LOG_FORMATTER', 'verbose').lower()
-LOG_RETENTION_DAYS = int(os.getenv('LOG_RETENTION_DAYS', '30'))
-LOG_MAX_BYTES = int(os.getenv('LOG_MAX_BYTES', str(5 * 1024 * 1024)))  # Default: 5MB
-ENABLE_SIZE_ROTATION = os.getenv('ENABLE_SIZE_ROTATION', 'false').lower() == 'true'
-
-# Get log directory
+# Get log directory path
 LOG_DIR = get_log_directory()
 
 # Build handlers dictionary conditionally
+# Handler level allows INFO (for application code), but Django loggers are set to WARNING
 LOGGING_HANDLERS = {
-    'stdout': {
-        'class': 'logging.StreamHandler',
-        'formatter': LOG_FORMATTER,
-        'stream': 'ext://sys.stdout',
-    },
-    'file_date': {
-        '()': DateRotatingFileHandler,
-        'log_dir': LOG_DIR,
-        'retention_days': LOG_RETENTION_DAYS,
-        'formatter': LOG_FORMATTER,
-        'level': 'DEBUG',
+    "stdout": {
+        "class": "logging.StreamHandler",
+        "formatter": LOG_FORMATTER,
+        "stream": "ext://sys.stdout",
+        # No level filter here - let individual loggers control their levels
     },
 }
 
-# Add size-based handler if enabled
-if ENABLE_SIZE_ROTATION:
-    LOGGING_HANDLERS['file_size'] = {
-        '()': SizeRotatingFileHandler,
-        'log_dir': LOG_DIR,
-        'max_bytes': LOG_MAX_BYTES,
-        'formatter': LOG_FORMATTER,
-        'level': 'DEBUG',
+# Determine file handler: date-based (if enabled) or size-based (default)
+ENABLE_DATE_ROTATION = os.getenv("ENABLE_DATE_ROTATION", "false").lower() == "true"
+# Handler level allows INFO (for application code), but Django loggers are set to WARNING
+if ENABLE_DATE_ROTATION:
+    LOGGING_HANDLERS["file"] = {
+        "()": DateRotatingFileHandler,
+        "log_dir": LOG_DIR,
+        "retention_days": LOG_RETENTION_DAYS,
+        "formatter": LOG_FORMATTER,
+        # No level filter here - let individual loggers control their levels
     }
+    FILE_HANDLER = "file"
+else:
+    # Size-based rotation is the default
+    LOGGING_HANDLERS["file"] = {
+        "()": SizeRotatingFileHandler,
+        "log_dir": LOG_DIR,
+        "max_bytes": LOG_MAX_BYTES,
+        "formatter": LOG_FORMATTER,
+        # No level filter here - let individual loggers control their levels
+    }
+    FILE_HANDLER = "file"
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    
+    "version": 1,
+    "disable_existing_loggers": False,
     # Formatters
-    'formatters': {
-        'verbose': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+    "formatters": {
+        "verbose": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | Process:{process:5} | Thread:{threadName:10} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        
         # Balanced: timestamp, level, logger name, message
-        'detailed': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "detailed": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-        
         # Minimal: level and message only
-        'simple': {
-            'format': '[{levelname:8}] {message}',
-            'style': '{',
+        "simple": {
+            "format": "[{levelname:8}] {message}",
+            "style": "{",
         },
-        
         # Error format: includes file path and line number
-        'error': {
-            'format': '[{levelname:8}] {asctime} | {name:30} | {pathname}:{lineno} | {message}',
-            'style': '{',
-            'datefmt': '%Y-%m-%d %H:%M:%S',
+        "error": {
+            "format": "[{levelname:8}] {asctime} | {name:30} | {pathname}:{lineno} | {message}",
+            "style": "{",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
-    
     # Handlers
     # StreamHandler: Writes directly to stdout for Docker log collection
     # File handlers: Write to files with rotation for persistence
-    'handlers': LOGGING_HANDLERS,
-    
+    "handlers": LOGGING_HANDLERS,
     # Loggers
-    # All loggers write to both stdout and file_date handlers
-    'loggers': {
+    # All loggers write to both stdout and file handlers
+    "loggers": {
         # Root logger: catches all unhandled logs from third-party libraries
-        '': {
-            'handlers': ['stdout', 'file_date'],
-            'level': os.getenv('ROOT_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        # Production: Only WARNING and ERROR to reduce noise
+        "": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": os.getenv("ROOT_LOG_LEVEL", "WARNING"),
+            "propagate": False,
         },
-        
         # Django framework: middleware, templates, cache
-        'django': {
-            'handlers': ['stdout', 'file_date'],
-            'level': os.getenv('FRAMEWORK_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        # Production: Only WARNING and ERROR for Django internals
+        "django": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": os.getenv("FRAMEWORK_LOG_LEVEL", "WARNING"),
+            "propagate": False,
         },
-        
         # Django requests: HTTP requests and responses
-        'django.request': {
-            'handlers': ['stdout', 'file_date'],
-            'level': 'INFO',
-            'propagate': False,
+        # Production: Only WARNING and ERROR (4xx/5xx responses)
+        "django.request": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": "WARNING",
+            "propagate": False,
         },
-        
         # Django server: startup, shutdown, console output
-        'django.server': {
-            'handlers': ['stdout', 'file_date'],
-            'level': 'INFO',
-            'propagate': False,
+        # Production: Only WARNING and ERROR
+        "django.server": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": "WARNING",
+            "propagate": False,
         },
-        
         # Django database: SQL queries and connections
-        'django.db.backends': {
-            'handlers': ['stdout', 'file_date'],
-            'level': 'DEBUG' if DEBUG else 'WARNING',
-            'propagate': False,
+        # Production: SILENT - No DEBUG SQL logs, only WARNING and ERROR
+        "django.db.backends": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": "WARNING",  # Always WARNING in production, regardless of DEBUG setting
+            "propagate": False,
         },
-        
         # PostgreSQL-specific logging: connections, slow queries, errors
-        'django.db.backends.postgresql': {
-            'handlers': ['stdout', 'file_date'],
-            'level': 'INFO',  # Always log connections and errors, even in production
-            'propagate': False,
+        # Production: Only WARNING (slow queries) and ERROR (database errors)
+        # Note: Custom db_logging.py handles slow queries at WARNING level
+        "django.db.backends.postgresql": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": "WARNING",  # Only slow queries and errors, no DEBUG/INFO SQL logs
+            "propagate": False,
         },
-        
         # Vibera middleware: request/response logging and timing
-        'vibera.middleware': {
-            'handlers': ['stdout', 'file_date'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "vibera.middleware": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Users app: registration, authentication, profile management
-        'users': {
-            'handlers': ['stdout', 'file_date'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "users": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Moods app: mood tracking and journal entries
-        'moods': {
-            'handlers': ['stdout', 'file_date'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "moods": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # Social app: social interactions and community features
-        'social': {
-            'handlers': ['stdout', 'file_date'],
-            'level': os.getenv('APPLICATION_LOG_LEVEL', 'INFO'),
-            'propagate': False,
+        "social": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": os.getenv("APPLICATION_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
-        
         # REST Framework: API authentication, permissions, viewsets
-        'rest_framework': {
-            'handlers': ['stdout', 'file_date'],
-            'level': 'INFO',
-            'propagate': False,
+        # Production: Only WARNING and ERROR
+        "rest_framework": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": "WARNING",
+            "propagate": False,
         },
-        
         # Django security: CSRF failures, suspicious activities
-        'django.security': {
-            'handlers': ['stdout', 'file_date'],
-            'level': 'WARNING',
-            'propagate': False,
+        "django.security": {
+            "handlers": ["stdout", FILE_HANDLER],
+            "level": "WARNING",
+            "propagate": False,
         },
     },
 }

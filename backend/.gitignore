@@ -22,3 +22,6 @@ logs/
 .vscode/
 
 pull_request.md
+.cursorignore
+
+vibera_db 

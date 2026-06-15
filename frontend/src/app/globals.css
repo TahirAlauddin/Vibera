@@ -1,13 +1,72 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:is(.dark *));
+
 :root {
   /* Colors */
+  --color-accent-primary: #f6c531;
+  --color-accent-primary-hover: #e0a800;
+  --color-accent-primary-active: #f1dc9a;
+  --color-accent-secondary-default: #ffffff;
+  --color-accent-secondary-border: #91b6a2;
+  --color-accent-secondary-hover: #91b6a2;
+  --color-accent-secondary-active: #d7e9b6;
+  --color-accent-disabled-hover: #e0e6d9;
+  --color-accent-disabled-active: #e0e6d9;
+  --color-accent-ghost-default: #000000;
+  --color-accent-ghost-hover: #f6c531;
+  --color-accent-ghost-active: #000000;
   --color-primary: #7dbf7a;
   --color-background: #e9f1f2;
   --color-secondary: #a7d9d4;
   --color-accent: oklch(0.22 0.04 235);
+  --input-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+  /* Input background */
+  --input-bg-default: #f4f6f1;
+  --input-bg-active: #e0e6d9;
+  --input-bg-accent: #f1dc9a;
+  --input-bg-secondary-accent: #d7e9b6;
+  /* Borders */
+  --input-border-default: #000000;
+  --input-border-error: #e10e11;
+
+  /* Disabled */
+  --input-disabled-text: #bababa;
+
   /* font */
   --font-primary: 'DIN Pro Cond';
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.13 0.028 261.692);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.13 0.028 261.692);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.13 0.028 261.692);
+  --primary: oklch(0.21 0.034 264.665);
+  --primary-foreground: oklch(0.985 0.002 247.839);
+  --secondary: oklch(0.967 0.003 264.542);
+  --secondary-foreground: oklch(0.21 0.034 264.665);
+  --muted: oklch(0.967 0.003 264.542);
+  --muted-foreground: oklch(0.551 0.027 264.364);
+  --accent: oklch(0.967 0.003 264.542);
+  --accent-foreground: oklch(0.21 0.034 264.665);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.928 0.006 264.531);
+  --input: oklch(0.928 0.006 264.531);
+  --ring: oklch(0.707 0.022 261.325);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0.002 247.839);
+  --sidebar-foreground: oklch(0.13 0.028 261.692);
+  --sidebar-primary: oklch(0.21 0.034 264.665);
+  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-accent: oklch(0.967 0.003 264.542);
+  --sidebar-accent-foreground: oklch(0.21 0.034 264.665);
+  --sidebar-border: oklch(0.928 0.006 264.531);
+  --sidebar-ring: oklch(0.707 0.022 261.325);
 }
 
 @layer utilities {
@@ -16,20 +75,25 @@
   .font-primary {
     font-family: var(--font-primary);
   }
+
   /* Colors */
   .color-bg {
     background-color: var(--color-background);
   }
+
   .color-primary {
     background-color: var(--color-primary);
   }
+
   .color-secondary {
     background-color: var(--color-secondary);
   }
+
   .color-accent {
     color: var(--color-accent);
   }
 }
+
 @font-face {
   font-family: 'DIN Pro Cond';
   src:
@@ -39,12 +103,122 @@
   font-style: normal;
   font-display: swap;
 }
-body {
+
+/* body {
   font-family: 'DIN Pro Cond', sans-serif;
-}
+} */
 
 h1,
 h2,
 h3 {
   font-family: 'DIN Pro Cond', sans-serif;
+}
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  /* Accent colors - values must match :root definitions above for Tailwind v4 */
+  /* Source of truth is in :root, these are duplicated here for Tailwind utility generation */
+  --color-accent-primary: var(--color-accent-primary);
+  --color-accent-primary-hover: var(--color-accent-primary-hover);
+  --color-accent-primary-active: var(--color-accent-primary-active);
+  --color-accent-secondary-default: var(--color-accent-secondary-default);
+  --color-accent-secondary-border: var(--color-accent-secondary-border);
+  --color-accent-secondary-hover: var(--color-accent-secondary-hover);
+  --color-accent-secondary-active: var(--color-accent-secondary-active);
+  --color-accent-disabled-hover: var(--color-accent-disabled-hover);
+  --color-accent-disabled-active: var(--color-accent-disabled-active);
+  --color-accent-ghost-default: var(--color-accent-ghost-default);
+  --color-accent-ghost-hover: var(--color-accent-ghost-hover);
+  --color-accent-ghost-active: var(--color-accent-ghost-active);
+  /* Input colors - values must match :root definitions above for Tailwind v4 */
+  --color-input: var(--input-bg-default);
+  --color-input-active: var(--input-bg-active);
+  --color-input-accent: var(--input-bg-accent);
+  --color-input-secondary-accent: var(--input-bg-secondary-accent);
+  --color-input-border: var(--input-border-default);
+  --color-input-error: var(--input-border-error);
+  --color-input-disabledText: var(--input-disabled-text);
+  /* Input box-shadow: use --shadow-* so shadow-input utility works */
+  --shadow-input: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.dark {
+  --background: oklch(0.13 0.028 261.692);
+  --foreground: oklch(0.985 0.002 247.839);
+  --card: oklch(0.21 0.034 264.665);
+  --card-foreground: oklch(0.985 0.002 247.839);
+  --popover: oklch(0.21 0.034 264.665);
+  --popover-foreground: oklch(0.985 0.002 247.839);
+  --primary: oklch(0.928 0.006 264.531);
+  --primary-foreground: oklch(0.21 0.034 264.665);
+  --secondary: oklch(0.278 0.033 256.848);
+  --secondary-foreground: oklch(0.985 0.002 247.839);
+  --muted: oklch(0.278 0.033 256.848);
+  --muted-foreground: oklch(0.707 0.022 261.325);
+  --accent: oklch(0.278 0.033 256.848);
+  --accent-foreground: oklch(0.985 0.002 247.839);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.551 0.027 264.364);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.21 0.034 264.665);
+  --sidebar-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-accent: oklch(0.278 0.033 256.848);
+  --sidebar-accent-foreground: oklch(0.985 0.002 247.839);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.551 0.027 264.364);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
 }

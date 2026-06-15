@@ -11,6 +11,8 @@ import os
 
 from django.core.asgi import get_asgi_application
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "vibera.settings")
+# Default to production settings for ASGI deployments
+# Set DJANGO_SETTINGS_MODULE environment variable to override
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings.production")
 
 application = get_asgi_application()

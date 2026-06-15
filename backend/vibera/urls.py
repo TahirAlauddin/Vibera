@@ -18,14 +18,22 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from moods import views as moods_views
+from users.views import GoogleSocialAuthView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     # JWT Authentication endpoints (Djoser)
     path("api/auth/", include("djoser.urls")),
     path("api/auth/", include("djoser.urls.jwt")),
+    path("api/auth/social/google/", GoogleSocialAuthView.as_view(), name="google-social-auth"),
+    # Users endpoints (includes 2FA)
+    path("api/users/", include("users.urls")),
     # Moods endpoints
     path("api/moods/", include("moods.urls")),
+    # Social endpoints
+    path("api/social/", include("social.urls")),
+    # Notifications endpoints
+    path("api/notifications/", include("notifications.urls")),
     # Test endpoint
     path("api/test/", moods_views.test_api, name="test_api"),
 ]
