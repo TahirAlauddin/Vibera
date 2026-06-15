@@ -1,25 +1,31 @@
-'use client'
-import type { ReactNode } from 'react'
-import Navbar from '@/components/Navbar'
-import Footer from '@/components/Footer'
+import { Plus_Jakarta_Sans, Playfair_Display } from 'next/font/google'
+import { cn } from '@/lib/utils'
+import { LandingNavbar } from './_components/landing-navbar'
+import { LandingFooter } from './_components/landing-footer'
 
-type MainLayoutProps = {
-  children: ReactNode
-}
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta',
+})
 
-export default function MainLayout({ children }: MainLayoutProps) {
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+})
+
+export default function LandingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* header placeholder */}
-      <header className="h-16 birder-b flex items-center">
-        <Navbar />
-      </header>
-      {/* Main content */}
-      <main className="flex-1 py-6 color-bg">{children}</main>
-      {/* Footer placefolder */}
-      <footer>
-        <Footer />
-      </footer>
+    <div
+      className={cn(
+        plusJakarta.variable,
+        playfair.variable,
+        'flex min-h-screen flex-col bg-[#FFFBEB] text-[#423E28]'
+      )}
+      style={{ fontFamily: 'var(--font-plus-jakarta), sans-serif' }}
+    >
+      <LandingNavbar />
+      <main className="flex-1">{children}</main>
+      <LandingFooter />
     </div>
   )
 }
