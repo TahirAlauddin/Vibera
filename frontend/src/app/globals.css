@@ -1,5 +1,4 @@
 @import 'tailwindcss';
-@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -105,9 +104,9 @@
   font-display: swap;
 }
 
-body {
+/* body {
   font-family: 'DIN Pro Cond', sans-serif;
-}
+} */
 
 h1,
 h2,
