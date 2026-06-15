@@ -118,11 +118,12 @@ class UserProfileSerializer(serializers.Serializer):
 
 class MoodFeedSerializer(MoodLogSerializer):
     """Serializer for mood feed with personalization fields"""
+    author_id = serializers.IntegerField(source="user.id", read_only=True)
     is_following = serializers.SerializerMethodField()
     user_profile = serializers.SerializerMethodField()
 
     class Meta(MoodLogSerializer.Meta):
-        fields = MoodLogSerializer.Meta.fields + ["is_following", "user_profile"]
+        fields = MoodLogSerializer.Meta.fields + ["author_id", "is_following", "user_profile"]
 
     def get_is_following(self, obj):
         """Check if the authenticated user follows the mood author"""
